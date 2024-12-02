@@ -1,17 +1,23 @@
 package com.project.foodieHub.entity;
 
+import com.project.foodieHub.enums.Role;
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.util.Set;
 
+@Entity
+@Table(name = "roles")
+@Data
 public class Roles extends BaseEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private String id;
+    private Long id;
 
     @Column(name = "role_name")
-    private String roleName;
+    @Enumerated(EnumType.STRING)
+    private Role roleName;
 
     @ManyToMany
     @JoinTable(
@@ -22,5 +28,5 @@ public class Roles extends BaseEntity{
     private Set<Permissions> permissions;
 
     @ManyToMany(mappedBy = "roles")
-    private Set<Users> users;
+    private Set<User> users;
 }

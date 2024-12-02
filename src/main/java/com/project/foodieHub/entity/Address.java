@@ -3,8 +3,10 @@ package com.project.foodieHub.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import jakarta.validation.constraints.NotNull;
+import lombok.Data;
 
 @Embeddable
+@Data
 public class Address {
 
     @Column(name = "addressLine1", nullable = false)
