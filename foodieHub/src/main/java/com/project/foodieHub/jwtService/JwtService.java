@@ -1,5 +1,7 @@
 package com.project.foodieHub.jwtService;
 
+import static java.rmi.server.LogStream.log;
+
 import com.project.foodieHub.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -14,11 +16,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import javax.crypto.SecretKey;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class JwtService {
 
   @Value("${jwt.secret.key}")
@@ -31,6 +35,9 @@ public class JwtService {
 
   @PostConstruct
   public void init() {
+    if (secretKey.length() < 32) {
+      log.error("JWT secret key must be at least 32 characters long!");
+    }
     this.key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
   }
 
