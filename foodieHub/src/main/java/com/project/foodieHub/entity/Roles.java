@@ -1,6 +1,5 @@
 package com.project.foodieHub.entity;
 
-import com.project.foodieHub.enums.Role;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -16,8 +15,7 @@ public class Roles extends BaseEntity{
     private Long id;
 
     @Column(name = "role_name")
-    @Enumerated(EnumType.STRING)
-    private Role roleName;
+    private String roleName;
 
     @ManyToMany
     @JoinTable(
@@ -26,7 +24,4 @@ public class Roles extends BaseEntity{
             inverseJoinColumns = @JoinColumn(name = "permission_id")
     )
     private Set<Permissions> permissions;
-
-    @ManyToMany(mappedBy = "roles")
-    private Set<User> users;
 }
