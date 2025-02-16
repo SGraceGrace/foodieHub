@@ -1,7 +1,5 @@
 package com.project.foodieHub.jwtService;
 
-import static java.rmi.server.LogStream.log;
-
 import com.project.foodieHub.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;

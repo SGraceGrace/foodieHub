@@ -37,9 +37,9 @@ public class SecurityConfig {
     return httpSecurity.csrf(csrf -> csrf.disable())
         .cors(cors -> cors.configurationSource(request -> {
           CorsConfiguration corsConfiguration = new CorsConfiguration();
-          corsConfiguration.setAllowedOrigins(List.of("*"));
+          corsConfiguration.setAllowedOrigins(List.of("*")); //Allow all origins
           corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
-          corsConfiguration.setAllowedHeaders(List.of("*"));
+          corsConfiguration.setAllowedHeaders(List.of("*")); //Accept all headers
           corsConfiguration.setAllowCredentials(true); // Allow cookies/auth headers
           return corsConfiguration;
         }))
