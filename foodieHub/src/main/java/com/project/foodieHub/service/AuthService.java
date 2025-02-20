@@ -1,11 +1,13 @@
 package com.project.foodieHub.service;
 
+import com.project.foodieHub.dto.JwtResponseDTO;
 import com.project.foodieHub.dto.LoginRequestDTO;
 import com.project.foodieHub.dto.SignUpRequestDTO;
+import com.project.foodieHub.exception_handler.UserAlreadyExistsException;
 
 public interface AuthService {
 
-  public String login(LoginRequestDTO loginRequestDTO) throws Exception;
+  public JwtResponseDTO login(LoginRequestDTO loginRequestDTO) throws Exception;
 
-  public String signup(SignUpRequestDTO signUpRequestDTO);
+  public JwtResponseDTO signup(SignUpRequestDTO signUpRequestDTO) throws Exception;
 }

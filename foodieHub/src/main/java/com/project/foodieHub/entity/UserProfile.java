@@ -16,10 +16,6 @@ public class UserProfile extends BaseEntity{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "email", nullable = false)
-    @NotNull(message = "Email cannot be null")
-    private String email;
-
     @Column(name = "phone_no", nullable = false)
     @NotNull(message = "Phoneno cannot be null")
     private String phoneNumber;
@@ -38,6 +34,7 @@ public class UserProfile extends BaseEntity{
     @Column(name = "is_primary_user")
     private boolean primaryUser;
 
-    @OneToOne(mappedBy = "userProfile")
+    @OneToOne
+    @JoinColumn(name = "id")
     private User user;
 }

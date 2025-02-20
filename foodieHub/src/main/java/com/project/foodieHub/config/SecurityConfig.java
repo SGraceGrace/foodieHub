@@ -43,7 +43,7 @@ public class SecurityConfig {
           corsConfiguration.setAllowCredentials(true); // Allow cookies/auth headers
           return corsConfiguration;
         }))
-        .authorizeHttpRequests(request -> request.requestMatchers("/api/auth/login").permitAll())
+        .authorizeHttpRequests(request -> request.requestMatchers("/api/auth/login", "/api/auth/signup").permitAll())
         .authorizeHttpRequests(request -> request.anyRequest().authenticated())
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

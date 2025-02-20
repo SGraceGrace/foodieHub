@@ -1,5 +1,6 @@
 package com.project.foodieHub.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.project.foodieHub.enums.UserStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -24,12 +25,17 @@ public class User extends BaseEntity implements UserDetails {
     @NotNull(message = "Name cannot be empty")
     private String name;
 
-    @Column(name = "user_name", nullable = false)
+    @Column(name = "user_name", nullable = false, unique = true)
     @NotNull(message = "Username cannot be null")
     private String userName;
 
+    @Column(name = "email", nullable = false, unique = true)
+    @NotNull(message = "Email cannot be null")
+    private String email;
+
     @Column(name = "password", nullable = false)
     @NotNull(message = "Password cannot be null")
+    @JsonIgnore
     private String password;
 
     @ManyToOne(fetch = FetchType.EAGER)
@@ -40,9 +46,11 @@ public class User extends BaseEntity implements UserDetails {
     @Enumerated(value = EnumType.STRING)
     private UserStatus status;
 
-    @OneToOne
-    @JoinColumn(name = "id")
+    @OneToOne(mappedBy = "user")
     private UserProfile userProfile;
+
+    @OneToOne(mappedBy = "user")
+    private RefreshToken refreshToken;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
