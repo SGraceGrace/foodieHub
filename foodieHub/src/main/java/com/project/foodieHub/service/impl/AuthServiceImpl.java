@@ -3,8 +3,6 @@ package com.project.foodieHub.service.impl;
 import com.project.foodieHub.dto.JwtResponseDTO;
 import com.project.foodieHub.dto.LoginRequestDTO;
 import com.project.foodieHub.dto.SignUpRequestDTO;
-import com.project.foodieHub.entity.RefreshToken;
-import com.project.foodieHub.entity.Roles;
 import com.project.foodieHub.entity.User;
 import com.project.foodieHub.enums.Role;
 import com.project.foodieHub.enums.UserStatus;
@@ -12,14 +10,11 @@ import com.project.foodieHub.exception_handler.BadCredentialsException;
 import com.project.foodieHub.exception_handler.CommonException;
 import com.project.foodieHub.exception_handler.UserAlreadyExistsException;
 import com.project.foodieHub.jwtService.JwtService;
-import com.project.foodieHub.repo.RefreshTokenRepo;
 import com.project.foodieHub.repo.RoleRepo;
 import com.project.foodieHub.repo.UserRepo;
 import com.project.foodieHub.service.AuthService;
-import java.time.LocalDate;
+import com.project.foodieHub.service.RefreshTokenService;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -39,15 +34,12 @@ public class AuthServiceImpl implements AuthService {
   private final AuthenticationManager authenticationManager;
   private final JwtService jwtService;
   private final UserRepo userRepo;
-  private final RefreshTokenRepo refreshTokenRepo;
+  private final RefreshTokenService refreshTokenService;
   private final PasswordEncoder passwordEncoder;
   private final RoleRepo roleRepo;
 
-  @Value("${refresh.token.expiration}")
-  private Long refreshTokenExpiration;
-
   @Override
-  public JwtResponseDTO login(LoginRequestDTO loginRequestDTO) throws Exception {
+  public JwtResponseDTO login(LoginRequestDTO loginRequestDTO) {
     Authentication authentication;
     try {
       authentication = authenticationManager.authenticate(
@@ -60,23 +52,13 @@ public class AuthServiceImpl implements AuthService {
     SecurityContextHolder.getContext().setAuthentication(authentication);
     var userDetails = (UserDetails) authentication.getPrincipal();
     var token = jwtService.generateToken(user);
-    var refreshToken = createRefreshToken(user);
+    var refreshToken = refreshTokenService.createRefreshToken(user);
     return new JwtResponseDTO(token, refreshToken.getToken(), userDetails);
-  }
-
-  private RefreshToken createRefreshToken(User user) {
-    var refreshToken = new RefreshToken();
-    refreshToken.setToken(UUID.randomUUID().toString());
-    refreshToken.setUser(user);
-    refreshToken.setExpiryDate(
-        LocalDate.now().plusDays(TimeUnit.MILLISECONDS.toDays(refreshTokenExpiration)));
-    return refreshTokenRepo.saveAndFlush(refreshToken);
   }
 
   @Override
   @Transactional(rollbackFor = Exception.class)
-  public JwtResponseDTO signup(SignUpRequestDTO signUpRequestDTO)
-      throws Exception {
+  public JwtResponseDTO signup(SignUpRequestDTO signUpRequestDTO) {
 
     //validate Username
     var existingUserByUsername = userRepo.findByUserName(signUpRequestDTO.getUsername());
@@ -97,7 +79,7 @@ public class AuthServiceImpl implements AuthService {
     return doAutoLogin(user.getUsername());
   }
 
-  private JwtResponseDTO doAutoLogin(String username) throws Exception {
+  private JwtResponseDTO doAutoLogin(String username) {
     var user = userRepo.findByUserName(username).orElseThrow(() -> new BadCredentialsException("User not found"));
     var userDetails = new org.springframework.security.core.userdetails.User(
         user.getUsername(), user.getPassword(), user.getAuthorities()
@@ -106,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
     SecurityContextHolder.getContext().setAuthentication(authentication);
 
     var token = jwtService.generateToken(user);
-    var refreshToken = createRefreshToken(user);
+    var refreshToken = refreshTokenService.createRefreshToken(user);
     return new JwtResponseDTO(token, refreshToken.getToken(), userDetails);
   }
 

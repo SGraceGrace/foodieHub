@@ -3,7 +3,6 @@ package com.project.foodieHub.controller;
 import com.project.foodieHub.dto.BaseAPIResponse;
 import com.project.foodieHub.dto.LoginRequestDTO;
 import com.project.foodieHub.dto.SignUpRequestDTO;
-import com.project.foodieHub.exception_handler.UserAlreadyExistsException;
 import com.project.foodieHub.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,8 +20,7 @@ public class AuthController {
   private final AuthService authService;
 
   @PostMapping("/login")
-  public ResponseEntity<BaseAPIResponse> login(@RequestBody LoginRequestDTO loginRequestDTO)
-      throws Exception {
+  public ResponseEntity<BaseAPIResponse> login(@RequestBody LoginRequestDTO loginRequestDTO) {
     BaseAPIResponse baseAPIResponse = new BaseAPIResponse();
     baseAPIResponse.setData(authService.login(loginRequestDTO));
     baseAPIResponse.setSuccessMessage("Logged In Successfully");
