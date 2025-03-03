@@ -48,7 +48,7 @@ public class AuthServiceImpl implements AuthService {
     } catch (AuthenticationException e) {
       throw new BadCredentialsException("Invalid username or password");
     }
-    var user = userRepo.findByUserName(loginRequestDTO.getUsername()).orElseThrow(() -> new BadCredentialsException("User not found"));
+    var user = userRepo.findByUserNameAndStatus(loginRequestDTO.getUsername(), UserStatus.ACTIVE).orElseThrow(() -> new BadCredentialsException("User not found"));
     SecurityContextHolder.getContext().setAuthentication(authentication);
     var userDetails = (UserDetails) authentication.getPrincipal();
     var token = jwtService.generateToken(user);
@@ -61,11 +61,11 @@ public class AuthServiceImpl implements AuthService {
   public JwtResponseDTO signup(SignUpRequestDTO signUpRequestDTO) {
 
     //validate Username
-    var existingUserByUsername = userRepo.findByUserName(signUpRequestDTO.getUsername());
+    var existingUserByUsername = userRepo.findByUserNameAndStatus(signUpRequestDTO.getUsername(), UserStatus.ACTIVE);
     validateUserAlreadyExists(existingUserByUsername, "username");
 
     //validate Email
-    var existingUserByEmail = userRepo.findByEmail(signUpRequestDTO.getEmail());
+    var existingUserByEmail = userRepo.findByEmailAndStatus(signUpRequestDTO.getEmail(), UserStatus.ACTIVE);
     validateUserAlreadyExists(existingUserByEmail, "email");
 
     var roles = roleRepo.findByRoleName(Role.END_USERS.name()).orElseThrow(() -> new CommonException("Something went wrong"));
@@ -80,7 +80,7 @@ public class AuthServiceImpl implements AuthService {
   }
 
   private JwtResponseDTO doAutoLogin(String username) {
-    var user = userRepo.findByUserName(username).orElseThrow(() -> new BadCredentialsException("User not found"));
+    var user = userRepo.findByUserNameAndStatus(username, UserStatus.ACTIVE).orElseThrow(() -> new BadCredentialsException("User not found"));
     var userDetails = new org.springframework.security.core.userdetails.User(
         user.getUsername(), user.getPassword(), user.getAuthorities()
     );

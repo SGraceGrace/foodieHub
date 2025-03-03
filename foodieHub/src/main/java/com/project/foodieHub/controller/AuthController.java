@@ -24,17 +24,17 @@ public class AuthController {
     BaseAPIResponse baseAPIResponse = new BaseAPIResponse();
     baseAPIResponse.setData(authService.login(loginRequestDTO));
     baseAPIResponse.setSuccessMessage("Logged In Successfully");
-    baseAPIResponse.setHttpCode(HttpStatus.OK.value());
     return new ResponseEntity<>(baseAPIResponse, HttpStatus.OK);
   }
 
   @PostMapping("/signup")
-  public ResponseEntity<BaseAPIResponse> signup(@RequestBody SignUpRequestDTO signUpRequestDTO)
-      throws Exception {
+  public ResponseEntity<BaseAPIResponse> signup(@RequestBody SignUpRequestDTO signUpRequestDTO) {
     BaseAPIResponse baseAPIResponse = new BaseAPIResponse();
     baseAPIResponse.setData(authService.signup(signUpRequestDTO));
     baseAPIResponse.setSuccessMessage("Account Created Successfully");
-    baseAPIResponse.setHttpCode(HttpStatus.OK.value());
     return new ResponseEntity<>(baseAPIResponse, HttpStatus.OK);
   }
+
+//  @PostMapping("/logout")
+
 }

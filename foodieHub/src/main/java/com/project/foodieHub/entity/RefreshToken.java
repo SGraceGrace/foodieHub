@@ -1,5 +1,6 @@
 package com.project.foodieHub.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -24,7 +25,8 @@ public class RefreshToken extends BaseEntity{
   private String token;
 
   @OneToOne
-  @JoinColumn(name = "user_id", referencedColumnName = "id")
+  @JoinColumn(name = "user_id", referencedColumnName = "id", unique = true)
+  @JsonBackReference
   private User user;
 
   @Column(name = "expiry_date", nullable = false)

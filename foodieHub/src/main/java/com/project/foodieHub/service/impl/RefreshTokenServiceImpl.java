@@ -15,6 +15,8 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -24,7 +26,7 @@ import org.springframework.stereotype.Service;
 public class RefreshTokenServiceImpl implements RefreshTokenService {
 
   @Value("${refresh.token.expiration}")
-  private final Long refreshTokenExpiration;
+  private Long refreshTokenExpiration;
 
   private final RefreshTokenRepo refreshTokenRepo;
   private final UserRepo userRepo;
@@ -39,13 +41,14 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     }
 
     var user = userRepo.findById(refreshToken.getUser().getId()).orElseThrow(() -> new CommonException("User cannot be fetched"));
-    var appUser = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-    if(!user.getUsername().equals(appUser.getUsername())) {
-      throw new CommonException("Something wrong in refresh token user");
-    }
 
+    var userDetails = new org.springframework.security.core.userdetails.User(
+        user.getUsername(), user.getPassword(), user.getAuthorities()
+    );
+    Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, user.getAuthorities());
+    SecurityContextHolder.getContext().setAuthentication(authentication);
     var token = jwtService.generateToken(user);
-    return new JwtResponseDTO(token, refreshToken.getToken(), appUser);
+    return new JwtResponseDTO(token, refreshToken.getToken(), user);
   }
 
   private boolean isRefreshTokenExpired(RefreshToken refreshToken){
@@ -54,7 +57,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
   @Override
   public RefreshToken createRefreshToken(User user) {
-    var refreshToken = new RefreshToken();
+    RefreshToken refreshToken = refreshTokenRepo.findByUser(user)
+        .orElse(new RefreshToken());
     refreshToken.setToken(UUID.randomUUID().toString());
     refreshToken.setUser(user);
     refreshToken.setExpiryDate(

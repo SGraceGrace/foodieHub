@@ -7,6 +7,6 @@ import org.springframework.http.HttpStatus;
 public class BaseAPIResponse {
     private String successMessage;
     private Object data;
-    private int httpCode;
+    private int httpCode = HttpStatus.OK.value();
     private String errorMsg;
 }
