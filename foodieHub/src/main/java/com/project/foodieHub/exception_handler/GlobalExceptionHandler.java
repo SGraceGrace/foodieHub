@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
   public ResponseEntity<BaseAPIResponse> refreshTokenException(RefreshTokenException e) {
     var response = new BaseAPIResponse();
     response.setErrorMsg(e.getMessage());
-    response.setHttpCode(HttpStatus.FORBIDDEN.value());
+    response.setHttpCode(HttpStatus.UNAUTHORIZED.value());
     return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 }
