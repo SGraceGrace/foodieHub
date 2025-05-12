@@ -14,7 +14,7 @@ public class UserController {
 
   private final UserService userService;
 
-  @PreAuthorize("hasRole('ROLE_ADMIN')")
+  @PreAuthorize("hasRole('END_USERS')")
   @GetMapping("/test")
   public String test() {
     return "Everything is good";

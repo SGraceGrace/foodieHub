@@ -8,5 +8,5 @@ import com.project.foodieHub.entity.User;
 public interface RefreshTokenService {
   public JwtResponseDTO refreshToken(TokenRefreshRequest tokenRefreshRequest);
 
-  public RefreshToken createRefreshToken(User user);
+  public RefreshToken createRefreshToken(User user, String deviceId);
 }

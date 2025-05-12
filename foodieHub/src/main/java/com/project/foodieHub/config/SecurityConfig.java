@@ -12,10 +12,12 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 
@@ -34,7 +36,7 @@ public class SecurityConfig {
 
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-    return httpSecurity.csrf(csrf -> csrf.disable())
+    return httpSecurity.csrf(AbstractHttpConfigurer::disable)
         .cors(cors -> cors.configurationSource(request -> {
           CorsConfiguration corsConfiguration = new CorsConfiguration();
           corsConfiguration.setAllowedOrigins(List.of("*")); //Allow all origins
@@ -45,10 +47,13 @@ public class SecurityConfig {
         }))
         .authorizeHttpRequests(request -> request.requestMatchers("/api/auth/login", "/api/auth/signup", "/api/refresh-token").permitAll())
         .authorizeHttpRequests(request -> request.anyRequest().authenticated())
+        .exceptionHandling(httpSecurityExceptionHandlingConfigurer ->
+          httpSecurityExceptionHandlingConfigurer.accessDeniedHandler(accessDeniedHandler()).authenticationEntryPoint(authEntryPoint()))
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
-        .authenticationProvider(authenticationProvider()).build();
+        .authenticationProvider(authenticationProvider())
+        .build();
   }
 
   @Bean
@@ -67,6 +72,16 @@ public class SecurityConfig {
   @Bean
   public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
     return config.getAuthenticationManager();
+  }
+
+  @Bean
+  public AccessDeniedHandler accessDeniedHandler() {
+    return new CustomAccessDeniedHandler();
+  }
+
+  @Bean
+  public CustomAuthEntryPoint authEntryPoint() {
+    return new CustomAuthEntryPoint();
   }
 
 }

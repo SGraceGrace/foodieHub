@@ -7,6 +7,7 @@ import com.project.foodieHub.dto.TokenRefreshRequest;
 import com.project.foodieHub.exception_handler.CommonException;
 import com.project.foodieHub.exception_handler.RefreshTokenException;
 import com.project.foodieHub.service.RefreshTokenService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +24,7 @@ public class RefreshTokenController {
   private final RefreshTokenService refreshTokenService;
 
   @PostMapping
-  public ResponseEntity<BaseAPIResponse> refreshToken(@RequestBody TokenRefreshRequest tokenRefreshRequest) {
+  public ResponseEntity<BaseAPIResponse> refreshToken(@Valid @RequestBody TokenRefreshRequest tokenRefreshRequest) {
     var response = new BaseAPIResponse();
     response.setData(refreshTokenService.refreshToken(tokenRefreshRequest));
     response.setSuccessMessage(SUCCESS);

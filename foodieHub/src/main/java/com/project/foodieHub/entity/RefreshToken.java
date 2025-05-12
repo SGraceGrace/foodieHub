@@ -24,6 +24,9 @@ public class RefreshToken extends BaseEntity{
   @Column(name = "token", nullable = false)
   private String token;
 
+  @Column(name = "device_id", nullable = false)
+  private String deviceId;
+
   @OneToOne
   @JoinColumn(name = "user_id", referencedColumnName = "id", unique = true)
   @JsonBackReference

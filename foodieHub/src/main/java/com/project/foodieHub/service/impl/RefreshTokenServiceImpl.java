@@ -10,15 +10,16 @@ import com.project.foodieHub.jwtService.JwtService;
 import com.project.foodieHub.repo.RefreshTokenRepo;
 import com.project.foodieHub.repo.UserRepo;
 import com.project.foodieHub.service.RefreshTokenService;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -31,6 +32,10 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
   private final RefreshTokenRepo refreshTokenRepo;
   private final UserRepo userRepo;
   private final JwtService jwtService;
+  private final RedisTemplate<String, String> redisTemplate;
+
+  @Value("${jwt.token.expiration}")
+  private int jwtExpiration;
 
   public JwtResponseDTO refreshToken(TokenRefreshRequest tokenRefreshRequest) {
     var refreshToken = refreshTokenRepo.findByToken(tokenRefreshRequest.getRefreshToken()).orElseThrow(() -> new CommonException("Refresh Token is invalid"));
@@ -47,7 +52,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     );
     Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, user.getAuthorities());
     SecurityContextHolder.getContext().setAuthentication(authentication);
-    var token = jwtService.generateToken(user);
+    var token = jwtService.generateToken(user, tokenRefreshRequest.getDeviceId());
+    redisTemplate.opsForValue().set(user.getUsername()+tokenRefreshRequest.getDeviceId(), token, Duration.ofMillis(jwtExpiration)); //store token in redis
     return new JwtResponseDTO(token, refreshToken.getToken(), user);
   }
 
@@ -56,11 +62,12 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
   }
 
   @Override
-  public RefreshToken createRefreshToken(User user) {
-    RefreshToken refreshToken = refreshTokenRepo.findByUser(user)
+  public RefreshToken createRefreshToken(User user, String deviceId) {
+    RefreshToken refreshToken = refreshTokenRepo.findByUserAndDeviceId(user, deviceId)
         .orElse(new RefreshToken());
     refreshToken.setToken(UUID.randomUUID().toString());
     refreshToken.setUser(user);
+    refreshToken.setDeviceId(deviceId);
     refreshToken.setExpiryDate(
         LocalDate.now().plusDays(TimeUnit.MILLISECONDS.toDays(refreshTokenExpiration)));
     return refreshTokenRepo.saveAndFlush(refreshToken);
