@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -35,7 +35,4 @@ public class AuthController {
     baseAPIResponse.setSuccessMessage("Account Created Successfully");
     return new ResponseEntity<>(baseAPIResponse, HttpStatus.OK);
   }
-
-//  @PostMapping("/logout")
-
 }
