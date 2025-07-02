@@ -2,6 +2,7 @@ package com.project.foodieHub.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.project.foodieHub.enums.AuthProvider;
 import com.project.foodieHub.enums.UserStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -53,6 +54,9 @@ public class User extends BaseEntity implements UserDetails {
     @OneToOne(mappedBy = "user")
     @JsonManagedReference
     private RefreshToken refreshToken;
+
+    @Column(name = "auth_provider")
+    private AuthProvider authProvider = AuthProvider.LOCAL;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
