@@ -8,7 +8,7 @@ import java.util.Set;
 @Entity
 @Table(name = "roles")
 @Data
-public class Roles extends BaseEntity{
+public class Roles{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -35,10 +35,10 @@ public class User extends BaseEntity implements UserDetails {
     @NotNull(message = "Email cannot be null")
     private String email;
 
-    @Column(name = "password", nullable = false)
-    @NotNull(message = "Password cannot be null")
+    @Column(name = "password")
+//    @NotNull(message = "Password cannot be null")
     @JsonIgnore
-    private String password;
+    private String password = "DEFAULT_PASSWORD";
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "role_id", nullable = false) // Foreign Key

@@ -17,6 +17,7 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
@@ -33,10 +34,12 @@ public class SecurityConfig {
 
   private AuthFilter authFilter;
   private UserDetailsServiceImpl userDetailsService;
+  private ClientRegistrationRepository clientRegistrationRepository;
 
-  public SecurityConfig(AuthFilter authFilter, UserDetailsServiceImpl userDetailsService) {
+  public SecurityConfig(AuthFilter authFilter, UserDetailsServiceImpl userDetailsService, ClientRegistrationRepository clientRegistrationRepository) {
     this.authFilter = authFilter;
     this.userDetailsService = userDetailsService;
+    this.clientRegistrationRepository = clientRegistrationRepository;
   }
 
   @Bean
@@ -53,6 +56,9 @@ public class SecurityConfig {
         .authorizeHttpRequests(request -> request.requestMatchers("/api/v1/auth/login", "/api/v1/auth/signup", "/api/v1/refresh-token").permitAll())
         .authorizeHttpRequests(request -> request.anyRequest().authenticated())
         .oauth2Login(httpSecurityOAuth2LoginConfigurer -> httpSecurityOAuth2LoginConfigurer
+            .authorizationEndpoint(authorizationEndpointConfig -> authorizationEndpointConfig.authorizationRequestResolver(
+                new CustomAuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization")
+            ))
             .successHandler(oAuth2SuccessHandler())
             .failureHandler(oAuth2FailureHandler()))
         .exceptionHandling(httpSecurityExceptionHandlingConfigurer ->
