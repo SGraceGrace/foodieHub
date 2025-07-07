@@ -18,19 +18,15 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.stereotype.Component;
 
-@Component
 public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler {
 
   @Autowired
@@ -53,7 +49,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
   @Override
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-      Authentication authentication) throws IOException, ServletException {
+      Authentication authentication) throws IOException {
     DefaultOAuth2User oAuth2User = (DefaultOAuth2User) authentication.getPrincipal();
 
     Map<String, Object> attributes = oAuth2User.getAttributes();

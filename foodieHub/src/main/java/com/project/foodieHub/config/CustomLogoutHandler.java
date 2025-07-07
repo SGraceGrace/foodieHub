@@ -3,7 +3,6 @@ package com.project.foodieHub.config;
 import com.project.foodieHub.enums.UserStatus;
 import com.project.foodieHub.exception_handler.BadCredentialsException;
 import com.project.foodieHub.jwtService.JwtService;
-import com.project.foodieHub.repo.RefreshTokenRepo;
 import com.project.foodieHub.repo.UserRepo;
 import com.project.foodieHub.service.impl.LogoutService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,14 +11,10 @@ import java.io.IOException;
 import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-@Component
 public class CustomLogoutHandler implements LogoutHandler {
 
   @Autowired
