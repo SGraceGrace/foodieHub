@@ -11,7 +11,6 @@ import com.project.foodieHub.jwtService.JwtService;
 import com.project.foodieHub.repo.RoleRepo;
 import com.project.foodieHub.repo.UserRepo;
 import com.project.foodieHub.service.RefreshTokenService;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -24,6 +23,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 
@@ -51,6 +51,9 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
   public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
       Authentication authentication) throws IOException {
     DefaultOAuth2User oAuth2User = (DefaultOAuth2User) authentication.getPrincipal();
+
+    OAuth2AuthenticationToken authToken = (OAuth2AuthenticationToken) authentication;
+    String registrationId = authToken.getAuthorizedClientRegistrationId();
 
     Map<String, Object> attributes = oAuth2User.getAttributes();
     String email = (String) attributes.get("email");
