@@ -1,0 +1,24 @@
+<div class="container" [ngStyle]="{'background-image': 'url(' + backgroundUrl + ')'}">
+    <mat-card class="example-card" appearance="outlined">
+        <mat-card-header class="h-header">
+            <mat-card-title class="header">
+                <img class="img" src="logo.png" alt="logo">
+                <div class="title">Welcome Back</div>
+            </mat-card-title>
+        </mat-card-header>
+        <mat-card-content class="content">
+            <div class="inputs">
+                <i class="fa-solid fa-user"></i>
+                <input type="text" name="uname" id="uname" placeholder="Username">
+            </div>
+            <div class="inputs">
+                <i class="fa-solid fa-lock"></i>
+                <input type="text" name="pwd" id="pwd" placeholder="Password">
+            </div>
+        </mat-card-content>
+        <mat-card-footer class="example-card-footer">
+            <a href="#">Forgot Password?</a>
+            <button mat-raised-button class="login-btn">Login</button>
+        </mat-card-footer>
+    </mat-card>
+</div>
