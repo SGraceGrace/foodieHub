@@ -1,1 +1,19 @@
-<p>header works!</p>
+<mat-toolbar class="header">
+    <div class="title">
+        <img src="logo.png" alt="logo" class="logo">
+        <span>foodiehub</span>
+    </div>
+    <span class="example-spacer"></span>
+    <button mat-icon-button [matMenuTriggerFor]="menu" class="example-icon"
+        aria-label="Example icon-button with menu icon">
+        <mat-icon>menu</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+        <button mat-menu-item>
+            <span>LOGIN</span>
+        </button>
+        <button mat-menu-item>
+            <span>SIGNUP</span>
+        </button>
+    </mat-menu>
+</mat-toolbar>
