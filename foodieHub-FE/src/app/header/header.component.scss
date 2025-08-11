@@ -1,22 +1,45 @@
-@use '../../styles/variables' as *;
+@use "../../styles/variables" as *;
 
 .header {
-    background-color: white;
-    padding: 50px;
-    // min-height: 100px;
+  display: flex;
+  background-color: white;
+  border-bottom: 1px solid $secondary-color;
+  justify-content: center;
+  align-items: center;
+  gap: 10rem;
+  padding: 2rem 4rem; // Add padding for desktop
 }
 
 .title {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    // padding: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .logo {
-    max-width: 10vh;
+  max-width: 10vh;
 }
 
 .example-spacer {
   flex: 1 1 auto;
+}
+
+::ng-deep .mat-mdc-menu-panel {
+  background-color: white !important;
+}
+
+@media (max-width: 600px) {
+  .header {
+    gap: 0.5rem; /* Smaller space on mobile */
+    padding: 0.5rem 1rem;
+    justify-content: space-between; 
+  }
+
+  .example-spacer {
+    display: none; /* ✅ Hide nav links on mobile */
+  }
+
+  .logo {
+    max-width: 8vh; /* Smaller logo on mobile */
+  }
 }

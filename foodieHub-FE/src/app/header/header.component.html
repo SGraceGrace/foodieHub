@@ -3,17 +3,29 @@
         <img src="logo.png" alt="logo" class="logo">
         <span>foodiehub</span>
     </div>
-    <span class="example-spacer"></span>
-    <button mat-icon-button [matMenuTriggerFor]="menu" class="example-icon"
-        aria-label="Example icon-button with menu icon">
-        <mat-icon>menu</mat-icon>
-    </button>
-    <mat-menu #menu="matMenu">
-        <button mat-menu-item>
-            <span>LOGIN</span>
+    <div class="example-spacer">
+        <a routerLink="/home">Home</a>
+        <a routerLink="/">Cuisines</a>
+        <a routerLink="/">About us</a>
+        <a routerLink="/">Reviews</a>
+        <a routerLink="/">Blog</a>
+        <a routerLink="/">Contact us</a>
+        <a routerLink="/">
+            <i class="fa-solid fa-gift"></i>
+        </a>
+    </div>
+    <div class="menu">
+        <button mat-icon-button [matMenuTriggerFor]="menu" class="example-icon"
+            aria-label="Example icon-button with menu icon">
+            <mat-icon>menu</mat-icon>
         </button>
-        <button mat-menu-item>
-            <span>SIGNUP</span>
-        </button>
-    </mat-menu>
+        <mat-menu #menu="matMenu">
+            <button mat-menu-item>
+                <span>Login</span>
+            </button>
+            <button mat-menu-item>
+                <span>Signup</span>
+            </button>
+        </mat-menu>
+    </div>
 </mat-toolbar>
