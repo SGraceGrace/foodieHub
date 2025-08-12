@@ -3,7 +3,8 @@
         <img src="logo.png" alt="logo" class="logo">
         <span>foodiehub</span>
     </div>
-    <div class="example-spacer">
+    <div class="example-spacer"></div>
+    <div class="links">
         <a routerLink="/home">Home</a>
         <a routerLink="/">Cuisines</a>
         <a routerLink="/">About us</a>
@@ -15,16 +16,16 @@
         </a>
     </div>
     <div class="menu">
-        <button mat-icon-button [matMenuTriggerFor]="menu" class="example-icon"
+        <button mat-icon-button [matMenuTriggerFor]="menu" matMenuPositionX="after" matMenuPositionY="below" class="example-icon"
             aria-label="Example icon-button with menu icon">
-            <mat-icon>menu</mat-icon>
+            <mat-icon>segment</mat-icon>
         </button>
         <mat-menu #menu="matMenu">
             <button mat-menu-item>
-                <span>Login</span>
+                <span class="menu-item">Login</span>
             </button>
             <button mat-menu-item>
-                <span>Signup</span>
+                <span class="menu-item">Signup</span>
             </button>
         </mat-menu>
     </div>

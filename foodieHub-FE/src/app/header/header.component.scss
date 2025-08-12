@@ -3,36 +3,57 @@
 .header {
   display: flex;
   background-color: white;
-  border-bottom: 1px solid $secondary-color;
   justify-content: center;
   align-items: center;
-  gap: 10rem;
-  padding: 2rem 4rem; // Add padding for desktop
+  gap: clamp(1rem, 5vw, 10rem);
+  padding: 2rem 4rem;
 }
 
 .title {
   display: flex;
   justify-content: center;
   align-items: center;
+  color: $font-color;
 }
 
 .logo {
-  max-width: 10vh;
+  max-width: clamp(40px, 8vw, 80px);
 }
 
 .example-spacer {
   flex: 1 1 auto;
 }
 
+.links {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 1.2rem;
+
+  a {
+    color: $font-color;
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: $hover-color;
+    text-decoration: underline;
+  }
+}
+
 ::ng-deep .mat-mdc-menu-panel {
   background-color: white !important;
+}
+
+.menu-item {
+  font-size: 1rem;
 }
 
 @media (max-width: 600px) {
   .header {
     gap: 0.5rem; /* Smaller space on mobile */
     padding: 0.5rem 1rem;
-    justify-content: space-between; 
+    justify-content: space-between;
   }
 
   .example-spacer {
@@ -41,5 +62,11 @@
 
   .logo {
     max-width: 8vh; /* Smaller logo on mobile */
+  }
+
+  ::ng-deep .cdk-overlay-pane {
+    top: 56px !important;
+    max-height: calc(100vh - 70px) !important; /* 70px = header height + some padding */
+    overflow-y: auto !important;
   }
 }
