@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
-import { HomeComponent } from './home/home.component';
-import { LoginComponent } from './login/login.component';
+import { NotFoundComponent } from './not-found/not-found.component';
 
 export const routes: Routes = [
     {
@@ -10,10 +9,22 @@ export const routes: Routes = [
     },
     {
         path: 'home',
-        component: HomeComponent
+        loadComponent: () => import('./home/home.component').then(module => module.HomeComponent)
     },
     {
         path: 'login',
         loadComponent: () => import('./login/login.component').then(module => module.LoginComponent)
+    },
+    {
+        path: 'signup',
+        loadComponent: () => import('./signup/signup.component').then(module => module.SignupComponent)
+    },
+    {
+        path: 'user',
+        loadChildren: () => import('./user/user.routes').then(m => m.routes)
+    },
+    {
+        path: '**',
+        component: NotFoundComponent
     }
 ];

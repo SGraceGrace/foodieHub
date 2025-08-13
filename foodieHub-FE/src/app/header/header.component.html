@@ -5,15 +5,19 @@
     </div>
     <div class="example-spacer"></div>
     <div class="links">
-        <a routerLink="/home">Home</a>
-        <a routerLink="/">Cuisines</a>
-        <a routerLink="/">About us</a>
-        <a routerLink="/">Reviews</a>
-        <a routerLink="/">Blog</a>
-        <a routerLink="/">Contact us</a>
-        <a routerLink="/">
+        <a routerLink="/home" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">Home</a>
+        <a routerLink="/user/cuisine" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">Cuisines</a>
+        <a routerLink="/user/about-us" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">About us</a>
+        <a routerLink="/user/reviews" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">Reviews</a>
+        <a routerLink="/user/blog" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">Blog</a>
+        <a routerLink="/user/contact-us" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">Contact us</a>
+        <a routerLink="/user/deals" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">
             <i class="fa-solid fa-gift"></i>
         </a>
+        <span class="search">
+            <input type="text" name="search-box" id="search-box" placeholder="Search..." [formControl]="searchControl" (keyup.enter)="onSearch()">
+            <i class="fa-solid fa-magnifying-glass"></i>
+        </span>
     </div>
     <div class="menu">
         <button mat-icon-button [matMenuTriggerFor]="menu" matMenuPositionX="after" matMenuPositionY="below" class="example-icon"
