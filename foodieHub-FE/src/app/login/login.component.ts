@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { CloudinaryImage } from '@cloudinary/url-gen/index';
 import { CloudinaryService } from '../shared/cloudinary.service';
 import { CommonModule } from '@angular/common';
@@ -11,7 +11,8 @@ import {MatButtonModule} from '@angular/material/button';
   standalone: true,
   imports: [CommonModule, MatCardModule, MatChipsModule, MatButtonModule],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.scss'
+  styleUrl: './login.component.scss',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent implements OnInit{
   

@@ -1,24 +1,42 @@
-<div class="container">
-    <mat-card class="example-card" appearance="outlined">
-        <mat-card-header class="h-header">
-            <mat-card-title class="header">
-                <img class="img" src="logo.png" alt="logo">
-                <div class="title">Welcome Back</div>
-            </mat-card-title>
-        </mat-card-header>
-        <mat-card-content class="content">
-            <div class="inputs">
-                <i class="fa-solid fa-user"></i>
-                <input type="text" name="uname" id="uname" placeholder="Username">
+<div class="outer-container">
+    <div class="container">
+        <div class="left-container">
+            <div class="title">
+                <img src="logo.png" alt="logo" class="logo">
+                <span>foodiehub</span>
             </div>
-            <div class="inputs">
-                <i class="fa-solid fa-lock"></i>
-                <input type="text" name="pwd" id="pwd" placeholder="Password">
-            </div>
-        </mat-card-content>
-        <mat-card-footer class="example-card-footer">
-            <a href="#">Forgot Password?</a>
-            <button mat-raised-button class="login-btn">Login</button>
-        </mat-card-footer>
-    </mat-card>
+            <mat-card class="example-card" appearance="outlined">
+                <mat-card-header class="h-header">
+                    <mat-card-title>Welcome Back</mat-card-title>
+                </mat-card-header>
+                <mat-card-content class="content">
+                    <div class="inputs">
+                        <i class="fa-solid fa-user"></i>
+                        <input type="text" name="uname" id="uname" placeholder="Username">
+                    </div>
+                    <div class="inputs">
+                        <i class="fa-solid fa-lock"></i>
+                        <input type="text" name="pwd" id="pwd" placeholder="Password">
+                    </div>
+                </mat-card-content>
+                <mat-card-footer class="example-card-footer">
+                    <a href="#">Forgot Password?</a>
+                    <button mat-raised-button class="login-btn">Login</button>
+                </mat-card-footer>
+            </mat-card>
+        </div>
+        <div class="right-container">
+            <mat-card class="example-card1" appearance="outlined">
+                <img mat-card-image src="https://material.angular.io/assets/img/examples/shiba2.jpg"
+                    alt="Photo of a Shiba Inu">
+                <mat-card-content>
+                    <p>
+                        The Shiba Inu is the smallest of the six original and distinct spitz breeds of dog from Japan.
+                        A small, agile dog that copes very well with mountainous terrain, the Shiba Inu was originally
+                        bred for hunting.
+                    </p>
+                </mat-card-content>
+            </mat-card>
+        </div>
+    </div>
 </div>
