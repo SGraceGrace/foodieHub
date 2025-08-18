@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { SharedServiceService } from '../../shared/shared-service.service';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-search',
@@ -8,4 +10,11 @@ import { Component } from '@angular/core';
 })
 export class SearchComponent {
 
+  searchTerm$: Observable<string>;
+  searchValue!: string;
+
+  constructor(private sharedService : SharedServiceService) {
+    this.searchTerm$ = this.sharedService.searchTerm$;
+    this.searchTerm$.subscribe(term => this.searchValue = term);
+  }
 }

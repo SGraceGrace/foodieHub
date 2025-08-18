@@ -4,9 +4,6 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-repeat: no-repeat;
-    background-size: 100vw 100vh;
-    min-height: 100vh;
 }
 
 .example-card {
@@ -74,7 +71,7 @@ a {
 }
 
 button.login-btn.mat-mdc-raised-button {
-  // background-color: $primary-color;
-  color: white;
+  background-color: $primary-color;
+  // color: white;
   padding: 10px;
 }

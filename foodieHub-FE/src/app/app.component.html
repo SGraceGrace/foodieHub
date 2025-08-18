@@ -1,4 +1,4 @@
-<ng-container [ngSwitch]="role">
+<ng-container [ngSwitch]="role"  *ngIf="showHeader">
   <app-header *ngSwitchCase="'guest'"></app-header>
   <!-- <app-user-header *ngSwitchCase="'user'"></app-user-header> -->
   <!-- <app-admin-header *ngSwitchCase="'admin'"></app-admin-header> -->

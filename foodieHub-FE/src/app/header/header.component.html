@@ -25,10 +25,10 @@
             <mat-icon>segment</mat-icon>
         </button>
         <mat-menu #menu="matMenu">
-            <button mat-menu-item>
+            <button mat-menu-item type="button" (click)="onLogin()">
                 <span class="menu-item">Login</span>
             </button>
-            <button mat-menu-item>
+            <button mat-menu-item type="button" (click)="onSignup()">
                 <span class="menu-item">Signup</span>
             </button>
         </mat-menu>
