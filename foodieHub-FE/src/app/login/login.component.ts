@@ -15,16 +15,15 @@ import {MatButtonModule} from '@angular/material/button';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class LoginComponent implements OnInit{
-  
-  img!: CloudinaryImage;
-  backgroundUrl!: string;
+  loginBigScreenUrl!: string;
+  loginSmallScreenUrl!: string;
 
   constructor(private cloudinaryService: CloudinaryService) {};
 
   ngOnInit(): void {
     const cld = this.cloudinaryService.getInstance();
-    this.img = cld.image('docs/models');
-    this.backgroundUrl = this.img.toURL();
+    this.loginBigScreenUrl = cld.image('docs/models').toURL();
+    this.loginSmallScreenUrl = cld.image('docs/loginbackgroundsmall').toURL();
   }
 
 
