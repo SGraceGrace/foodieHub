@@ -7,22 +7,34 @@
             </div>
             <mat-card class="example-card" appearance="outlined">
                 <mat-card-header class="h-header">
-                    <mat-card-title>Welcome Back</mat-card-title>
+                    <mat-card-title>Welcome Back!</mat-card-title>
                 </mat-card-header>
-                <mat-card-content class="content">
-                    <div class="inputs">
-                        <i class="fa-solid fa-user"></i>
-                        <input type="text" name="uname" id="uname" placeholder="Username">
-                    </div>
-                    <div class="inputs">
-                        <i class="fa-solid fa-lock"></i>
-                        <input type="text" name="pwd" id="pwd" placeholder="Password">
-                    </div>
-                </mat-card-content>
-                <mat-card-footer class="example-card-footer">
-                    <a href="#">Forgot Password?</a>
-                    <button mat-raised-button class="login-btn">Login</button>
-                </mat-card-footer>
+                <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+                    <mat-card-content class="content">
+                        <div class="inputs">
+                            <i class="fa-solid fa-user"></i>
+                            <input type="text" name="uname" id="uname" placeholder="Username" formControlName="uname">
+                        </div>
+                        <div class="inputs">
+                            <i class="fa-solid fa-lock"></i>
+                            <input type="password" name="pwd" id="pwd" placeholder="Password" formControlName="pwd">
+                        </div>
+                        <div *ngIf="loginForm.get('pwd')?.invalid && (loginForm.get('pwd')?.dirty || loginForm.get('pwd')?.touched)"
+                            class="error">
+                            <span *ngIf="loginForm.get('pwd')?.errors?.['required']">Password is required.</span>
+                            <span *ngIf="loginForm.get('pwd')?.errors?.['minlength']">Password must be at least 8
+                                characters long.</span>
+                            <span *ngIf="loginForm.get('pwd')?.errors?.['maxlength']">Password cannot be more than 15
+                                characters long.</span>
+                            <span *ngIf="loginForm.get('pwd')?.errors?.['pattern']">Password must contain at least one
+                                uppercase letter, one lowercase letter, one number, and one special character.</span>
+                        </div>
+                    </mat-card-content>
+                    <mat-card-footer class="example-card-footer">
+                        <a href="#">Forgot Password?</a>
+                        <button mat-raised-button class="login-btn">Login</button>
+                    </mat-card-footer>
+                </form>
             </mat-card>
         </div>
         <div class="right-container">
@@ -38,8 +50,8 @@
                         bred for hunting.
                     </p>
                 </mat-card-content>
-                dots
             </mat-card>
+            dots
         </div>
     </div>
 </div>
