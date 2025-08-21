@@ -17,17 +17,34 @@
                         </div>
                         <div class="inputs">
                             <i class="fa-solid fa-lock"></i>
-                            <input type="password" name="pwd" id="pwd" placeholder="Password" formControlName="pwd">
+                            <input type="password" name="pwd" id="pwd" placeholder="Password" formControlName="pwd"
+                            (focus)="showRules = true" (blur)="hideRules()">
                         </div>
-                        <div *ngIf="loginForm.get('pwd')?.invalid && (loginForm.get('pwd')?.dirty || loginForm.get('pwd')?.touched)"
-                            class="error">
-                            <span *ngIf="loginForm.get('pwd')?.errors?.['required']">Password is required.</span>
-                            <span *ngIf="loginForm.get('pwd')?.errors?.['minlength']">Password must be at least 8
-                                characters long.</span>
-                            <span *ngIf="loginForm.get('pwd')?.errors?.['maxlength']">Password cannot be more than 15
-                                characters long.</span>
-                            <span *ngIf="loginForm.get('pwd')?.errors?.['pattern']">Password must contain at least one
-                                uppercase letter, one lowercase letter, one number, and one special character.</span>
+                        <div class="error" *ngIf="showRules && pwd?.invalid && (pwd?.dirty || pwd?.touched)">
+                            <div>
+                                <i [class]="isMinLength ? 'fa-solid fa-circle-check rule-valid' : 'fa-solid fa-times-circle rule-invalid'"></i>
+                                <span>At least 8 characters</span>
+                            </div>
+                            <div>
+                                <i [class]="isMaxLength ? 'fa-solid fa-circle-check rule-valid' : 'fa-solid fa-times-circle rule-invalid'"></i>
+                                <span>No more than 15 characters</span>
+                            </div>
+                            <div>
+                                <i [class]="hasUppercase ? 'fa-solid fa-circle-check rule-valid' : 'fa-solid fa-times-circle rule-invalid'"></i>
+                                <span>One uppercase letter</span>
+                            </div>
+                            <div>
+                                <i [class]="hasLowercase ? 'fa-solid fa-circle-check rule-valid' : 'fa-solid fa-times-circle rule-invalid'"></i>
+                                <span>One lowercase letter</span>
+                            </div>
+                            <div>
+                                <i [class]="hasNumber ? 'fa-solid fa-circle-check rule-valid' : 'fa-solid fa-times-circle rule-invalid'"></i>
+                                <span>One number</span>
+                            </div>
+                            <div>
+                                <i [class]="hasSpecial ? 'fa-solid fa-circle-check rule-valid' : 'fa-solid fa-times-circle rule-invalid'"></i>
+                                <span>One special character</span>
+                            </div>
                         </div>
                     </mat-card-content>
                     <mat-card-footer class="example-card-footer">

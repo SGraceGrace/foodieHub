@@ -4,7 +4,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
+  min-height: 100vh;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -110,15 +110,29 @@
   font-size: 0.85rem;
   min-width: 200px;
   z-index: 10;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   white-space: pre-line;
-  width: 30px;
+
+  .rule-valid {
+    color: #4caf50;
+  }
+
+  .rule-invalid {
+    color: #f44336;
+  }
+
+  div {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
 
   @media (max-width: 600px) {
-    left: 0;              // show inside container
-    top: 100%;            // move below the input
-    transform: translateY(5px);
-    min-width: 100%;      // full width under input
+    left: 0;
+    bottom: 100%;
+    top: auto;
+    transform: translateY(-5px);
+    min-width: 100%;
   }
 }
 
