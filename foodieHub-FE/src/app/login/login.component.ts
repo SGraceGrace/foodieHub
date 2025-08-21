@@ -11,6 +11,9 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { LoginService } from './login.service';
+import { Login } from '../model/login.model';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-login',
@@ -32,9 +35,12 @@ export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   showRules: boolean = false;
 
+  loginData!: Login;
+
   constructor(
     private cloudinaryService: CloudinaryService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private loginService: LoginService
   ) {
     this.loginForm = this.fb.group({
       uname: ['', Validators.required],
@@ -60,9 +66,27 @@ export class LoginComponent implements OnInit {
 
   onSubmit() {
     if (this.loginForm.valid) {
-      const { uname, pwd } = this.loginForm.value;
-      console.log('Form Submitted', { uname, pwd });
-      this.loginForm.reset();
+      const { uname, pwd } = this.loginForm.getRawValue();
+
+      this.loginData = {
+        username: uname.trim(),
+        password: pwd.trim(),
+      };
+
+      this.loginService.onLogin(this.loginData).subscribe({
+        next: (response) => {
+          console.log('Login successful', response);
+          Swal.fire({
+            title: 'Drag me!',
+            icon: 'success',
+            draggable: true,
+          });
+          this.loginForm.reset();
+        },
+        error: (error) => {
+          console.error('Login failed', error);
+        },
+      });
     }
   }
 

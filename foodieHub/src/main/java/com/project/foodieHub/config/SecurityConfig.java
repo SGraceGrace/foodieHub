@@ -8,7 +8,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -47,7 +46,7 @@ public class SecurityConfig {
     return httpSecurity.csrf(AbstractHttpConfigurer::disable)
         .cors(cors -> cors.configurationSource(request -> {
           CorsConfiguration corsConfiguration = new CorsConfiguration();
-          corsConfiguration.setAllowedOrigins(List.of("*")); //Allow all origins
+          corsConfiguration.setAllowedOrigins(List.of("http://localhost:4200")); //Allow all origins
           corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
           corsConfiguration.setAllowedHeaders(List.of("*")); //Accept all headers
           corsConfiguration.setAllowCredentials(true); // Allow cookies/auth headers
