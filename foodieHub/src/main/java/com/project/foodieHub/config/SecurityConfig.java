@@ -48,8 +48,7 @@ public class SecurityConfig {
           CorsConfiguration corsConfiguration = new CorsConfiguration();
           corsConfiguration.setAllowedOrigins(List.of("http://localhost:4200")); //Allow all origins
           corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
-          corsConfiguration.setAllowedHeaders(List.of("*")); //Accept all headers
-          corsConfiguration.setAllowCredentials(true); // Allow cookies/auth headers
+          corsConfiguration.setAllowedHeaders(List.of("*"));
           return corsConfiguration;
         }))
         .authorizeHttpRequests(request -> request.requestMatchers("/api/v1/auth/login", "/api/v1/auth/signup", "/api/v1/refresh-token").permitAll())

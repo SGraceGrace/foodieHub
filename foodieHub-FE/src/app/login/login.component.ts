@@ -14,6 +14,11 @@ import {
 import { LoginService } from './login.service';
 import { Login } from '../model/login.model';
 import Swal from 'sweetalert2';
+import { DeviceService } from '../shared/device.service';
+import { ApiResponse } from '../model/apiResponse.model';
+import { JwtResponse } from '../model/jwtResponse.model';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-login',
@@ -40,7 +45,9 @@ export class LoginComponent implements OnInit {
   constructor(
     private cloudinaryService: CloudinaryService,
     private fb: FormBuilder,
-    private loginService: LoginService
+    private loginService: LoginService,
+    private deviceService: DeviceService,
+    private toastr: ToastrService
   ) {
     this.loginForm = this.fb.group({
       uname: ['', Validators.required],
@@ -71,20 +78,25 @@ export class LoginComponent implements OnInit {
       this.loginData = {
         username: uname.trim(),
         password: pwd.trim(),
+        deviceId: this.deviceService.getDeviceId(),
       };
 
+      console.log('Login successful', this.loginData);
+
       this.loginService.onLogin(this.loginData).subscribe({
-        next: (response) => {
+        next: (response: ApiResponse<JwtResponse>) => {
           console.log('Login successful', response);
-          Swal.fire({
-            title: 'Drag me!',
-            icon: 'success',
-            draggable: true,
-          });
+          this.toastr.success(response.successMessage || 'Login Successful!');
           this.loginForm.reset();
         },
-        error: (error) => {
-          console.error('Login failed', error);
+        error: (error: HttpErrorResponse) => {
+          const backendError = error.error as ApiResponse<any>;
+          this.toastr.error(
+            Array.isArray(backendError?.errorMsg)
+              ? backendError.errorMsg.join('\n')
+              : backendError?.errorMsg || 'Something went wrong',
+            'Try again...'
+          );
         },
       });
     }
