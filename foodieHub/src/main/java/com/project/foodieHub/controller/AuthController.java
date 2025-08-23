@@ -21,11 +21,10 @@ public class AuthController {
   private final AuthService authService;
 
   @PostMapping("/login")
-  public ResponseEntity<BaseAPIResponse> login(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
-    BaseAPIResponse baseAPIResponse = new BaseAPIResponse();
-    baseAPIResponse.setData(authService.login(loginRequestDTO));
-    baseAPIResponse.setSuccessMessage("Logged In Successfully");
-    return new ResponseEntity<>(baseAPIResponse, HttpStatus.OK);
+  public ResponseEntity login(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
+    var data = authService.login(loginRequestDTO);
+    return ResponseEntity.ok().header("Authorization", "Bearer" + data.getAccessToken())
+        .header("X-Refresh-Token", data.getRefreshToken()).body(new BaseAPIResponse("Login Successfully!", null, HttpStatus.OK.value(), null));
   }
 
   @PostMapping("/signup")

@@ -10,7 +10,13 @@ export class SharedServiceService {
 
   constructor() { }
 
-  onSearch(searchTerm: string) {
+  onSearch(searchTerm: string): void {
     this.searchTermSubject.next(searchTerm);
   }
+
+  setUserInfoInLocalStorage(accessToken: string, refreshToken: string): void {
+    localStorage.setItem('accessToken', accessToken);
+    localStorage.setItem('refreshToken', refreshToken);
+  }
+
 }

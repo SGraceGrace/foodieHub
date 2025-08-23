@@ -21,10 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -47,21 +44,18 @@ public class AuthServiceImpl implements AuthService {
   @Override
   @Transactional
   public JwtResponseDTO login(LoginRequestDTO loginRequestDTO) {
-    Authentication authentication;
     try {
-      authentication = authenticationManager.authenticate(
+      authenticationManager.authenticate(
           new UsernamePasswordAuthenticationToken(loginRequestDTO.getUsername(),
               loginRequestDTO.getPassword()));
     } catch (AuthenticationException e) {
       throw new BadCredentialsException("Invalid username or password");
     }
     var user = userRepo.findByUserNameAndStatus(loginRequestDTO.getUsername(), UserStatus.ACTIVE).orElseThrow(() -> new BadCredentialsException("User not found"));
-    SecurityContextHolder.getContext().setAuthentication(authentication);
-    var userDetails = (UserDetails) authentication.getPrincipal();
     var token = jwtService.generateToken(user, loginRequestDTO.getDeviceId());
     var refreshToken = refreshTokenService.createRefreshToken(user, loginRequestDTO.getDeviceId());
     redisTemplate.opsForValue().set(user.getUsername()+loginRequestDTO.getDeviceId(), token, Duration.ofMillis(jwtExpiration)); //store token in redis
-    return new JwtResponseDTO(token, refreshToken.getToken(), userDetails);
+    return new JwtResponseDTO(token, refreshToken.getToken());
   }
 
   @Override
@@ -90,16 +84,10 @@ public class AuthServiceImpl implements AuthService {
 
   private JwtResponseDTO doAutoLogin(String username, String deviceId) {
     var user = userRepo.findByUserNameAndStatus(username, UserStatus.ACTIVE).orElseThrow(() -> new BadCredentialsException("User not found"));
-    var userDetails = new org.springframework.security.core.userdetails.User(
-        user.getUsername(), user.getPassword(), user.getAuthorities()
-    );
-    Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, user.getAuthorities());
-    SecurityContextHolder.getContext().setAuthentication(authentication);
-
     var token = jwtService.generateToken(user, deviceId);
     var refreshToken = refreshTokenService.createRefreshToken(user, deviceId);
     redisTemplate.opsForValue().set(user.getUsername()+deviceId, token, Duration.ofMillis(jwtExpiration)); //store token in redis
-    return new JwtResponseDTO(token, refreshToken.getToken(), userDetails);
+    return new JwtResponseDTO(token, refreshToken.getToken());
   }
 
   private void validateUserAlreadyExists(User user, String fieldName)

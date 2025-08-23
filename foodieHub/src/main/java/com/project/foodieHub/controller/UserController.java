@@ -1,7 +1,9 @@
 package com.project.foodieHub.controller;
 
+import com.project.foodieHub.dto.BaseAPIResponse;
 import com.project.foodieHub.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,4 +21,8 @@ public class UserController {
   public String test() {
     return "Everything is good";
   }
+
+//  public ResponseEntity<BaseAPIResponse> getUserInfo() {
+//
+//  }
 }

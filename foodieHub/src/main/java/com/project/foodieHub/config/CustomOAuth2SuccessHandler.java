@@ -20,9 +20,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -78,17 +76,12 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     } else {
       user = existingUser.get();
     }
-    var userDetails = new org.springframework.security.core.userdetails.User(
-        user.getUsername(), user.getPassword(), user.getAuthorities()
-    );
-    Authentication authentication1 = new UsernamePasswordAuthenticationToken(userDetails, null, user.getAuthorities());
-    SecurityContextHolder.getContext().setAuthentication(authentication1);
     var token = jwtService.generateToken(user, deviceId);
     var refreshToken = refreshTokenService.createRefreshToken(user, deviceId);
     redisTemplate.opsForValue().set(user.getUsername()+deviceId, token, Duration.ofMillis(jwtExpiration)); //store token in redis
 
     response.setStatus(HttpServletResponse.SC_OK);
-    var jwtResponseDTO = new JwtResponseDTO(token, refreshToken.getToken(), userDetails);
+    var jwtResponseDTO = new JwtResponseDTO(token, refreshToken.getToken());
 
     response.setContentType("application/json");
     response.setCharacterEncoding("UTF-8");

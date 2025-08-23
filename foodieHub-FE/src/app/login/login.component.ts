@@ -1,5 +1,4 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { CloudinaryImage } from '@cloudinary/url-gen/index';
 import { CloudinaryService } from '../shared/cloudinary.service';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
@@ -13,12 +12,12 @@ import {
 } from '@angular/forms';
 import { LoginService } from './login.service';
 import { Login } from '../model/login.model';
-import Swal from 'sweetalert2';
 import { DeviceService } from '../shared/device.service';
 import { ApiResponse } from '../model/apiResponse.model';
-import { JwtResponse } from '../model/jwtResponse.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ToastrService } from 'ngx-toastr';
+import { Router } from '@angular/router';
+import { SharedServiceService } from '../shared/shared-service.service';
 
 @Component({
   selector: 'app-login',
@@ -47,7 +46,9 @@ export class LoginComponent implements OnInit {
     private fb: FormBuilder,
     private loginService: LoginService,
     private deviceService: DeviceService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private router: Router,
+    private sharedService: SharedServiceService
   ) {
     this.loginForm = this.fb.group({
       uname: ['', Validators.required],
@@ -80,14 +81,19 @@ export class LoginComponent implements OnInit {
         password: pwd.trim(),
         deviceId: this.deviceService.getDeviceId(),
       };
-
-      console.log('Login successful', this.loginData);
-
       this.loginService.onLogin(this.loginData).subscribe({
-        next: (response: ApiResponse<JwtResponse>) => {
-          console.log('Login successful', response);
-          this.toastr.success(response.successMessage || 'Login Successful!');
-          this.loginForm.reset();
+        next: (response) => {
+          const accessToken = response.headers.get('Authorization');
+          const refreshToken = response.headers.get('X-Refresh-Token');
+
+          const toast = this.toastr.success(
+            response.successMessage || 'Login Successful!'
+          );
+          toast.onHidden?.subscribe(() => {
+            this.loginForm.reset();
+            this.sharedService.setUserInfoInLocalStorage(accessToken, refreshToken);
+            this.router.navigateByUrl('/home');
+          });
         },
         error: (error: HttpErrorResponse) => {
           const backendError = error.error as ApiResponse<any>;

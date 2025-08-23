@@ -17,9 +17,6 @@ import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -46,15 +43,9 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     }
 
     var user = userRepo.findById(refreshToken.getUser().getId()).orElseThrow(() -> new CommonException("User cannot be fetched"));
-
-    var userDetails = new org.springframework.security.core.userdetails.User(
-        user.getUsername(), user.getPassword(), user.getAuthorities()
-    );
-    Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, user.getAuthorities());
-    SecurityContextHolder.getContext().setAuthentication(authentication);
     var token = jwtService.generateToken(user, tokenRefreshRequest.getDeviceId());
     redisTemplate.opsForValue().set(user.getUsername()+tokenRefreshRequest.getDeviceId(), token, Duration.ofMillis(jwtExpiration)); //store token in redis
-    return new JwtResponseDTO(token, refreshToken.getToken(), user);
+    return new JwtResponseDTO(token, refreshToken.getToken());
   }
 
   private boolean isRefreshTokenExpired(RefreshToken refreshToken){
