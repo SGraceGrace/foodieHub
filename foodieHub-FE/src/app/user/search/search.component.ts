@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { SharedServiceService } from '../../shared/shared-service.service';
+import { SharedServiceService } from '../../core/shared/shared-service.service';
 import { Observable } from 'rxjs';
 
 @Component({

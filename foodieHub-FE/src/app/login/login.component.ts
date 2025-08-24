@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { CloudinaryService } from '../shared/cloudinary.service';
+import { CloudinaryService } from '../core/shared/cloudinary.service';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
@@ -12,12 +12,13 @@ import {
 } from '@angular/forms';
 import { LoginService } from './login.service';
 import { Login } from '../model/login.model';
-import { DeviceService } from '../shared/device.service';
+import { DeviceService } from '../core/shared/device.service';
 import { ApiResponse } from '../model/apiResponse.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ToastrService } from 'ngx-toastr';
 import { Router } from '@angular/router';
-import { SharedServiceService } from '../shared/shared-service.service';
+import { TokenService } from '../core/shared/token.service';
+import { UserService } from '../user/user.service';
 
 @Component({
   selector: 'app-login',
@@ -48,7 +49,8 @@ export class LoginComponent implements OnInit {
     private deviceService: DeviceService,
     private toastr: ToastrService,
     private router: Router,
-    private sharedService: SharedServiceService
+    private tokenService: TokenService,
+    private userService: UserService
   ) {
     this.loginForm = this.fb.group({
       uname: ['', Validators.required],
@@ -91,8 +93,15 @@ export class LoginComponent implements OnInit {
           );
           toast.onHidden?.subscribe(() => {
             this.loginForm.reset();
-            this.sharedService.setUserInfoInLocalStorage(accessToken, refreshToken);
-            this.router.navigateByUrl('/home');
+            this.tokenService.setTokens(accessToken, refreshToken);
+            this.userService.getUserInfo().subscribe({
+              next: (userInfo) => {
+                this.router.navigateByUrl('/home');
+              },
+              error: (error) => {
+                this.router.navigateByUrl('/login');
+              },
+            });
           });
         },
         error: (error: HttpErrorResponse) => {

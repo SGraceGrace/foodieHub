@@ -1,6 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { UserConfig } from './user.config';
+import { Observable } from 'rxjs';
+import { UserDetails } from '../model/user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +13,7 @@ export class UserService {
 
   constructor(private http: HttpClient) { }
 
-  getUserInfo() {
-    return this.http.get(this.getUserUrl);
+  getUserInfo(): Observable<UserDetails> {
+    return this.http.get<UserDetails>(this.getUserUrl);
   }
 }

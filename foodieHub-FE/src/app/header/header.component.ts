@@ -5,7 +5,7 @@ import {MatIconModule} from '@angular/material/icon';
 import {MatMenuModule} from '@angular/material/menu';
 import { Router, RouterLink, RouterModule } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { SharedServiceService } from '../shared/shared-service.service';
+import { SharedServiceService } from '../core/shared/shared-service.service';
 
 @Component({
   selector: 'app-header',

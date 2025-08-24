@@ -7,14 +7,16 @@ import {
   withEventReplay,
 } from '@angular/platform-browser';
 import { provideToastr } from 'ngx-toastr';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(),
+    provideHttpClient(
+      withInterceptors([]),
+    ),
     provideAnimations(),
     provideToastr({
       positionClass: 'toast-top-center',

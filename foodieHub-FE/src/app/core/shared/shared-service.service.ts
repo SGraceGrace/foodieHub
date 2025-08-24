@@ -14,9 +14,4 @@ export class SharedServiceService {
     this.searchTermSubject.next(searchTerm);
   }
 
-  setUserInfoInLocalStorage(accessToken: string, refreshToken: string): void {
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
-  }
-
 }
