@@ -4,13 +4,12 @@ import com.project.foodieHub.entity.User;
 import com.project.foodieHub.enums.UserStatus;
 import com.project.foodieHub.repo.UserRepo;
 import jakarta.transaction.Transactional;
+import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-
-import java.util.Objects;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
@@ -21,7 +20,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user =  userServiceRepo.findByUserNameAndStatus(username, UserStatus.ACTIVE).orElse(null);
+        User user =  userServiceRepo.findByEmailAndStatus(username, UserStatus.ACTIVE).orElse(null);
 
         if(Objects.isNull(user)) {
             throw new UsernameNotFoundException("User is not found");

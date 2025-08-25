@@ -47,7 +47,7 @@ public class CustomLogoutHandler implements LogoutHandler {
     token = token.substring(7);
     var username = jwtService.extractUserName(token);
     var deviceId = jwtService.extractDeviceId(token);
-    var user = userRepo.findByUserNameAndStatus(username, UserStatus.ACTIVE).orElseThrow(() -> new BadCredentialsException("User not found"));
+    var user = userRepo.findByEmailAndStatus(username, UserStatus.ACTIVE).orElseThrow(() -> new BadCredentialsException("User not found"));
 
     redisTemplate.delete(username+deviceId);
     logoutService.cleanUpUserTokens(user, deviceId);

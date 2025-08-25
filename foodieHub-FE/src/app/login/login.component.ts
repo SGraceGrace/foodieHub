@@ -16,9 +16,10 @@ import { DeviceService } from '../core/shared/device.service';
 import { ApiResponse } from '../model/apiResponse.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ToastrService } from 'ngx-toastr';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { TokenService } from '../core/shared/token.service';
 import { UserService } from '../user/user.service';
+import { UserDetails } from '../model/user.model';
 
 @Component({
   selector: 'app-login',
@@ -29,6 +30,7 @@ import { UserService } from '../user/user.service';
     MatChipsModule,
     MatButtonModule,
     ReactiveFormsModule,
+    RouterModule,
   ],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
@@ -41,6 +43,7 @@ export class LoginComponent implements OnInit {
   showRules: boolean = false;
 
   loginData!: Login;
+  userDetails!: UserDetails;
 
   constructor(
     private cloudinaryService: CloudinaryService,
@@ -53,7 +56,7 @@ export class LoginComponent implements OnInit {
     private userService: UserService
   ) {
     this.loginForm = this.fb.group({
-      uname: ['', Validators.required],
+      email: ['', Validators.required],
       pwd: [
         '',
         [
@@ -76,10 +79,10 @@ export class LoginComponent implements OnInit {
 
   onSubmit() {
     if (this.loginForm.valid) {
-      const { uname, pwd } = this.loginForm.getRawValue();
+      const { email, pwd } = this.loginForm.getRawValue();
 
       this.loginData = {
-        username: uname.trim(),
+        username: email.trim(),
         password: pwd.trim(),
         deviceId: this.deviceService.getDeviceId(),
       };
@@ -87,7 +90,6 @@ export class LoginComponent implements OnInit {
         next: (response) => {
           const accessToken = response.headers.get('Authorization');
           const refreshToken = response.headers.get('X-Refresh-Token');
-
           const toast = this.toastr.success(
             response.successMessage || 'Login Successful!'
           );
@@ -96,10 +98,19 @@ export class LoginComponent implements OnInit {
             this.tokenService.setTokens(accessToken, refreshToken);
             this.userService.getUserInfo().subscribe({
               next: (userInfo) => {
+                this.userDetails = userInfo;
+                this.tokenService.setUserInfo(this.userDetails);
                 this.router.navigateByUrl('/home');
               },
               error: (error) => {
                 this.router.navigateByUrl('/login');
+                this.tokenService.clearTokens();
+                this.toastr.error(
+                  Array.isArray(error?.errorMsg)
+                    ? error.errorMsg.join('\n')
+                    : error?.errorMsg || 'Something went wrong',
+                  'Try again...'
+                );
               },
             });
           });

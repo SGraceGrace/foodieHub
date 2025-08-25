@@ -23,7 +23,7 @@ public class AuthController {
   @PostMapping("/login")
   public ResponseEntity login(@Valid @RequestBody LoginRequestDTO loginRequestDTO) {
     var data = authService.login(loginRequestDTO);
-    return ResponseEntity.ok().header("Authorization", "Bearer" + data.getAccessToken())
+    return ResponseEntity.ok().header("Authorization", "Bearer " + data.getAccessToken())
         .header("X-Refresh-Token", data.getRefreshToken()).body(new BaseAPIResponse("Login Successfully!", null, HttpStatus.OK.value(), null));
   }
 

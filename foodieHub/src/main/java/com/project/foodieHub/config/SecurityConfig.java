@@ -49,10 +49,12 @@ public class SecurityConfig {
           corsConfiguration.setAllowedOrigins(List.of("http://localhost:4200")); //Allow all origins
           corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
           corsConfiguration.setAllowedHeaders(List.of("*"));
+          corsConfiguration.addExposedHeader("Authorization");
+          corsConfiguration.addExposedHeader("X-Refresh-Token");
           return corsConfiguration;
         }))
-        .authorizeHttpRequests(request -> request.requestMatchers("/api/v1/auth/login", "/api/v1/auth/signup", "/api/v1/refresh-token").permitAll())
-        .authorizeHttpRequests(request -> request.anyRequest().authenticated())
+        .authorizeHttpRequests(request -> request.requestMatchers("/api/v1/auth/login", "/api/v1/auth/signup", "/api/v1/refresh-token", "/oauth2/**", "/login/oauth2/**").permitAll())
+        .authorizeHttpRequests(request -> request.requestMatchers("/api/v1/**").authenticated())
         .oauth2Login(httpSecurityOAuth2LoginConfigurer -> httpSecurityOAuth2LoginConfigurer
             .authorizationEndpoint(authorizationEndpointConfig -> authorizationEndpointConfig.authorizationRequestResolver(
                 new CustomAuthorizationRequestResolver(clientRegistrationRepository, "/oauth2/authorization")
@@ -60,13 +62,13 @@ public class SecurityConfig {
             .successHandler(oAuth2SuccessHandler())
             .failureHandler(oAuth2FailureHandler()))
         .exceptionHandling(httpSecurityExceptionHandlingConfigurer ->
-          httpSecurityExceptionHandlingConfigurer.accessDeniedHandler(accessDeniedHandler()).authenticationEntryPoint(authEntryPoint()))
+          httpSecurityExceptionHandlingConfigurer.accessDeniedHandler(accessDeniedHandler()))
         .logout(httpSecurityLogoutConfigurer -> httpSecurityLogoutConfigurer.logoutUrl("/api/v1/auth/logout").addLogoutHandler(
             logoutHandler()).logoutSuccessHandler(logoutSuccessHandler()))
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
         .authenticationProvider(authenticationProvider())
+        .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
         .build();
   }
 
