@@ -70,6 +70,7 @@ public class User extends BaseEntity implements UserDetails {
     private RefreshToken refreshToken;
 
     @Column(name = "auth_provider")
+    @Enumerated(EnumType.STRING)
     private AuthProvider authProvider = AuthProvider.LOCAL;
 
     @Column(name = "provider_id")
