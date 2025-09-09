@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { UserConfig } from './user.config';
 import { Observable } from 'rxjs';
 import { UserDetails } from '../model/user.model';
+import { ApiResponse } from '../model/apiResponse.model';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,7 @@ export class UserService {
 
   constructor(private http: HttpClient) { }
 
-  getUserInfo(): Observable<UserDetails> {
-    return this.http.get<UserDetails>(this.getUserUrl);
+  getUserInfo(): Observable<ApiResponse<UserDetails>> {
+    return this.http.get<ApiResponse<UserDetails>>(this.getUserUrl);
   }
 }

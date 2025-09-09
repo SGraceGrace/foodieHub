@@ -97,8 +97,8 @@ export class LoginComponent implements OnInit {
             this.loginForm.reset();
             this.tokenService.setTokens(accessToken, refreshToken);
             this.userService.getUserInfo().subscribe({
-              next: (userInfo) => {
-                this.userDetails = userInfo;
+              next: (apiResponse) => {
+                this.userDetails = apiResponse.data;
                 this.tokenService.setUserInfo(this.userDetails);
                 this.router.navigateByUrl('/home');
               },

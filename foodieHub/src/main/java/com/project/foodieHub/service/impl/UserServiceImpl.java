@@ -18,8 +18,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUser(String username) {
-        var user = userServiceRepo.findByEmailAndStatus(username, UserStatus.ACTIVE)
+        return userServiceRepo.findByUserNameAndStatus(username, UserStatus.ACTIVE)
             .orElseThrow(() -> new CommonException("User not found"));
-        return user;
     }
 }

@@ -27,7 +27,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
 @Table(name = "user", uniqueConstraints = {
-    @UniqueConstraint(columnNames = "email"),
     @UniqueConstraint(columnNames = "username")
 })
 @Data
@@ -45,7 +44,7 @@ public class User extends BaseEntity implements UserDetails {
     @NotNull(message = "Username cannot be null")
     private String userName;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false)
     @NotNull(message = "Email cannot be null")
     private String email;
 
@@ -83,7 +82,7 @@ public class User extends BaseEntity implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        return userName;
     }
 
     @Override

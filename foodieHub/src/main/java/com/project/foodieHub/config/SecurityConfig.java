@@ -61,8 +61,9 @@ public class SecurityConfig {
             ))
             .successHandler(oAuth2SuccessHandler())
             .failureHandler(oAuth2FailureHandler()))
-        .exceptionHandling(httpSecurityExceptionHandlingConfigurer ->
-          httpSecurityExceptionHandlingConfigurer.accessDeniedHandler(accessDeniedHandler()))
+        .exceptionHandling(ex -> ex
+            .accessDeniedHandler(accessDeniedHandler())
+            .authenticationEntryPoint(authEntryPoint()))
         .logout(httpSecurityLogoutConfigurer -> httpSecurityLogoutConfigurer.logoutUrl("/api/v1/auth/logout").addLogoutHandler(
             logoutHandler()).logoutSuccessHandler(logoutSuccessHandler()))
         .sessionManagement(

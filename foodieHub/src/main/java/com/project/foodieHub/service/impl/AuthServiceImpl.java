@@ -51,7 +51,7 @@ public class AuthServiceImpl implements AuthService {
     } catch (AuthenticationException e) {
       throw new BadCredentialsException("Invalid username or password");
     }
-    var user = userRepo.findByEmailAndStatus(loginRequestDTO.getUsername(), UserStatus.ACTIVE).orElseThrow(() -> new BadCredentialsException("User not found"));
+    var user = userRepo.findByUserNameAndStatus(loginRequestDTO.getUsername(), UserStatus.ACTIVE).orElseThrow(() -> new BadCredentialsException("User not found"));
     var token = jwtService.generateToken(user, loginRequestDTO.getDeviceId());
     var refreshToken = refreshTokenService.createRefreshToken(user, loginRequestDTO.getDeviceId());
     redisTemplate.opsForValue().set(user.getUsername()+loginRequestDTO.getDeviceId(), token, Duration.ofMillis(jwtExpiration)); //store token in redis
@@ -66,10 +66,6 @@ public class AuthServiceImpl implements AuthService {
     var existingUserByUsername = userRepo.findByUserNameAndStatus(signUpRequestDTO.getUsername(), UserStatus.ACTIVE).orElse(null);
     validateUserAlreadyExists(existingUserByUsername, "username");
 
-    //validate Email
-    var existingUserByEmail = userRepo.findByEmailAndStatus(signUpRequestDTO.getEmail(), UserStatus.ACTIVE).orElse(null);
-    validateUserAlreadyExists(existingUserByEmail, "email");
-
     var roles = roleRepo.findByRoleName(Role.END_USERS.name()).orElseThrow(() -> new CommonException("Something went wrong"));
     User newUser = new User();
     newUser.setUserName(signUpRequestDTO.getUsername());
@@ -83,7 +79,7 @@ public class AuthServiceImpl implements AuthService {
   }
 
   private JwtResponseDTO doAutoLogin(String username, String deviceId) {
-    var user = userRepo.findByEmailAndStatus(username, UserStatus.ACTIVE).orElseThrow(() -> new BadCredentialsException("User not found"));
+    var user = userRepo.findByUserNameAndStatus(username, UserStatus.ACTIVE).orElseThrow(() -> new BadCredentialsException("User not found"));
     var token = jwtService.generateToken(user, deviceId);
     var refreshToken = refreshTokenService.createRefreshToken(user, deviceId);
     redisTemplate.opsForValue().set(user.getUsername()+deviceId, token, Duration.ofMillis(jwtExpiration)); //store token in redis
