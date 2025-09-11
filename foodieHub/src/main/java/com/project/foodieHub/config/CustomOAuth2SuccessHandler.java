@@ -55,8 +55,9 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
     Map<String, Object> attributes = oAuth2User.getAttributes();
     String email = (String) attributes.get("email");
-    String userName = (String) attributes.get("name");
-    String name = (String) attributes.get("given_name");
+    String userName = (String) attributes.get("email");
+    String firstName = (String) attributes.get("given_name");
+    String lastName = (String) attributes.get("family_name");
     String deviceId = request.getParameter("state");
     String googleId = oAuth2User.getAttribute("sub");
 
@@ -68,7 +69,8 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
           Role.END_USERS.name()).orElseThrow(() -> new CommonException("Something went wrong"));
       User newUser = new User();
       newUser.setUserName(userName);
-      newUser.setName(name);
+      newUser.setFirstName(firstName);
+      newUser.setLastName(lastName);
       newUser.setRole(roles);
       newUser.setStatus(UserStatus.ACTIVE);
       newUser.setEmail(email);

@@ -37,6 +37,23 @@
           }
         }
       }
+    },
+    {
+      "label": "Run Angular (ng serve)",
+      "type": "shell",
+      "command": "ng serve",
+      "options": {
+        "cwd": "D:\\FoodieHub\\foodieHub-FE",
+        "shell": {
+          "executable": "cmd.exe",
+          "args": ["/d", "/c"]
+        }
+      },
+      "problemMatcher": [],
+      "isBackground": true,
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
     }
   ]
 }

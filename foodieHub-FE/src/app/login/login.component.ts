@@ -20,6 +20,7 @@ import { Router, RouterModule } from '@angular/router';
 import { TokenService } from '../core/shared/token.service';
 import { UserService } from '../user/user.service';
 import { UserDetails } from '../model/user.model';
+import { toUserDetails } from '../convertors/user-details.converter';
 
 @Component({
   selector: 'app-login',
@@ -41,6 +42,7 @@ export class LoginComponent implements OnInit {
   loginSmallScreenUrl!: string;
   loginForm!: FormGroup;
   showRules: boolean = false;
+  showPassword = false;
 
   loginData!: Login;
   userDetails!: UserDetails;
@@ -98,7 +100,7 @@ export class LoginComponent implements OnInit {
             this.tokenService.setTokens(accessToken, refreshToken);
             this.userService.getUserInfo().subscribe({
               next: (apiResponse) => {
-                this.userDetails = apiResponse.data;
+                this.userDetails = toUserDetails(apiResponse.data);
                 this.tokenService.setUserInfo(this.userDetails);
                 this.router.navigateByUrl('/home');
               },

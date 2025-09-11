@@ -67,7 +67,7 @@ public class JwtService {
   }
 
   private String createToken(Map<String, Object> claims, UserDetails userDetails, String deviceId) {
-    claims.put("name", ((User) userDetails).getName());
+    claims.put("name", ((User) userDetails).getFirstName() + " " + ((User) userDetails).getLastName());
     claims.put("role", userDetails.getAuthorities());
     claims.put("deviceId", deviceId);
 

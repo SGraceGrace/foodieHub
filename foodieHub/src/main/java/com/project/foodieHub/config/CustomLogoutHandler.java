@@ -34,6 +34,7 @@ public class CustomLogoutHandler implements LogoutHandler {
   public void logout(HttpServletRequest request, HttpServletResponse response,
       Authentication authentication) {
     String token = request.getHeader("Authorization");
+    String refreshToken = request.getHeader("X-Refresh-Token");
 
     if(Objects.isNull(token) || !token.startsWith("Bearer ")) {
       response.setStatus(HttpServletResponse.SC_OK);

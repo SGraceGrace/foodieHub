@@ -63,13 +63,14 @@ public class AuthServiceImpl implements AuthService {
   public JwtResponseDTO signup(SignUpRequestDTO signUpRequestDTO) {
 
     //validate Username
-    var existingUserByUsername = userRepo.findByUserNameAndStatus(signUpRequestDTO.getUsername(), UserStatus.ACTIVE).orElse(null);
+    var existingUserByUsername = userRepo.findByUserNameAndStatus(signUpRequestDTO.getEmail(), UserStatus.ACTIVE).orElse(null);
     validateUserAlreadyExists(existingUserByUsername, "username");
 
     var roles = roleRepo.findByRoleName(Role.END_USERS.name()).orElseThrow(() -> new CommonException("Something went wrong"));
     User newUser = new User();
-    newUser.setUserName(signUpRequestDTO.getUsername());
-    newUser.setName(signUpRequestDTO.getName());
+    newUser.setUserName(signUpRequestDTO.getEmail());
+    newUser.setFirstName(signUpRequestDTO.getFirstName());
+    newUser.setLastName(signUpRequestDTO.getLastName());
     newUser.setPassword(passwordEncoder.encode(signUpRequestDTO.getPassword()));
     newUser.setRole(roles);
     newUser.setStatus(UserStatus.ACTIVE);

@@ -7,7 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
 import lombok.Data;
@@ -21,14 +21,14 @@ public class RefreshToken extends BaseEntity{
   @GeneratedValue(strategy = GenerationType.AUTO)
   private Long id;
 
-  @Column(name = "token", nullable = false)
+  @Column(name = "token", nullable = false, unique = true)
   private String token;
 
   @Column(name = "device_id", nullable = false)
   private String deviceId;
 
-  @OneToOne
-  @JoinColumn(name = "user_id", referencedColumnName = "id", unique = true)
+  @ManyToOne
+  @JoinColumn(name = "user_id", referencedColumnName = "id")
   @JsonBackReference
   private User user;
 

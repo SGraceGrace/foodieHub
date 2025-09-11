@@ -7,13 +7,13 @@ import lombok.Data;
 public class SignUpRequestDTO {
 
     @NotNull(message = "name cannot be null")
-    private String name;
+    private String firstName;
 
     @NotNull(message = "email cannot be null")
     private String email;
 
     @NotNull(message = "username cannot be null")
-    private String username;
+    private String lastName;
 
     @NotNull(message = "password cannot be null")
     private String password;

@@ -1,9 +1,9 @@
 package com.project.foodieHub.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.project.foodieHub.enums.AuthProvider;
 import com.project.foodieHub.enums.UserStatus;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -14,12 +14,14 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -36,11 +38,15 @@ public class User extends BaseEntity implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false)
-    @NotNull(message = "Name cannot be empty")
-    private String name;
+    @Column(name = "first_name", nullable = false)
+    @NotNull(message = "First Name cannot be empty")
+    private String firstName;
 
-    @Column(name = "user_name", nullable = false, unique = true)
+    @Column(name = "last_name", nullable = false, unique = true)
+    @NotNull(message = "Last Name cannot be null")
+    private String lastName;
+
+    @Column(name = "username", nullable = false, unique = true)
     @NotNull(message = "Username cannot be null")
     private String userName;
 
@@ -64,9 +70,8 @@ public class User extends BaseEntity implements UserDetails {
     @OneToOne(mappedBy = "user")
     private UserProfile userProfile;
 
-    @OneToOne(mappedBy = "user")
-    @JsonManagedReference
-    private RefreshToken refreshToken;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<RefreshToken> refreshTokens;
 
     @Column(name = "auth_provider")
     @Enumerated(EnumType.STRING)
