@@ -8,16 +8,18 @@ export function authInterceptor(
   next: HttpHandlerFn
 ) {
   const accessToken = inject(TokenService).getAccessToken();
+  const refreshToken = inject(TokenService).getRefreshToken();
   const route = inject(Router);
 
   if (req.url.includes('/login') || req.url.includes('/signup')) {
     return next(req);
   }
 
-  if (accessToken) {
+  if (accessToken && refreshToken) {
     req = req.clone({
       setHeaders: {
         Authorization: accessToken,
+        'X-Refresh-Token': refreshToken
       },
     });
   } else {
