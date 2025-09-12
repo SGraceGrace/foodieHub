@@ -1,12 +1,19 @@
 import { Injectable } from '@angular/core';
 import { UserDetails } from '../../model/user.model';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TokenService {
 
-  constructor() { }
+  constructor() {}
+
+  private userInfoSubject = new BehaviorSubject<UserDetails | null>(
+    this.getUserInfoFromStorage()
+  );
+
+  userInfo$ = this.userInfoSubject.asObservable();
 
   setTokens(accessToken: string, refreshToken: string): void {
     localStorage.setItem('accessToken', accessToken);
@@ -15,11 +22,8 @@ export class TokenService {
 
   setUserInfo(userInfo: UserDetails): void {
     localStorage.setItem('userInfo', JSON.stringify(userInfo));
-  }
-
-  getUserInfo(): UserDetails | null {
-    const userInfo = localStorage.getItem('userInfo');
-    return userInfo ? JSON.parse(userInfo) : null;
+    localStorage.setItem('isAuthenticated', 'true');
+    this.userInfoSubject.next(userInfo);
   }
 
   getAccessToken(): string | null {
@@ -34,5 +38,12 @@ export class TokenService {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('userInfo');
+    localStorage.removeItem('isAuthenticated');
+    this.userInfoSubject.next(null); 
+  }
+
+  private getUserInfoFromStorage(): UserDetails | null {
+    const userInfo = localStorage.getItem('userInfo');
+    return userInfo ? JSON.parse(userInfo) : null;
   }
 }
