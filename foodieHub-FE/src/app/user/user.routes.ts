@@ -28,5 +28,21 @@ export const routes: Routes = [
   {
     path: 'search',
     loadComponent: () => import('./search/search.component').then(module => module.SearchComponent)
+  },
+  {
+    path: 'wishlist',
+    loadComponent: () => import('./wishlist/wishlist.component').then(module => module.WishlistComponent)
+  },
+  {
+    path: 'orders',
+    loadComponent: () => import('./orders/orders.component').then(module => module.OrdersComponent)
+  },
+  {
+    path: 'cart',
+    loadComponent: () => import('./cart/cart.component').then(module => module.CartComponent)
+  },
+  {
+    path: 'profile',
+    loadComponent: () => import('./profile/profile.component').then(module => module.ProfileComponent)
   }
 ];

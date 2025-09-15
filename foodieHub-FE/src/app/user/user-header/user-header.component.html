@@ -25,14 +25,20 @@
             <mat-icon>segment</mat-icon>
         </button>
         <mat-menu #menu="matMenu">
-            <button mat-menu-item type="button">
+            <button mat-menu-item type="button" routerLink="/user/profile">
                 <span class="menu-item">My Profile</span>
             </button>
-            <button mat-menu-item type="button">
-                <span class="menu-item">My cart</span>
+            <button mat-menu-item type="button" routerLink="/user/cart">
+                <span class="menu-item">My Cart</span>
             </button>
-            <button mat-menu-item type="button">
+            <button mat-menu-item type="button" routerLink="/user/wishlist">
                 <span class="menu-item">My Wishlist</span>
+            </button>
+            <button mat-menu-item type="button" routerLink="/user/orders">
+                <span class="menu-item">My Orders</span>
+            </button>
+            <button mat-menu-item type="button" (click)="logout()">
+                <span class="menu-item">Logout</span>
             </button>
         </mat-menu>
     </div>

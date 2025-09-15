@@ -35,6 +35,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
   private int jwtExpiration;
 
   public JwtResponseDTO refreshToken(TokenRefreshRequest tokenRefreshRequest) {
+    var deviceId = jwtService.extractDeviceId(tokenRefreshRequest.getAccessToken());
     var refreshToken = refreshTokenRepo.findByToken(tokenRefreshRequest.getRefreshToken()).orElseThrow(() -> new CommonException("Refresh Token is invalid"));
 
     if (isRefreshTokenExpired(refreshToken)) {
@@ -43,8 +44,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     }
 
     var user = userRepo.findById(refreshToken.getUser().getId()).orElseThrow(() -> new CommonException("User cannot be fetched"));
-    var token = jwtService.generateToken(user, tokenRefreshRequest.getDeviceId());
-    redisTemplate.opsForValue().set(user.getUsername()+tokenRefreshRequest.getDeviceId(), token, Duration.ofMillis(jwtExpiration)); //store token in redis
+    var token = jwtService.generateToken(user, deviceId);
+    redisTemplate.opsForValue().set(user.getUsername()+deviceId, token, Duration.ofMillis(jwtExpiration)); //store token in redis
     return new JwtResponseDTO(token, refreshToken.getToken());
   }
 

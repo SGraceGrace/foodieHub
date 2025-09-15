@@ -8,6 +8,6 @@ public class TokenRefreshRequest {
   @NotNull(message = "refreshToken cannot be null")
   private String refreshToken;
 
-  @NotNull(message = "deviceId cannot be null")
-  private String deviceId;
+  @NotNull(message = "accessToken cannot be null")
+  private String accessToken;
 }

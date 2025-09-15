@@ -6,15 +6,19 @@ import { UserDetails } from '../model/user.model';
 import { ApiResponse } from '../model/apiResponse.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class UserService {
-
   getUserUrl: string = UserConfig.userApiUrl;
+  logoutUrl: string = UserConfig.userLogoutUrl;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   getUserInfo(): Observable<ApiResponse<UserDetails>> {
     return this.http.get<ApiResponse<UserDetails>>(this.getUserUrl);
+  }
+
+  logout(): Observable<any> {
+    return this.http.get(this.logoutUrl);
   }
 }
