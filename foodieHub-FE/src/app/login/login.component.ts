@@ -16,7 +16,7 @@ import { DeviceService } from '../core/shared/device.service';
 import { ApiResponse } from '../model/apiResponse.model';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ToastrService } from 'ngx-toastr';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TokenService } from '../core/shared/token.service';
 import { UserService } from '../user/user.service';
 import { UserDetails } from '../model/user.model';
@@ -55,7 +55,8 @@ export class LoginComponent implements OnInit {
     private toastr: ToastrService,
     private router: Router,
     private tokenService: TokenService,
-    private userService: UserService
+    private userService: UserService,
+    private route: ActivatedRoute 
   ) {
     this.loginForm = this.fb.group({
       email: ['', Validators.required],
@@ -102,7 +103,8 @@ export class LoginComponent implements OnInit {
               next: (apiResponse) => {
                 this.userDetails = toUserDetails(apiResponse.data);
                 this.tokenService.setUserInfo(this.userDetails);
-                this.router.navigateByUrl('/home');
+                const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
+                this.router.navigateByUrl(returnUrl);
               },
               error: (error) => {
                 this.router.navigateByUrl('/login');

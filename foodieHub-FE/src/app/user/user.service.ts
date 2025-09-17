@@ -19,6 +19,6 @@ export class UserService {
   }
 
   logout(): Observable<any> {
-    return this.http.get(this.logoutUrl);
+    return this.http.get(this.logoutUrl, { responseType: 'text' });
   }
 }

@@ -28,7 +28,8 @@ export class AppComponent {
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
         this.currentUrl = event.url;
-        this.showHeader = this.currentUrl !== '/login' && this.currentUrl !== '/signup';
+        const path = event.urlAfterRedirects.split('?')[0];
+        this.showHeader = path !== '/login' && path !== '/signup';
       }
     });
   }

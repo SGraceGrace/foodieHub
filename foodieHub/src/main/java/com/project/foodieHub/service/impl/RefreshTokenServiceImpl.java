@@ -35,8 +35,8 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
   private int jwtExpiration;
 
   public JwtResponseDTO refreshToken(TokenRefreshRequest tokenRefreshRequest) {
-    var deviceId = jwtService.extractDeviceId(tokenRefreshRequest.getAccessToken());
     var refreshToken = refreshTokenRepo.findByToken(tokenRefreshRequest.getRefreshToken()).orElseThrow(() -> new CommonException("Refresh Token is invalid"));
+    var deviceId = refreshToken.getDeviceId();
 
     if (isRefreshTokenExpired(refreshToken)) {
       refreshTokenRepo.delete(refreshToken);

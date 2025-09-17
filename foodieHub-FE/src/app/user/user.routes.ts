@@ -1,9 +1,11 @@
 import { Routes } from '@angular/router';
+import { authGuard } from '../core/guard/auth.guard';
 
 export const routes: Routes = [
   { 
     path: 'cuisine', 
-    loadComponent: () => import('./cuisine/cuisine.component').then(module => module.CuisineComponent)
+    loadComponent: () => import('./cuisine/cuisine.component').then(module => module.CuisineComponent),
+    canActivate: [authGuard]
   },
   { 
     path: 'about-us', 

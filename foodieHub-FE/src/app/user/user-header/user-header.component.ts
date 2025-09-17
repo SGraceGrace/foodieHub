@@ -46,6 +46,7 @@ export class UserHeaderComponent {
   logout() {
     this.userService.logout().subscribe({
       next: (response) => {
+        console.log('Logout successful', response);
         this.tokenService.clearTokens();
         this.router.navigateByUrl('/login');
       },
