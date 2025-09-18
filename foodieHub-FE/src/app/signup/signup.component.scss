@@ -56,7 +56,6 @@
 
 .example-card {
   display: flex;
-  flex-direction: column;
   gap: 5px;
   padding: 20px;
   min-width: 25vw;
@@ -81,12 +80,19 @@
   gap: 20px;
 }
 
+.partition {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+}
+
 .inputs {
   display: flex;
   align-items: center;
   border: 1px solid $font-color;
   padding: 10px;
   position: relative;
+  width: 100%;
 
   input {
     outline: none;
@@ -94,7 +100,15 @@
     box-sizing: border-box;
     flex: 1;
     background-color: transparent;
+    width: 100%;
   }
+}
+
+.eye-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  outline: none;
 }
 
 .error {
@@ -153,13 +167,7 @@
   align-self: center;
 }
 
-.button-container {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.signup-prompt {
+.login-prompt {
   align-self: center;
 }
 

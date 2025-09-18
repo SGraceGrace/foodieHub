@@ -97,6 +97,13 @@
   }
 }
 
+.eye-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  outline: none;
+}
+
 .error {
   position: absolute;
   left: -200px; // Adjust as needed for your layout

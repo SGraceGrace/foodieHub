@@ -29,6 +29,8 @@ export class SignupComponent implements OnInit {
 
   constructor(private cloudinaryService: CloudinaryService, private fb: FormBuilder) {
     this.signupForm = this.fb.group({
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
       email: ['', Validators.required],
       pwd: [
         '',
