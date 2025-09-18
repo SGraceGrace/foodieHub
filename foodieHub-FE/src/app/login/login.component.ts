@@ -93,30 +93,27 @@ export class LoginComponent implements OnInit {
         next: (response) => {
           const accessToken = response.headers.get('Authorization');
           const refreshToken = response.headers.get('X-Refresh-Token');
-          const toast = this.toastr.success(
-            response.successMessage || 'Login Successful!'
-          );
-          toast.onHidden?.subscribe(() => {
-            this.loginForm.reset();
-            this.tokenService.setTokens(accessToken, refreshToken);
-            this.userService.getUserInfo().subscribe({
-              next: (apiResponse) => {
-                this.userDetails = toUserDetails(apiResponse.data);
-                this.tokenService.setUserInfo(this.userDetails);
-                const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
-                this.router.navigateByUrl(returnUrl);
-              },
-              error: (error) => {
-                this.router.navigateByUrl('/login');
-                this.tokenService.clearTokens();
-                this.toastr.error(
-                  Array.isArray(error?.errorMsg)
-                    ? error.errorMsg.join('\n')
-                    : error?.errorMsg || 'Something went wrong',
-                  'Try again...'
-                );
-              },
-            });
+          this.tokenService.setTokens(accessToken, refreshToken);
+          
+          this.userService.getUserInfo().subscribe({
+            next: (apiResponse) => {
+              this.userDetails = toUserDetails(apiResponse.data);
+              this.tokenService.setUserInfo(this.userDetails);
+              this.toastr.success('Login Successful!');
+              this.loginForm.reset();
+              const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
+              this.router.navigateByUrl(returnUrl);
+            },
+            error: (error) => {
+              this.router.navigateByUrl('/login');
+              this.tokenService.clearTokens();
+              this.toastr.error(
+                Array.isArray(error?.errorMsg)
+                  ? error.errorMsg.join('\n')
+                  : error?.errorMsg || 'Something went wrong',
+                'Try again...'
+              );
+            },
           });
         },
         error: (error: HttpErrorResponse) => {

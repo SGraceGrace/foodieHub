@@ -84,6 +84,9 @@
   display: flex;
   gap: 10px;
   flex: 1;
+  @media screen and (max-width: 1000px) {
+    flex-direction: column;
+  }
 }
 
 .inputs {

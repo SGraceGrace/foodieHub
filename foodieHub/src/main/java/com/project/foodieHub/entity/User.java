@@ -42,7 +42,7 @@ public class User extends BaseEntity implements UserDetails {
     @NotNull(message = "First Name cannot be empty")
     private String firstName;
 
-    @Column(name = "last_name", nullable = false, unique = true)
+    @Column(name = "last_name", nullable = false)
     @NotNull(message = "Last Name cannot be null")
     private String lastName;
 

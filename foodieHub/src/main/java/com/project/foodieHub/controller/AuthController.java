@@ -29,9 +29,8 @@ public class AuthController {
 
   @PostMapping("/signup")
   public ResponseEntity<BaseAPIResponse> signup(@Valid @RequestBody SignUpRequestDTO signUpRequestDTO) {
-    BaseAPIResponse baseAPIResponse = new BaseAPIResponse();
-    baseAPIResponse.setData(authService.signup(signUpRequestDTO));
-    baseAPIResponse.setSuccessMessage("Account Created Successfully");
-    return new ResponseEntity<>(baseAPIResponse, HttpStatus.OK);
+    var data = authService.signup(signUpRequestDTO);
+    return ResponseEntity.ok().header("Authorization", "Bearer " + data.getAccessToken())
+        .header("X-Refresh-Token", data.getRefreshToken()).body(new BaseAPIResponse("Signup Successfully!", null, HttpStatus.OK.value(), null));
   }
 }

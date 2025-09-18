@@ -6,6 +6,15 @@ import { MatCard, MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { RouterModule } from '@angular/router';
 import { CloudinaryService } from '../core/shared/cloudinary.service';
+import { SignupService } from './signup.service';
+import { Signup } from '../model/signup.model';
+import { UserService } from '../user/user.service';
+import { TokenService } from '../core/shared/token.service';
+import { UserDetails } from '../model/user.model';
+import { toUserDetails } from '../convertors/user-details.converter';
+import { ToastrService } from 'ngx-toastr';
+import { Router } from '@angular/router';
+import { DeviceService } from '../core/shared/device.service';
 
 @Component({
   selector: 'app-signup',
@@ -27,7 +36,18 @@ export class SignupComponent implements OnInit {
   showRules: boolean = false;
   showPassword = false;
 
-  constructor(private cloudinaryService: CloudinaryService, private fb: FormBuilder) {
+  userDetails!: UserDetails;
+
+  constructor(
+    private cloudinaryService: CloudinaryService,
+    private fb: FormBuilder,
+    private signupService: SignupService,
+    private toastr: ToastrService,
+    private router: Router,
+    private userService: UserService,
+    private tokenService: TokenService,
+    private deviceService: DeviceService
+  ) {
     this.signupForm = this.fb.group({
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
@@ -53,7 +73,51 @@ export class SignupComponent implements OnInit {
   }
 
   onSubmit() {
-
+    if (this.signupForm.valid) {
+      const { firstName, lastName, email, pwd } = this.signupForm.getRawValue();
+      const signupRequest: Signup = {
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        email: email.trim(),
+        password: pwd.trim(),
+        deviceId: this.deviceService.getDeviceId()
+      };
+      this.signupService.onSignup(signupRequest).subscribe({
+        next: (response) => {
+          const accessToken = response.headers?.get?.('Authorization');
+          const refreshToken = response.headers?.get?.('X-Refresh-Token');
+          this.tokenService.setTokens(accessToken, refreshToken);
+          this.userService.getUserInfo().subscribe({
+            next: (apiResponse) => {
+              this.userDetails = toUserDetails(apiResponse.data);
+              this.tokenService.setUserInfo(this.userDetails);
+              this.toastr.success('Signup Successful!');
+              this.signupForm.reset();
+              this.router.navigateByUrl('/home');
+            },
+            error: (error) => {
+              this.router.navigateByUrl('/login');
+              this.tokenService.clearTokens();
+              this.toastr.error(
+                Array.isArray(error?.errorMsg)
+                  ? error.errorMsg.join('\n')
+                  : error?.errorMsg || 'Something went wrong',
+                'Try again...'
+              );
+            },
+          });
+        },
+        error: (error) => {
+          const backendError = error.error;
+          this.toastr.error(
+            Array.isArray(backendError?.errorMsg)
+              ? backendError.errorMsg.join('\n')
+              : backendError?.errorMsg || 'Something went wrong',
+            'Try again...'
+          );
+        },
+      });
+    }
   }
 
   hideRules() {

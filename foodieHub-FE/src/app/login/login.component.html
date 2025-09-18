@@ -13,13 +13,13 @@
                     <mat-card-content class="content">
                         <div class="inputs">
                             <i class="fa-solid fa-user"></i>
-                            <input type="email" name="email" id="email" placeholder="Enter Email Id"
+                            <input type="email" name="email" id="email" placeholder="Email Id"
                                 formControlName="email">
                         </div>
                         <div class="inputs">
                             <i class="fa-solid fa-lock"></i>
                             <input [type]="showPassword ? 'text' : 'password'" name="pwd" id="pwd"
-                                placeholder="Enter Password" formControlName="pwd" (focus)="showRules = true"
+                                placeholder="Password" formControlName="pwd" (focus)="showRules = true"
                                 (blur)="hideRules()">
                             <button type="button" class="eye-btn" (click)="showPassword = !showPassword" tabindex="-1">
                                 <i class="fa-solid" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
