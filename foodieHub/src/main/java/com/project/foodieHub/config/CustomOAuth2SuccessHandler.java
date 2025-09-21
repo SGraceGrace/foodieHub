@@ -1,7 +1,6 @@
 package com.project.foodieHub.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.project.foodieHub.dto.JwtResponseDTO;
 import com.project.foodieHub.entity.User;
 import com.project.foodieHub.enums.AuthProvider;
 import com.project.foodieHub.enums.Role;
@@ -85,10 +84,14 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     redisTemplate.opsForValue().set(user.getUsername()+deviceId, token, Duration.ofMillis(jwtExpiration)); //store token in redis
 
     response.setStatus(HttpServletResponse.SC_OK);
-    var jwtResponseDTO = new JwtResponseDTO(token, refreshToken.getToken());
+    response.setHeader("Authorization", "Bearer " + token);
+    response.setHeader("X-Refresh-Token", refreshToken.getToken());
 
     response.setContentType("application/json");
     response.setCharacterEncoding("UTF-8");
-    new ObjectMapper().writeValue(response.getWriter(), jwtResponseDTO);
+    new ObjectMapper().writeValue(
+        response.getWriter(),
+        Map.of("message", "Google login successful")
+    );
   }
 }

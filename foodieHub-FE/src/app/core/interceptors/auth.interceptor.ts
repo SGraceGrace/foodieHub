@@ -49,8 +49,7 @@ export function authInterceptor(
     catchError((error: HttpErrorResponse) => {
       if (
         error.status === 401 &&
-        typeof refreshToken === 'string' &&
-        typeof accessToken === 'string'
+        typeof refreshToken === 'string'
       ) {
         return handle401(
           req,
@@ -58,8 +57,7 @@ export function authInterceptor(
           tokenService,
           loginService,
           router,
-          refreshToken,
-          accessToken
+          refreshToken
         );
       }
       return throwError(() => error);
@@ -73,14 +71,13 @@ function handle401(
   tokenService: TokenService,
   loginService: LoginService,
   router: Router,
-  refreshToken: string,
-  accessToken: string
+  refreshToken: string
 ): Observable<HttpEvent<unknown>> {
   if (!isRefreshing) {
     isRefreshing = true;
     refreshSubject.next(null);
 
-    return loginService.refreshToken({ refreshToken, accessToken }).pipe(
+    return loginService.refreshToken({ refreshToken }).pipe(
       switchMap((tokens) => {
         isRefreshing = false;
         tokenService.setTokens(tokens.accessToken, tokens.refreshToken);

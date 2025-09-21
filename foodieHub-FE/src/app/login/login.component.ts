@@ -136,6 +136,11 @@ export class LoginComponent implements OnInit {
     }
   }
 
+  signInWithGoogle() {
+    const deviceId = this.deviceService.getDeviceId();
+    window.location.href = `http://localhost:8080/oauth2/authorization/google?deviceId=${encodeURIComponent(deviceId)}`;
+  }
+
   get pwd() {
     return this.loginForm.get('pwd');
   }

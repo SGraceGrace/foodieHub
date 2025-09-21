@@ -1,95 +1,168 @@
-<div class="outer-container" [ngStyle]="{'background-image': 'url(' + loginBigScreenUrl + ')'}">
-    <div class="container" [ngStyle]="{'background-image': 'url(' + loginSmallScreenUrl + ')'}">
-        <div class="left-container">
-            <div class="title">
-                <img src="logo.png" alt="logo" class="logo">
-                <span>foodiehub</span>
+<div
+  class="outer-container"
+  [ngStyle]="{ 'background-image': 'url(' + loginBigScreenUrl + ')' }"
+>
+  <div
+    class="container"
+    [ngStyle]="{ 'background-image': 'url(' + loginSmallScreenUrl + ')' }"
+  >
+    <div class="left-container">
+      <div class="title">
+        <img src="logo.png" alt="logo" class="logo" />
+        <span>foodiehub</span>
+      </div>
+      <mat-card class="example-card" appearance="outlined">
+        <mat-card-header class="h-header">
+          <mat-card-title>Welcome Back!</mat-card-title>
+        </mat-card-header>
+        <form
+          [formGroup]="loginForm"
+          (ngSubmit)="onSubmit()"
+          class="login-form"
+        >
+          <mat-card-content class="content">
+            <div class="inputs">
+              <i class="fa-solid fa-user"></i>
+              <input
+                type="email"
+                name="email"
+                id="email"
+                placeholder="Email Id"
+                formControlName="email"
+              />
             </div>
-            <mat-card class="example-card" appearance="outlined">
-                <mat-card-header class="h-header">
-                    <mat-card-title>Welcome Back!</mat-card-title>
-                </mat-card-header>
-                <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
-                    <mat-card-content class="content">
-                        <div class="inputs">
-                            <i class="fa-solid fa-user"></i>
-                            <input type="email" name="email" id="email" placeholder="Email Id"
-                                formControlName="email">
-                        </div>
-                        <div class="inputs">
-                            <i class="fa-solid fa-lock"></i>
-                            <input [type]="showPassword ? 'text' : 'password'" name="pwd" id="pwd"
-                                placeholder="Password" formControlName="pwd" (focus)="showRules = true"
-                                (blur)="hideRules()">
-                            <button type="button" class="eye-btn" (click)="showPassword = !showPassword" tabindex="-1">
-                                <i class="fa-solid" [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-                            </button>
-                        </div>
-                        <div class="error" *ngIf="showRules && pwd?.invalid && (pwd?.dirty || pwd?.touched)">
-                            <div>
-                                <i
-                                    [class]="isMinLength ? 'fa-solid fa-circle-check rule-valid' : 'fa-solid fa-times-circle rule-invalid'"></i>
-                                <span>At least 8 characters</span>
-                            </div>
-                            <div>
-                                <i
-                                    [class]="isMaxLength ? 'fa-solid fa-circle-check rule-valid' : 'fa-solid fa-times-circle rule-invalid'"></i>
-                                <span>No more than 15 characters</span>
-                            </div>
-                            <div>
-                                <i
-                                    [class]="hasUppercase ? 'fa-solid fa-circle-check rule-valid' : 'fa-solid fa-times-circle rule-invalid'"></i>
-                                <span>One uppercase letter</span>
-                            </div>
-                            <div>
-                                <i
-                                    [class]="hasLowercase ? 'fa-solid fa-circle-check rule-valid' : 'fa-solid fa-times-circle rule-invalid'"></i>
-                                <span>One lowercase letter</span>
-                            </div>
-                            <div>
-                                <i
-                                    [class]="hasNumber ? 'fa-solid fa-circle-check rule-valid' : 'fa-solid fa-times-circle rule-invalid'"></i>
-                                <span>One number</span>
-                            </div>
-                            <div>
-                                <i
-                                    [class]="hasSpecial ? 'fa-solid fa-circle-check rule-valid' : 'fa-solid fa-times-circle rule-invalid'"></i>
-                                <span>One special character</span>
-                            </div>
-                        </div>
-                    </mat-card-content>
-                    <mat-card-footer class="example-card-footer">
-                        <div class="button-container">
-                            <button type="submit" mat-raised-button class="login-btn">Login</button>
-                            <a routerLink="/forgot-password" class="forgot-password">Forgot Password?</a>
-                        </div>
-                        <span>or</span>
-                        <span class="other-login">
-                            <button type="button">
-                                <i class="fa-brands fa-google"></i>
-                                Sign in with Google
-                            </button>
-                        </span>
-                    </mat-card-footer>
-                    <span class="signup-prompt">Don't have an account? <a routerLink="/signup">Sign Up</a></span>
-                </form>
-            </mat-card>
-        </div>
-        <div class="right-container">
-            <mat-card class="example-card1" appearance="outlined">
-                <div class="imgs">
-                    <img mat-card-image src="https://material.angular.io/assets/img/examples/shiba2.jpg"
-                        alt="Photo of a Shiba Inu" class="food-images">
-                </div>
-                <mat-card-content class="content2">
-                    <p>
-                        The Shiba Inu is the smallest of the six original and distinct spitz breeds of dog from Japan.
-                        A small, agile dog that copes very well with mountainous terrain, the Shiba Inu was originally
-                        bred for hunting.
-                    </p>
-                </mat-card-content>
-            </mat-card>
-            dots
-        </div>
+            <div class="inputs">
+              <i class="fa-solid fa-lock"></i>
+              <input
+                [type]="showPassword ? 'text' : 'password'"
+                name="pwd"
+                id="pwd"
+                placeholder="Password"
+                formControlName="pwd"
+                (focus)="showRules = true"
+                (blur)="hideRules()"
+              />
+              <button
+                type="button"
+                class="eye-btn"
+                (click)="showPassword = !showPassword"
+                tabindex="-1"
+              >
+                <i
+                  class="fa-solid"
+                  [ngClass]="showPassword ? 'fa-eye-slash' : 'fa-eye'"
+                ></i>
+              </button>
+            </div>
+            <div
+              class="error"
+              *ngIf="showRules && pwd?.invalid && (pwd?.dirty || pwd?.touched)"
+            >
+              <div>
+                <i
+                  [class]="
+                    isMinLength
+                      ? 'fa-solid fa-circle-check rule-valid'
+                      : 'fa-solid fa-times-circle rule-invalid'
+                  "
+                ></i>
+                <span>At least 8 characters</span>
+              </div>
+              <div>
+                <i
+                  [class]="
+                    isMaxLength
+                      ? 'fa-solid fa-circle-check rule-valid'
+                      : 'fa-solid fa-times-circle rule-invalid'
+                  "
+                ></i>
+                <span>No more than 15 characters</span>
+              </div>
+              <div>
+                <i
+                  [class]="
+                    hasUppercase
+                      ? 'fa-solid fa-circle-check rule-valid'
+                      : 'fa-solid fa-times-circle rule-invalid'
+                  "
+                ></i>
+                <span>One uppercase letter</span>
+              </div>
+              <div>
+                <i
+                  [class]="
+                    hasLowercase
+                      ? 'fa-solid fa-circle-check rule-valid'
+                      : 'fa-solid fa-times-circle rule-invalid'
+                  "
+                ></i>
+                <span>One lowercase letter</span>
+              </div>
+              <div>
+                <i
+                  [class]="
+                    hasNumber
+                      ? 'fa-solid fa-circle-check rule-valid'
+                      : 'fa-solid fa-times-circle rule-invalid'
+                  "
+                ></i>
+                <span>One number</span>
+              </div>
+              <div>
+                <i
+                  [class]="
+                    hasSpecial
+                      ? 'fa-solid fa-circle-check rule-valid'
+                      : 'fa-solid fa-times-circle rule-invalid'
+                  "
+                ></i>
+                <span>One special character</span>
+              </div>
+            </div>
+          </mat-card-content>
+          <mat-card-footer class="example-card-footer">
+            <div class="button-container">
+              <button type="submit" mat-raised-button class="login-btn">
+                Login
+              </button>
+              <a routerLink="/forgot-password" class="forgot-password"
+                >Forgot Password?</a
+              >
+            </div>
+            <span>or</span>
+            <span class="other-login">
+              <button type="button" mat-raised-button class="fb-btn" (click)="signInWithGoogle()">
+                <i class="fa-brands fa-google"></i>
+                Sign in with Google
+              </button>
+            </span>
+          </mat-card-footer>
+          <span class="signup-prompt"
+            >Don't have an account? <a routerLink="/signup">Sign Up</a>
+            </span>
+        </form>
+      </mat-card>
     </div>
+    <div class="right-container">
+      <mat-card class="example-card1" appearance="outlined">
+        <div class="imgs">
+          <img
+            mat-card-image
+            src="https://material.angular.io/assets/img/examples/shiba2.jpg"
+            alt="Photo of a Shiba Inu"
+            class="food-images"
+          />
+        </div>
+        <mat-card-content class="content2">
+          <p>
+            The Shiba Inu is the smallest of the six original and distinct spitz
+            breeds of dog from Japan. A small, agile dog that copes very well
+            with mountainous terrain, the Shiba Inu was originally bred for
+            hunting.
+          </p>
+        </mat-card-content>
+      </mat-card>
+      dots
+    </div>
+  </div>
 </div>

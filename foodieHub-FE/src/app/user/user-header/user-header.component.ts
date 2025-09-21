@@ -9,6 +9,7 @@ import { SharedServiceService } from '../../core/shared/shared-service.service';
 import { CommonModule } from '@angular/common';
 import { TokenService } from '../../core/shared/token.service';
 import { UserService } from '../user.service';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-user-header',
@@ -22,6 +23,7 @@ import { UserService } from '../user.service';
     RouterModule,
     MatMenu,
     ReactiveFormsModule,
+    MatTooltipModule,
   ],
   templateUrl: './user-header.component.html',
   styleUrl: './user-header.component.scss',

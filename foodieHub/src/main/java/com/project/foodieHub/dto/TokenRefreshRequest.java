@@ -7,7 +7,4 @@ import lombok.Data;
 public class TokenRefreshRequest {
   @NotNull(message = "refreshToken cannot be null")
   private String refreshToken;
-
-  @NotNull(message = "accessToken cannot be null")
-  private String accessToken;
 }
