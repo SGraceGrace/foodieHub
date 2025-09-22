@@ -14,7 +14,7 @@ import { LoginService } from './login.service';
 import { Login } from '../model/login.model';
 import { DeviceService } from '../core/shared/device.service';
 import { ApiResponse } from '../model/apiResponse.model';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { ToastrService } from 'ngx-toastr';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TokenService } from '../core/shared/token.service';
@@ -56,7 +56,7 @@ export class LoginComponent implements OnInit {
     private router: Router,
     private tokenService: TokenService,
     private userService: UserService,
-    private route: ActivatedRoute 
+    private route: ActivatedRoute
   ) {
     this.loginForm = this.fb.group({
       email: ['', Validators.required],
@@ -91,30 +91,7 @@ export class LoginComponent implements OnInit {
       };
       this.loginService.onLogin(this.loginData).subscribe({
         next: (response) => {
-          const accessToken = response.headers.get('Authorization');
-          const refreshToken = response.headers.get('X-Refresh-Token');
-          this.tokenService.setTokens(accessToken, refreshToken);
-          
-          this.userService.getUserInfo().subscribe({
-            next: (apiResponse) => {
-              this.userDetails = toUserDetails(apiResponse.data);
-              this.tokenService.setUserInfo(this.userDetails);
-              this.toastr.success('Login Successful!');
-              this.loginForm.reset();
-              const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
-              this.router.navigateByUrl(returnUrl);
-            },
-            error: (error) => {
-              this.router.navigateByUrl('/login');
-              this.tokenService.clearTokens();
-              this.toastr.error(
-                Array.isArray(error?.errorMsg)
-                  ? error.errorMsg.join('\n')
-                  : error?.errorMsg || 'Something went wrong',
-                'Try again...'
-              );
-            },
-          });
+          this.postLoginRedirect(response);
         },
         error: (error: HttpErrorResponse) => {
           const backendError = error.error as ApiResponse<any>;
@@ -136,9 +113,39 @@ export class LoginComponent implements OnInit {
     }
   }
 
+  private postLoginRedirect(response: HttpResponse<ApiResponse<any>>) {
+    const accessToken = response.headers.get('Authorization') ?? '';
+    const refreshToken = response.headers.get('X-Refresh-Token') ?? '';
+    this.tokenService.setTokens(accessToken, refreshToken);
+
+    this.userService.getUserInfo().subscribe({
+      next: (apiResponse) => {
+        this.userDetails = toUserDetails(apiResponse.data);
+        this.tokenService.setUserInfo(this.userDetails);
+        this.toastr.success('Login Successful!');
+        this.loginForm.reset();
+        const returnUrl =
+          this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
+        this.router.navigateByUrl(returnUrl);
+      },
+      error: (error) => {
+        this.router.navigateByUrl('/login');
+        this.tokenService.clearTokens();
+        this.toastr.error(
+          Array.isArray(error?.errorMsg)
+            ? error.errorMsg.join('\n')
+            : error?.errorMsg || 'Something went wrong',
+          'Try again...'
+        );
+      },
+    });
+  }
+
   signInWithGoogle() {
     const deviceId = this.deviceService.getDeviceId();
-    window.location.href = `http://localhost:8080/oauth2/authorization/google?deviceId=${encodeURIComponent(deviceId)}`;
+    window.location.href = `http://localhost:8080/oauth2/authorization/google?deviceId=${encodeURIComponent(
+      deviceId
+    )}`;
   }
 
   get pwd() {

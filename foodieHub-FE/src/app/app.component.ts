@@ -6,10 +6,11 @@ import { map } from 'rxjs';
 import { TokenService } from './core/shared/token.service';
 import { UserHeaderComponent } from "./user/user-header/user-header.component";
 import { AdminHeaderComponent } from "./admin/admin-header/admin-header.component";
+import { GlobalLoaderComponent } from "./core/shared/components/global-loader/global-loader.component";
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, CommonModule, HeaderComponent, UserHeaderComponent, AdminHeaderComponent],
+  imports: [RouterOutlet, CommonModule, HeaderComponent, UserHeaderComponent, AdminHeaderComponent, GlobalLoaderComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

@@ -1,6 +1,5 @@
 package com.project.foodieHub.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.foodieHub.entity.User;
 import com.project.foodieHub.enums.AuthProvider;
 import com.project.foodieHub.enums.Role;
@@ -13,6 +12,8 @@ import com.project.foodieHub.service.RefreshTokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
@@ -83,15 +84,11 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     var refreshToken = refreshTokenService.createRefreshToken(user, deviceId);
     redisTemplate.opsForValue().set(user.getUsername()+deviceId, token, Duration.ofMillis(jwtExpiration)); //store token in redis
 
-    response.setStatus(HttpServletResponse.SC_OK);
-    response.setHeader("Authorization", "Bearer " + token);
-    response.setHeader("X-Refresh-Token", refreshToken.getToken());
-
-    response.setContentType("application/json");
-    response.setCharacterEncoding("UTF-8");
-    new ObjectMapper().writeValue(
-        response.getWriter(),
-        Map.of("message", "Google login successful")
+    String redirectUrl = String.format(
+        "http://localhost:4200/google-callback?accessToken=%s&refreshToken=%s",
+        URLEncoder.encode(token, StandardCharsets.UTF_8),
+        URLEncoder.encode(refreshToken.getToken(), StandardCharsets.UTF_8)
     );
+    response.sendRedirect(redirectUrl);
   }
 }

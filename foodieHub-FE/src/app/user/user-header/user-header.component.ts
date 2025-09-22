@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 import { TokenService } from '../../core/shared/token.service';
 import { UserService } from '../user.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-user-header',
@@ -33,7 +34,8 @@ export class UserHeaderComponent {
     private router: Router,
     private sharedService: SharedServiceService,
     private tokenService: TokenService,
-    private userService: UserService
+    private userService: UserService,
+    private toaster: ToastrService
   ) {}
 
   searchControl = new FormControl('');
@@ -48,12 +50,12 @@ export class UserHeaderComponent {
   logout() {
     this.userService.logout().subscribe({
       next: (response) => {
-        console.log('Logout successful', response);
+        this.toaster.success(response || 'Logged out successfully');
         this.tokenService.clearTokens();
         this.router.navigateByUrl('/login');
       },
       error: (error) => {
-        console.error('Logout failed', error);
+        this.toaster.error('Logout failed');
       },
     });
   }
