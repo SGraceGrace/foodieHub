@@ -1,1 +1,84 @@
-<p>orders works!</p>
+<div class="orders-wrap">
+  <h2 class="orders-title">My Orders</h2>
+
+  <!-- Tabs -->
+  <div class="order-tabs">
+    <button
+      class="order-tab"
+      *ngFor="let tab of tabs"
+      [class.active]="activeTab === tab.key"
+      (click)="applyTab(tab.key)"
+    >{{ tab.label }}</button>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="filtered.length === 0">
+    <div class="empty-icon">📦</div>
+    <p>No orders here yet.</p>
+  </div>
+
+  <!-- Order Cards -->
+  <div
+    class="order-card"
+    *ngFor="let order of filtered"
+    [class.active-order]="isActive(order)"
+  >
+    <!-- Card Header -->
+    <div class="oc-hdr">
+      <div>
+        <div class="oc-id">Order #{{ order.id }}</div>
+        <div class="oc-rest">{{ order.restaurantEmoji }} {{ order.restaurantName }}</div>
+      </div>
+      <span class="status-badge" [ngClass]="statusBadgeClass(order.status)">
+        {{ statusLabel(order.status) }}
+      </span>
+    </div>
+
+    <!-- Progress Tracker (active orders only) -->
+    <div class="track-bar" *ngIf="isActive(order)">
+      <ng-container *ngFor="let step of trackSteps; let i = index; let last = last">
+        <div class="trk-bar-step">
+          <div class="trk-bar-dot" [ngClass]="stepState(order, i)">
+            <span *ngIf="stepState(order, i) === 'done'">✓</span>
+            <span *ngIf="stepState(order, i) === 'curr' && i === 3">🛵</span>
+            <span *ngIf="stepState(order, i) === 'curr' && i !== 3">●</span>
+            <span *ngIf="stepState(order, i) === 'pending' && i === 4">🏠</span>
+          </div>
+          <div class="trk-bar-lbl" [ngClass]="stepState(order, i)">{{ step }}</div>
+        </div>
+        <div class="trk-bar-line" *ngIf="!last" [class.done]="stepState(order, i) === 'done'"></div>
+      </ng-container>
+    </div>
+
+    <!-- Items -->
+    <div class="oc-items">
+      <span class="oc-itag" *ngFor="let item of order.items">
+        {{ item.qty }}× {{ item.name }}
+      </span>
+    </div>
+
+    <!-- Footer -->
+    <div class="oc-foot">
+      <span class="oc-date">
+        {{ order.createdAt }}{{ order.eta ? ' · ' + order.eta : '' }}
+      </span>
+      <span class="oc-total">₹{{ order.totalAmount }}</span>
+    </div>
+
+    <!-- Actions -->
+    <div class="oc-actions">
+      <ng-container *ngIf="isActive(order)">
+        <button class="oc-btn gold" (click)="trackOrder(order)">📍 Track Order</button>
+        <button class="oc-btn outline">📞 Call Restaurant</button>
+      </ng-container>
+      <ng-container *ngIf="order.status === 'DELIVERED'">
+        <button class="oc-btn gold" (click)="reorder(order)">Reorder</button>
+        <button class="oc-btn outline" (click)="rateOrder(order)">✍ Rate Order</button>
+      </ng-container>
+      <ng-container *ngIf="order.status === 'CANCELLED'">
+        <button class="oc-btn outline" (click)="reorder(order)">Reorder</button>
+      </ng-container>
+    </div>
+  </div>
+
+</div>

@@ -67,9 +67,6 @@ public class User extends BaseEntity implements UserDetails {
     @Enumerated(value = EnumType.STRING)
     private UserStatus status;
 
-    @OneToOne(mappedBy = "user")
-    private UserProfile userProfile;
-
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<RefreshToken> refreshTokens;
 

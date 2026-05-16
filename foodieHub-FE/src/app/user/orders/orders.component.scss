@@ -1,0 +1,213 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+$gold:       #f9b303;
+$gold-dark:  #e0a000;
+$gold-light: #fff8e1;
+$text:       #4e4e4e;
+$text-dark:  #2a2a2a;
+$text-light: #888;
+$bg-warm:    #fffaf2;
+$border:     #e8e8e8;
+$success:    #2e7d32;
+$shadow:     0 2px 10px rgba(0,0,0,.08);
+$radius:     10px;
+$font-serif: 'Libre Baskerville', Georgia, serif;
+$font-sans:  'DM Sans', sans-serif;
+
+* { font-family: $font-sans; cursor: default; box-sizing: border-box; }
+button { cursor: pointer; }
+
+// ── Wrap ──────────────────────────────────────────────────────────
+.orders-wrap {
+  padding: 2.5rem;
+  max-width: 900px;
+  margin: 0 auto;
+
+  @media (max-width: 600px) { padding: 1.2rem; }
+}
+
+.orders-title {
+  font-family: $font-serif;
+  font-size: 1.7rem;
+  color: $text-dark;
+  margin-bottom: 1.3rem;
+}
+
+// ── Tabs ──────────────────────────────────────────────────────────
+.order-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 1.8rem;
+  background: $bg-warm;
+  border-radius: $radius;
+  padding: 4px;
+}
+
+.order-tab {
+  flex: 1;
+  padding: 9px;
+  text-align: center;
+  border-radius: 8px;
+  font-size: .85rem;
+  font-weight: 600;
+  color: $text-light;
+  border: none;
+  background: none;
+  font-family: $font-sans;
+  transition: all .2s;
+
+  &.active { background: $gold; color: $text-dark; }
+  &:not(.active):hover { color: $text-dark; }
+}
+
+// ── Empty ─────────────────────────────────────────────────────────
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: $text-light;
+
+  .empty-icon { font-size: 3rem; margin-bottom: .8rem; }
+  p { font-size: .93rem; }
+}
+
+// ── Order Card ────────────────────────────────────────────────────
+.order-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.4rem;
+  box-shadow: $shadow;
+  margin-bottom: 14px;
+  border: 1.5px solid transparent;
+
+  &.active-order { border-color: $gold; }
+}
+
+.oc-hdr {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: .9rem;
+}
+
+.oc-id   { font-size: .76rem; color: $text-light; margin-bottom: 3px; }
+.oc-rest { font-weight: 600; color: $text-dark; font-size: .97rem; }
+
+// ── Status Badges ─────────────────────────────────────────────────
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: .76rem;
+  font-weight: 700;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.sb-placed    { background: #f3e5f5; color: #7b1fa2; }
+.sb-confirmed { background: #e8f5e9; color: $success; }
+.sb-preparing { background: #fff8e1; color: #f57f17; }
+.sb-onway     { background: #e3f2fd; color: #1565c0; }
+.sb-delivered { background: #e8f5e9; color: $success; }
+.sb-cancelled { background: #ffebee; color: #c62828; }
+
+// ── Track Bar ─────────────────────────────────────────────────────
+.track-bar {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: .7rem 0;
+}
+
+.trk-bar-step {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.trk-bar-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: $border;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: white;
+  margin-bottom: 4px;
+  z-index: 1;
+
+  &.done    { background: $success; }
+  &.curr    { background: $gold; animation: pulse 1.5s infinite; }
+  &.pending { background: $border; color: $text-light; font-size: .85rem; }
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(249,179,3,.5); }
+  50%       { box-shadow: 0 0 0 6px rgba(249,179,3,0); }
+}
+
+.trk-bar-lbl {
+  font-size: .68rem;
+  color: $text-light;
+  text-align: center;
+
+  &.done { color: $success; font-weight: 600; }
+  &.curr { color: $gold;    font-weight: 600; }
+}
+
+.trk-bar-line {
+  flex: 1;
+  height: 2px;
+  background: $border;
+  margin-bottom: 20px;
+
+  &.done { background: $success; }
+}
+
+// ── Items ─────────────────────────────────────────────────────────
+.oc-items {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin-bottom: .9rem;
+}
+
+.oc-itag {
+  font-size: .79rem;
+  color: $text-light;
+  background: $bg-warm;
+  padding: 3px 11px;
+  border-radius: 20px;
+}
+
+// ── Footer ────────────────────────────────────────────────────────
+.oc-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid $border;
+  padding-top: 10px;
+}
+
+.oc-date  { font-size: .79rem; color: $text-light; }
+.oc-total { font-weight: 700; color: $text-dark; }
+
+// ── Actions ───────────────────────────────────────────────────────
+.oc-actions {
+  display: flex;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.oc-btn {
+  padding: 7px 14px;
+  border-radius: 7px;
+  font-size: .8rem;
+  font-weight: 600;
+  font-family: $font-sans;
+  transition: all .2s;
+
+  &.gold    { background: $gold; border: none; color: $text-dark; &:hover { background: $gold-dark; } }
+  &.outline { background: white; border: 1.5px solid $border; color: $text; &:hover { border-color: $gold; color: $gold; } }
+}

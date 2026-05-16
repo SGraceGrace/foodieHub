@@ -3,5 +3,6 @@ import { environment } from "../../environments/environment";
 export const UserConfig = {
   userApiUrl: `${environment.apiBaseUrl}/api/v1/user`,
   updateProfileUrl: `${environment.apiBaseUrl}/api/v1/user/profile`,
+  addressesUrl: `${environment.apiBaseUrl}/api/v1/user/addresses`,
   userLogoutUrl: `${environment.apiBaseUrl}/api/v1/auth/logout`
 };

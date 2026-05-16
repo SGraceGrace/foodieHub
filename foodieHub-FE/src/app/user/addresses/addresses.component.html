@@ -1,0 +1,112 @@
+<!-- Back -->
+<div class="back-bar">
+  <button class="back-btn" (click)="goBack()">← Back to Profile</button>
+</div>
+
+<!-- Hero -->
+<div class="page-hero">
+  <h1>📍 My Addresses</h1>
+  <p>Manage your saved delivery locations</p>
+</div>
+
+<!-- Address List -->
+<div class="addr-mgmt-list">
+
+  <!-- Loading -->
+  <div class="empty-state" *ngIf="loading">
+    <p>Loading addresses...</p>
+  </div>
+
+  <!-- Empty -->
+  <div class="empty-state" *ngIf="!loading && addresses.length === 0 && !showForm">
+    <div style="font-size:2.5rem;margin-bottom:.7rem">📭</div>
+    <p>No saved addresses yet. Add one below!</p>
+  </div>
+
+  <!-- Address Cards -->
+  <div
+    class="addr-card-mgmt"
+    *ngFor="let addr of addresses"
+    [class.default]="addr.defaultAddress"
+  >
+    <div class="addr-icon-big">{{ getIcon(addr.label) }}</div>
+
+    <div class="addr-card-info">
+      <div class="addr-card-label">{{ addr.label | titlecase }}</div>
+      <div class="addr-card-text">{{ addr.addressText }}</div>
+      <div class="addr-card-text" *ngIf="addr.landmark" style="font-size:.8rem;color:#888;margin-top:2px">
+        {{ addr.landmark }}
+      </div>
+      <span class="addr-card-default-tag" *ngIf="addr.defaultAddress">Default address</span>
+      <button
+        class="set-default-btn"
+        *ngIf="!addr.defaultAddress"
+        (click)="setDefault(addr)"
+      >Set as default</button>
+    </div>
+
+    <div class="addr-card-actions">
+      <button class="addr-action-btn delete" (click)="deleteAddress(addr)">Delete</button>
+    </div>
+  </div>
+
+  <!-- Add New Address Form -->
+  <div class="add-form-card" *ngIf="showForm">
+    <h3>New Address</h3>
+    <form [formGroup]="addressForm" (ngSubmit)="onAddAddress()">
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Label</label>
+          <select formControlName="label">
+            <option value="HOME">🏠 Home</option>
+            <option value="WORK">💼 Work</option>
+            <option value="OTHER">⭐ Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Set as Default?</label>
+          <div class="toggle-wrap">
+            <label class="toggle">
+              <input type="checkbox" formControlName="defaultAddress" />
+              <span class="slider"></span>
+            </label>
+            <span class="toggle-label">{{ addressForm.value.defaultAddress ? 'Yes' : 'No' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Full Address</label>
+        <input
+          type="text"
+          placeholder="e.g. 42, Gandhi Nagar, 3rd Street, Chennai — 600 020"
+          formControlName="addressText"
+          [class.field-error]="isInvalid('addressText')"
+        />
+        <span class="err-msg" *ngIf="isInvalid('addressText')">Address is required.</span>
+      </div>
+
+      <div class="form-group">
+        <label>Landmark <span style="font-weight:400;text-transform:none">(optional)</span></label>
+        <input type="text" placeholder="e.g. Near Adyar Signal · Blue gate" formControlName="landmark" />
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-gold" [disabled]="saving">
+          {{ saving ? 'Saving...' : 'Save Address' }}
+        </button>
+        <button type="button" class="btn btn-outline" (click)="cancelForm()">Cancel</button>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- Add New Address trigger -->
+  <div class="add-address-card" *ngIf="!showForm" (click)="showForm = true">
+    <div style="font-size:2rem;margin-bottom:.5rem">📍</div>
+    <div class="add-address-title">Add New Address</div>
+    <div class="add-address-sub">Home, Work or Other</div>
+  </div>
+
+</div>

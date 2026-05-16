@@ -46,5 +46,10 @@ export const routes: Routes = [
   {
     path: 'profile',
     loadComponent: () => import('./profile/profile.component').then(module => module.ProfileComponent)
+  },
+  {
+    path: 'addresses',
+    loadComponent: () => import('./addresses/addresses.component').then(module => module.AddressesComponent),
+    canActivate: [authGuard]
   }
 ];
