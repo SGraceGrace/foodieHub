@@ -1,0 +1,33 @@
+# ── Secrets & environment ─────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.jks
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.idea/
+!.idea/vcs.xml
+*.iml
+*.iws
+*.ipr
+.vscode/
+*.sublime-workspace
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Docker local data ─────────────────────────────────────────────────────────
+docker/data/
+docker/volumes/
+
+# ── Claude Code local settings ────────────────────────────────────────────────
+.claude/settings.local.json
