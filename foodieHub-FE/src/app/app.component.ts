@@ -23,7 +23,7 @@ export class AppComponent {
 
   constructor(private router: Router, private tokenService: TokenService) {
     this.role$ = this.tokenService.userInfo$.pipe(
-      map(user => user?.role ?? 'guest')
+      map(user => user?.role?.roleName ?? 'guest')
     );
     
     this.router.events.subscribe(event => {

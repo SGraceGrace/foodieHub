@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { LoadingService } from '../../loading.service';
 import { CommonModule } from '@angular/common';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { LoadingService } from '../../loading.service';
 
 @Component({
   selector: 'app-global-loader',
-  imports: [CommonModule, MatProgressSpinnerModule],
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './global-loader.component.html',
   styleUrl: './global-loader.component.scss',
 })

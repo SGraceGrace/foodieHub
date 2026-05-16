@@ -1,5 +1,6 @@
 package com.project.foodieHub.service.impl;
 
+import com.project.foodieHub.dto.UpdateProfileRequestDTO;
 import com.project.foodieHub.entity.User;
 import com.project.foodieHub.enums.UserStatus;
 import com.project.foodieHub.exception_handler.CommonException;
@@ -20,5 +21,18 @@ public class UserServiceImpl implements UserService {
     public User getUser(String username) {
         return userServiceRepo.findByUserNameAndStatus(username, UserStatus.ACTIVE)
             .orElseThrow(() -> new CommonException("User not found"));
+    }
+
+    @Override
+    public void updateProfile(String username, UpdateProfileRequestDTO dto) {
+        User user = userServiceRepo.findByUserNameAndStatus(username, UserStatus.ACTIVE)
+            .orElseThrow(() -> new CommonException("User not found"));
+        user.setFirstName(dto.getFirstName());
+        user.setLastName(dto.getLastName());
+        user.setPhone(dto.getPhone());
+        user.setDateOfBirth(dto.getDateOfBirth());
+        user.setGender(dto.getGender());
+        user.setBio(dto.getBio());
+        userServiceRepo.save(user);
     }
 }

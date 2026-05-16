@@ -43,7 +43,7 @@ public class AuthFilter extends OncePerRequestFilter {
 
   private String extractToken(HttpServletRequest request) {
     String header = request.getHeader("Authorization");
-    if (Objects.nonNull(header) && header.startsWith("Bearer")) {
+    if (Objects.nonNull(header) && header.startsWith("Bearer ")) {
       return header.substring(7);
     }
     return null;

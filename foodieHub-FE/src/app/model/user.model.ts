@@ -6,4 +6,8 @@ export interface UserDetails {
   lastName: string;
   email: string;
   role: Role;
+  phone?: string;
+  dateOfBirth?: string;
+  gender?: string;
+  bio?: string;
 }

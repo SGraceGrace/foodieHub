@@ -1,94 +1,59 @@
-<mat-toolbar class="header">
-  <div class="title">
-    <img src="logo.png" alt="logo" class="logo" />
-    <span>foodiehub</span>
+<header class="header">
+
+  <!-- Logo -->
+  <div class="logo-wrap">
+    <div class="logo-icon">F</div>
+    <div class="logo-divider"></div>
+    <span class="logo-text">foodiehub</span>
   </div>
-  <div class="example-spacer"></div>
-  <div class="links">
-    <a
-      routerLink="/home"
-      routerLinkActive="active-link"
-      [routerLinkActiveOptions]="{ exact: true }"
-      >Home</a
-    >
-    <a
-      routerLink="/user/cuisine"
-      routerLinkActive="active-link"
-      [routerLinkActiveOptions]="{ exact: true }"
-      >Cuisines</a
-    >
-    <a
-      routerLink="/user/about-us"
-      routerLinkActive="active-link"
-      [routerLinkActiveOptions]="{ exact: true }"
-      >About us</a
-    >
-    <a
-      routerLink="/user/reviews"
-      routerLinkActive="active-link"
-      [routerLinkActiveOptions]="{ exact: true }"
-      >Reviews</a
-    >
-    <a
-      routerLink="/user/blog"
-      routerLinkActive="active-link"
-      [routerLinkActiveOptions]="{ exact: true }"
-      >Blog</a
-    >
-    <a
-      routerLink="/user/contact-us"
-      routerLinkActive="active-link"
-      [routerLinkActiveOptions]="{ exact: true }"
-      >Contact us</a
-    >
-    <a
-      routerLink="/user/deals"
-      routerLinkActive="active-link"
-      [routerLinkActiveOptions]="{ exact: true }"
-      matTooltip="Deals"
-      matTooltipPosition="below"
-    >
-      <i class="fa-solid fa-gift"></i>
-    </a>
-    <span class="search">
+
+  <!-- Nav -->
+  <nav class="nav-links">
+    <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" class="nav-link">Home</a>
+    <a routerLink="/user/cuisine" routerLinkActive="active" class="nav-link">Cuisines</a>
+    <a routerLink="/user/about-us" routerLinkActive="active" class="nav-link">About Us</a>
+    <a routerLink="/user/reviews" routerLinkActive="active" class="nav-link">Reviews</a>
+    <a routerLink="/user/contact-us" routerLinkActive="active" class="nav-link">Contact Us</a>
+  </nav>
+
+  <!-- Right -->
+  <div class="header-right">
+
+    <!-- Search -->
+    <div class="search-box" [class.focused]="searchFocused">
+      <span class="search-icon">🔍</span>
       <input
         type="text"
-        name="search-box"
-        id="search-box"
-        placeholder="Search..."
+        placeholder="Search food, cuisines..."
         [formControl]="searchControl"
         (keyup.enter)="onSearch()"
+        (focus)="searchFocused = true"
+        (blur)="searchFocused = false"
       />
-      <i class="fa-solid fa-magnifying-glass"></i>
-    </span>
-  </div>
-  <div class="menu">
-    <button
-      mat-icon-button
-      [matMenuTriggerFor]="menu"
-      matMenuPositionX="after"
-      matMenuPositionY="below"
-      class="example-icon"
-      aria-label="Example icon-button with menu icon"
-    >
-      <mat-icon>segment</mat-icon>
+    </div>
+
+    <!-- Cart -->
+    <button class="icon-btn cart-btn" routerLink="/user/cart" title="My Cart">
+      🛒
+      <span class="cart-count" *ngIf="cartCount > 0">{{ cartCount }}</span>
     </button>
-    <mat-menu #menu="matMenu">
-      <button mat-menu-item type="button" routerLink="/user/profile">
-        <span class="menu-item">My Profile</span>
+
+    <!-- User Avatar + Dropdown -->
+    <div class="user-menu">
+      <button class="user-av" (click)="toggleMenu()">
+        {{ initials }}
       </button>
-      <button mat-menu-item type="button" routerLink="/user/cart">
-        <span class="menu-item">My Cart</span>
-      </button>
-      <button mat-menu-item type="button" routerLink="/user/wishlist">
-        <span class="menu-item">My Wishlist</span>
-      </button>
-      <button mat-menu-item type="button" routerLink="/user/orders">
-        <span class="menu-item">My Orders</span>
-      </button>
-      <button mat-menu-item type="button" (click)="logout()">
-        <span class="menu-item">Logout</span>
-      </button>
-    </mat-menu>
+
+      <div class="dropdown" *ngIf="menuOpen">
+        <a class="drop-item" routerLink="/user/profile" (click)="menuOpen=false">👤 My Profile</a>
+        <a class="drop-item" routerLink="/user/orders" (click)="menuOpen=false">📦 My Orders</a>
+        <a class="drop-item" routerLink="/user/wishlist" (click)="menuOpen=false">❤️ Wishlist</a>
+        <a class="drop-item" routerLink="/user/cart" (click)="menuOpen=false">🛒 My Cart</a>
+        <div class="drop-divider"></div>
+        <button class="drop-item drop-logout" (click)="logout()">🚪 Logout</button>
+      </div>
+    </div>
+
   </div>
-</mat-toolbar>
+
+</header>

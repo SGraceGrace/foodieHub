@@ -14,7 +14,7 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(schema = "refresh_token")
+@Table(name = "refresh_token")
 public class RefreshToken extends BaseEntity{
 
   @Id

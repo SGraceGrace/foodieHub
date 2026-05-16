@@ -1,1 +1,84 @@
-<p>profile works!</p>
+<div class="profile-layout">
+
+  <!-- ── Sidebar ── -->
+  <div class="profile-sidebar">
+    <div class="profile-avatar-area">
+      <div class="profile-avatar">{{ initials }}</div>
+      <div class="profile-name">{{ fullName }}</div>
+      <div class="profile-email">{{ (user$ | async)?.email }}</div>
+    </div>
+
+    <ul class="profile-menu">
+      <li class="active"><span>👤</span>My Profile</li>
+      <li routerLink="/user/orders"><span>📦</span>My Orders</li>
+      <li routerLink="/user/wishlist"><span>❤️</span>My Wishlist</li>
+      <li><span>📍</span>Addresses</li>
+      <li><span>💳</span>Payments</li>
+      <li><span>🔔</span>Notifications</li>
+      <li class="logout-item" (click)="logout()"><span>🚪</span>Logout</li>
+    </ul>
+  </div>
+
+  <!-- ── Content ── -->
+  <div class="profile-content">
+    <h2>My Profile</h2>
+
+    <form [formGroup]="profileForm" (ngSubmit)="onSave()">
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text" placeholder="First name" formControlName="firstName"
+            [class.field-error]="isInvalid('firstName')" />
+          <span class="err-msg" *ngIf="isInvalid('firstName')">First name is required.</span>
+        </div>
+
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text" placeholder="Last name" formControlName="lastName"
+            [class.field-error]="isInvalid('lastName')" />
+          <span class="err-msg" *ngIf="isInvalid('lastName')">Last name is required.</span>
+        </div>
+
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" formControlName="email" class="readonly-field" readonly />
+        </div>
+
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="tel" placeholder="+91 98765 43210" formControlName="phone" />
+        </div>
+
+        <div class="form-group">
+          <label>Date of Birth</label>
+          <input type="date" formControlName="dateOfBirth" />
+        </div>
+
+        <div class="form-group">
+          <label>Gender</label>
+          <select formControlName="gender">
+            <option value="">Select gender</option>
+            <option value="FEMALE">Female</option>
+            <option value="MALE">Male</option>
+            <option value="OTHER">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group full">
+          <label>Bio</label>
+          <input type="text" placeholder="Tell us about yourself..." formControlName="bio" />
+        </div>
+
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-gold" [disabled]="saving">
+          {{ saving ? 'Saving...' : 'Save Changes' }}
+        </button>
+        <button type="button" class="btn btn-outline" (click)="onCancel()">Cancel</button>
+      </div>
+    </form>
+  </div>
+
+</div>

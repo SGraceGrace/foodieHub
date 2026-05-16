@@ -1,3 +1,6 @@
 <div class="overlay" *ngIf="loadingService.isLoading$ | async">
-  <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+  <div class="loader-box">
+    <div class="spinner-ring"></div>
+    <div class="logo-center">F</div>
+  </div>
 </div>

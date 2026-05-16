@@ -1,44 +1,56 @@
-import { Component } from '@angular/core';
-import { MatMenu, MatMenuModule } from '@angular/material/menu';
-import { MatIconModule } from '@angular/material/icon';
-import { MatToolbarModule } from '@angular/material/toolbar';
-import { MatButtonModule } from '@angular/material/button';
+import { Component, ElementRef, HostListener, OnInit } from '@angular/core';
 import { Router, RouterLink, RouterModule } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { SharedServiceService } from '../../core/shared/shared-service.service';
 import { CommonModule } from '@angular/common';
+import { SharedServiceService } from '../../core/shared/shared-service.service';
 import { TokenService } from '../../core/shared/token.service';
 import { UserService } from '../user.service';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-user-header',
-  imports: [
-    CommonModule,
-    MatToolbarModule,
-    MatButtonModule,
-    MatIconModule,
-    MatMenuModule,
-    RouterLink,
-    RouterModule,
-    MatMenu,
-    ReactiveFormsModule,
-    MatTooltipModule,
-  ],
+  standalone: true,
+  imports: [CommonModule, RouterLink, RouterModule, ReactiveFormsModule],
   templateUrl: './user-header.component.html',
   styleUrl: './user-header.component.scss',
 })
-export class UserHeaderComponent {
+export class UserHeaderComponent implements OnInit {
+  searchControl = new FormControl('');
+  searchFocused = false;
+  menuOpen = false;
+  initials = '';
+  cartCount = 0;
+
   constructor(
     private router: Router,
     private sharedService: SharedServiceService,
     private tokenService: TokenService,
     private userService: UserService,
-    private toaster: ToastrService
+    private toaster: ToastrService,
+    private elRef: ElementRef
   ) {}
 
-  searchControl = new FormControl('');
+  ngOnInit() {
+    this.tokenService.userInfo$.subscribe(user => {
+      if (user) {
+        this.initials = (user.firstName?.[0] ?? '') + (user.lastName?.[0] ?? '');
+        this.initials = this.initials.toUpperCase();
+      } else {
+        this.initials = 'U';
+      }
+    });
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (!this.elRef.nativeElement.contains(event.target)) {
+      this.menuOpen = false;
+    }
+  }
+
+  toggleMenu() {
+    this.menuOpen = !this.menuOpen;
+  }
 
   onSearch() {
     const searchTerm = this.searchControl.value ?? '';
@@ -48,13 +60,14 @@ export class UserHeaderComponent {
   }
 
   logout() {
+    this.menuOpen = false;
     this.userService.logout().subscribe({
       next: (response) => {
         this.toaster.success(response || 'Logged out successfully');
         this.tokenService.clearTokens();
         this.router.navigateByUrl('/login');
       },
-      error: (error) => {
+      error: () => {
         this.toaster.error('Logout failed');
       },
     });

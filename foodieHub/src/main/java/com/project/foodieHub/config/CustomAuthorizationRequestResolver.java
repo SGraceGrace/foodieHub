@@ -37,14 +37,15 @@ public class CustomAuthorizationRequestResolver implements OAuth2AuthorizationRe
     }
 
     String deviceId = request.getParameter("deviceId");
-    Map<String, Object> additionalParams = new HashMap<>(req.getAdditionalParameters());
-
-    if (deviceId != null) {
-      additionalParams.put(OAuth2ParameterNames.STATE, deviceId); // You can also encode JSON if more data
+    if (deviceId == null) {
+      return req;
     }
 
+    Map<String, Object> additionalParams = new HashMap<>(req.getAdditionalParameters());
+    additionalParams.put(OAuth2ParameterNames.STATE, deviceId);
+
     return OAuth2AuthorizationRequest.from(req)
-        .state(deviceId) // put deviceId into the state
+        .state(deviceId)
         .additionalParameters(additionalParams)
         .build();
   }

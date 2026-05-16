@@ -12,7 +12,7 @@ public class SignUpRequestDTO {
     @NotNull(message = "email cannot be null")
     private String email;
 
-    @NotNull(message = "username cannot be null")
+    @NotNull(message = "lastName cannot be null")
     private String lastName;
 
     @NotNull(message = "password cannot be null")

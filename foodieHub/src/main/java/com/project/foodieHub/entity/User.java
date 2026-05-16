@@ -73,6 +73,18 @@ public class User extends BaseEntity implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<RefreshToken> refreshTokens;
 
+    @Column(name = "phone")
+    private String phone;
+
+    @Column(name = "date_of_birth")
+    private String dateOfBirth;
+
+    @Column(name = "gender")
+    private String gender;
+
+    @Column(name = "bio", length = 500)
+    private String bio;
+
     @Column(name = "auth_provider")
     @Enumerated(EnumType.STRING)
     private AuthProvider authProvider = AuthProvider.LOCAL;

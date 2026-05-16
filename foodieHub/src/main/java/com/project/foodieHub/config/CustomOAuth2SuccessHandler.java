@@ -58,7 +58,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     String userName = (String) attributes.get("email");
     String firstName = (String) attributes.get("given_name");
     String lastName = (String) attributes.get("family_name");
-    String deviceId = request.getParameter("state");
+    String deviceId = request.getParameter("state") != null ? request.getParameter("state") : "";
     String googleId = oAuth2User.getAttribute("sub");
 
     Optional<User> existingUser = userRepo.findByUserNameAndStatus(email, UserStatus.ACTIVE);

@@ -14,8 +14,21 @@ export class UserService {
 
   constructor(private http: HttpClient) {}
 
+  updateProfileUrl: string = UserConfig.updateProfileUrl;
+
   getUserInfo(): Observable<ApiResponse<UserDetails>> {
     return this.http.get<ApiResponse<UserDetails>>(this.getUserUrl);
+  }
+
+  updateProfile(data: {
+    firstName: string;
+    lastName: string;
+    phone?: string;
+    dateOfBirth?: string;
+    gender?: string;
+    bio?: string;
+  }): Observable<ApiResponse<null>> {
+    return this.http.put<ApiResponse<null>>(this.updateProfileUrl, data);
   }
 
   logout(): Observable<any> {
