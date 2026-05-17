@@ -30,7 +30,7 @@ export class AppComponent {
       if (event instanceof NavigationEnd) {
         this.currentUrl = event.url;
         const path = event.urlAfterRedirects.split('?')[0];
-        this.showHeader = path !== '/login' && path !== '/signup';
+        this.showHeader = path !== '/login' && path !== '/signup' && path !== '/admin/login';
       }
     });
   }

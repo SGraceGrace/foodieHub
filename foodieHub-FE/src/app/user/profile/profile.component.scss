@@ -1,3 +1,4 @@
+@use 'sass:color';
 @import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
 
 $gold:       #f9b303;
@@ -158,7 +159,7 @@ button, li { cursor: pointer; }
 
     &:focus { border-color: $gold; }
     &.field-error { border-color: #ef5350; }
-    &::placeholder { color: lighten($text-light, 12%); }
+    &::placeholder { color: color.adjust($text-light, $lightness: 12%); }
   }
 
   select { cursor: pointer; }

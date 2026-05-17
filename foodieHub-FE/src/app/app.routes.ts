@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { NotFoundComponent } from './not-found/not-found.component';
 import { guestGuard } from './core/guard/guest.guard';
+import { authGuard } from './core/guard/auth.guard';
+import { adminGuard } from './core/guard/admin.guard';
 
 export const routes: Routes = [
   {
@@ -37,6 +39,17 @@ export const routes: Routes = [
   {
     path: 'user',
     loadChildren: () => import('./user/user.routes').then((m) => m.routes),
+  },
+  {
+    path: 'admin/login',
+    loadComponent: () =>
+      import('./admin/admin-login/admin-login.component').then((m) => m.AdminLoginComponent),
+  },
+  {
+    path: 'admin',
+    loadComponent: () =>
+      import('./admin/admin.component').then((m) => m.AdminComponent),
+    canActivate: [adminGuard],
   },
   {
     path: '**',

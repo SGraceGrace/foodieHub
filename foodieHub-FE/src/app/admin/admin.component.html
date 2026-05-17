@@ -1,1 +1,347 @@
-<p>admin works!</p>
+<div class="dashboard">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-title">Admin Panel</div>
+
+    <button class="nav-btn" [class.active]="activeTab === 'dashboard'" (click)="goTab('dashboard')">
+      <span>📊</span> Dashboard
+    </button>
+    <button class="nav-btn" [class.active]="activeTab === 'users'" (click)="goTab('users')">
+      <span>👥</span> Users
+    </button>
+    <button class="nav-btn" [class.active]="activeTab === 'restaurants'" (click)="goTab('restaurants')">
+      <span>🍛</span> Restaurants
+    </button>
+    <button class="nav-btn" [class.active]="activeTab === 'orders'" (click)="goTab('orders')">
+      <span>📦</span> Orders
+    </button>
+    <button class="nav-btn" [class.active]="activeTab === 'payments'" (click)="goTab('payments')">
+      <span>💳</span> Payments
+    </button>
+    <button class="nav-btn" [class.active]="activeTab === 'support'" (click)="goTab('support')">
+      <span>💬</span> Support Tickets
+    </button>
+    <button class="nav-btn" [class.active]="activeTab === 'reports'" (click)="goTab('reports')">
+      <span>📈</span> Reports
+    </button>
+    <button class="nav-btn" [class.active]="activeTab === 'slides'" (click)="goTab('slides')">
+      <span>🖼️</span> Slideshow
+    </button>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+
+    <!-- DASHBOARD TAB -->
+    <ng-container *ngIf="activeTab === 'dashboard'">
+      <div class="page-title">Platform Overview</div>
+
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-label">Total Orders Today</div>
+          <div class="stat-value">—</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Total Revenue</div>
+          <div class="stat-value">—</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Active Users</div>
+          <div class="stat-value">—</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Active Restaurants</div>
+          <div class="stat-value">—</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="table-box">
+          <h3>Recent Orders</h3>
+          <table>
+            <thead><tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td colspan="4" class="empty-cell">No data available</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-box">
+          <h3>Pending Approvals</h3>
+          <table>
+            <thead><tr><th>Type</th><th>Name</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td colspan="3" class="empty-cell">No pending approvals</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- USERS TAB -->
+    <ng-container *ngIf="activeTab === 'users'">
+      <div class="page-title">User Management</div>
+      <div class="table-box">
+        <div class="table-toolbar">
+          <input class="search-input" type="text" placeholder="Search by name, email or phone..." />
+          <select class="filter-select">
+            <option>All Users</option>
+            <option>Active</option>
+            <option>Suspended</option>
+          </select>
+        </div>
+        <table>
+          <thead><tr><th>User ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Orders</th><th>Total Spent</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr><td colspan="8" class="empty-cell">No users found</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+
+    <!-- RESTAURANTS TAB -->
+    <ng-container *ngIf="activeTab === 'restaurants'">
+      <div class="page-title">Restaurant Management</div>
+      <div class="table-box">
+        <div class="table-toolbar">
+          <input class="search-input" type="text" placeholder="Search restaurants..." />
+          <select class="filter-select">
+            <option>All Restaurants</option>
+            <option>Approved</option>
+            <option>Pending</option>
+            <option>Suspended</option>
+          </select>
+        </div>
+        <table>
+          <thead><tr><th>Restaurant</th><th>Owner</th><th>Cuisine</th><th>Orders</th><th>Rating</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr><td colspan="7" class="empty-cell">No restaurants found</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+
+    <!-- ORDERS TAB -->
+    <ng-container *ngIf="activeTab === 'orders'">
+      <div class="page-title">Order Management</div>
+      <div class="filter-btns">
+        <button class="filter-btn active">All</button>
+        <button class="filter-btn">Placed</button>
+        <button class="filter-btn">Confirmed</button>
+        <button class="filter-btn">Delivered</button>
+        <button class="filter-btn">Cancelled</button>
+      </div>
+      <div class="table-box">
+        <div class="table-toolbar">
+          <input class="search-input" type="text" placeholder="Search by order ID..." />
+        </div>
+        <table>
+          <thead><tr><th>Order ID</th><th>Customer</th><th>Restaurant</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr><td colspan="7" class="empty-cell">No orders found</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+
+    <!-- PAYMENTS TAB -->
+    <ng-container *ngIf="activeTab === 'payments'">
+      <div class="page-title">Payment Management</div>
+      <div class="table-box">
+        <div class="table-toolbar">
+          <input class="search-input" type="text" placeholder="Search by transaction ID..." />
+          <select class="filter-select">
+            <option>All</option>
+            <option>Success</option>
+            <option>Pending</option>
+            <option>Failed</option>
+          </select>
+        </div>
+        <table>
+          <thead><tr><th>Transaction ID</th><th>Order ID</th><th>Customer</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody>
+            <tr><td colspan="7" class="empty-cell">No transactions found</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+
+    <!-- SUPPORT TAB -->
+    <ng-container *ngIf="activeTab === 'support'">
+      <div class="page-title">Support Tickets</div>
+      <div class="filter-btns">
+        <button class="filter-btn active">Open</button>
+        <button class="filter-btn">In Progress</button>
+        <button class="filter-btn">Resolved</button>
+      </div>
+      <div class="table-box">
+        <table>
+          <thead><tr><th>Ticket ID</th><th>Customer</th><th>Category</th><th>Issue</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr><td colspan="7" class="empty-cell">No tickets found</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+
+    <!-- REPORTS TAB -->
+    <ng-container *ngIf="activeTab === 'reports'">
+      <div class="page-title">Reports & Analytics</div>
+      <div class="two-col">
+        <div class="table-box">
+          <h3>Generate Reports</h3>
+          <div class="form-group">
+            <label>Report Type</label>
+            <select class="filter-select" style="width:100%">
+              <option>Daily Revenue</option>
+              <option>Weekly Summary</option>
+              <option>Restaurant Performance</option>
+              <option>User Activity</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>From</label>
+            <input type="date" class="search-input" />
+          </div>
+          <div class="form-group">
+            <label>To</label>
+            <input type="date" class="search-input" />
+          </div>
+          <button class="btn-primary" style="margin-top:.5rem">Generate Report</button>
+        </div>
+
+        <div class="table-box">
+          <h3>Export Data</h3>
+          <button class="btn-export">📊 Export Orders (CSV)</button>
+          <button class="btn-export">👥 Export Users (CSV)</button>
+          <button class="btn-export">🍛 Export Restaurants (CSV)</button>
+          <button class="btn-export">💳 Export Payments (CSV)</button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- SLIDES TAB -->
+    <ng-container *ngIf="activeTab === 'slides'">
+      <div class="page-title">Slideshow Management</div>
+
+      <h3 class="section-label">Current Slides</h3>
+      <div class="slides-list">
+        <div class="slide-item" *ngFor="let slide of slides">
+          <div class="slide-preview">{{ slide.emoji }}</div>
+          <div class="slide-info">
+            <h3>{{ slide.title }} <span class="highlight">{{ slide.highlightWord }}</span></h3>
+            <p>{{ slide.description }}</p>
+          </div>
+          <div class="slide-actions">
+            <button class="slide-btn toggle" [class.active]="slide.active" (click)="toggle(slide)">
+              {{ slide.active ? 'Active' : 'Inactive' }}
+            </button>
+            <button class="slide-btn edit" (click)="openEdit(slide)">Edit</button>
+            <button class="slide-btn delete" (click)="deleteSlide(slide)">Delete</button>
+          </div>
+        </div>
+        <p class="empty-msg" *ngIf="slides.length === 0">No slides yet.</p>
+      </div>
+
+      <h3 class="section-label">Add New Slide</h3>
+      <div class="add-slide-form">
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" placeholder="e.g., Delicious Food Delivered to" [(ngModel)]="form.title" />
+        </div>
+        <div class="form-group">
+          <label>Highlight Word</label>
+          <input type="text" placeholder="e.g., Your Door" [(ngModel)]="form.highlightWord" />
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea placeholder="Brief description..." [(ngModel)]="form.description"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Button 1 Text</label>
+            <input type="text" placeholder="e.g., 🍽️ Explore Food" [(ngModel)]="form.btn1Text" />
+          </div>
+          <div class="form-group">
+            <label>Button 2 Text</label>
+            <input type="text" placeholder="e.g., 🔍 Search Dishes" [(ngModel)]="form.btn2Text" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Emoji</label>
+            <input type="text" [(ngModel)]="form.emoji" maxlength="2" />
+          </div>
+          <div class="form-group">
+            <label>Badge Icon</label>
+            <input type="text" [(ngModel)]="form.badgeIcon" maxlength="2" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Badge Text</label>
+            <input type="text" placeholder="e.g., Delivery · 30 min avg" [(ngModel)]="form.badgeText" />
+          </div>
+          <div class="form-group">
+            <label>Display Order</label>
+            <input type="number" [(ngModel)]="form.displayOrder" />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-primary" (click)="addSlide()">Add Slide</button>
+          <button class="btn-outline" (click)="clearForm()">Clear</button>
+        </div>
+      </div>
+    </ng-container>
+
+  </div>
+</div>
+
+<!-- Edit Slide Modal -->
+<div class="modal" [class.show]="showEditModal">
+  <div class="modal-content">
+    <button class="modal-close" (click)="showEditModal = false">✕</button>
+    <div class="modal-title">Edit Slide</div>
+    <div class="form-group">
+      <label>Title</label>
+      <input type="text" [(ngModel)]="editForm.title" />
+    </div>
+    <div class="form-group">
+      <label>Highlight Word</label>
+      <input type="text" [(ngModel)]="editForm.highlightWord" />
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea [(ngModel)]="editForm.description"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Button 1</label>
+        <input type="text" [(ngModel)]="editForm.btn1Text" />
+      </div>
+      <div class="form-group">
+        <label>Button 2</label>
+        <input type="text" [(ngModel)]="editForm.btn2Text" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Emoji</label>
+        <input type="text" [(ngModel)]="editForm.emoji" maxlength="2" />
+      </div>
+      <div class="form-group">
+        <label>Badge Icon</label>
+        <input type="text" [(ngModel)]="editForm.badgeIcon" maxlength="2" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Badge Text</label>
+      <input type="text" [(ngModel)]="editForm.badgeText" />
+    </div>
+    <div class="form-actions" style="margin-top:1.5rem">
+      <button class="btn-primary" (click)="saveEdit()">Save Changes</button>
+      <button class="btn-outline" (click)="showEditModal = false">Cancel</button>
+    </div>
+  </div>
+</div>

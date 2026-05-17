@@ -1,3 +1,113 @@
-<div class="container">
-    home works!
+<!-- ── Slideshow ───────────────────────────────────────────────────── -->
+<div class="slideshow-container" *ngIf="slides.length > 0">
+  <button class="slide-nav prev" (click)="prevSlide()">❮</button>
+  <button class="slide-nav next" (click)="nextSlide()">❯</button>
+
+  <div class="slide" *ngFor="let slide of slides; let i = index"
+       [class.active]="i === activeSlide">
+    <div class="slide-content">
+      <div class="slide-title">
+        {{ slide.title }}<br>
+        <span class="highlight">{{ slide.highlightWord }}</span>
+      </div>
+      <div class="slide-desc">{{ slide.description }}</div>
+      <div class="slide-buttons">
+        <button class="btn btn-gold" routerLink="/user/cuisine">{{ slide.btn1Text }}</button>
+        <button class="btn btn-outline" routerLink="/user/search">{{ slide.btn2Text }}</button>
+      </div>
+      <div class="slide-badge" *ngIf="slide.badgeIcon">
+        <span class="badge-icon-lg">{{ slide.badgeIcon }}</span>
+        <div>
+          <strong>{{ slide.badgeText }}</strong>
+        </div>
+      </div>
+    </div>
+    <div class="slide-image">
+      <div class="slide-emoji">{{ slide.emoji }}</div>
+    </div>
+  </div>
+
+  <div class="slide-indicators">
+    <div class="indicator" *ngFor="let s of slides; let i = index"
+         [class.active]="i === activeSlide"
+         (click)="goToSlide(i)"></div>
+  </div>
+</div>
+
+<!-- ── Stats Bar ──────────────────────────────────────────────────── -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item"><h3>1,200+</h3><p>Restaurants</p></div>
+    <div class="stat-item"><h3>50K+</h3><p>Happy Customers</p></div>
+    <div class="stat-item"><h3>30 min</h3><p>Avg Delivery</p></div>
+    <div class="stat-item"><h3>4.8 ⭐</h3><p>Average Rating</p></div>
+  </div>
+</div>
+
+<!-- ── Popular Dishes ─────────────────────────────────────────────── -->
+<div class="section" *ngIf="popularDishes.length > 0">
+  <div class="section-hdr">
+    <h2>Popular Dishes</h2>
+    <button class="see-all" routerLink="/user/cuisine">See all →</button>
+  </div>
+  <div class="cuisine-tags">
+    <button class="ctag" [class.active]="selectedCuisine === 'All'" (click)="loadRestaurants()">All</button>
+    <button class="ctag" *ngFor="let c of cuisineFilters"
+            [class.active]="selectedCuisine === c"
+            (click)="loadRestaurants(c)">{{ c }}</button>
+  </div>
+  <div class="food-grid">
+    <div class="food-card" *ngFor="let dish of popularDishes">
+      <div class="food-card-img" [style.background]="dish.bg">
+        <div class="food-badge" *ngIf="dish.badge">{{ dish.badge }}</div>
+        {{ dish.emoji }}
+      </div>
+      <div class="food-card-body">
+        <h3>{{ dish.name }}</h3>
+        <div class="food-rating">
+          <span class="stars">
+            <ng-container *ngFor="let full of starsArray(dish.rating)">{{ full ? '★' : '☆' }}</ng-container>
+          </span>
+          {{ dish.rating }} ({{ dish.reviews }})
+        </div>
+        <div class="food-footer">
+          <span class="food-price">₹{{ dish.price }}</span>
+          <button class="add-btn">Add +</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Top Restaurants ───────────────────────────────────────────── -->
+<div style="background:var(--bg-warm);padding:3rem 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="section" style="padding-top:0;padding-bottom:0">
+    <div class="section-hdr">
+      <h2>Top Restaurants</h2>
+      <button class="see-all" routerLink="/user/cuisine">See all →</button>
+    </div>
+    <div class="rest-grid">
+      <div class="rest-card" *ngFor="let r of restaurants">
+        <div class="rest-img" [style.background]="getBg(r)">{{ getEmoji(r) }}</div>
+        <div class="rest-body">
+          <h3>{{ r.name }}</h3>
+          <div class="rest-meta">
+            <span>⭐ {{ r.rating }}</span>
+            <span>⏱ {{ r.deliveryTime }} min</span>
+            <span>Min ₹{{ r.minOrder }}</span>
+          </div>
+          <div class="rtags">
+            <span class="rtag" *ngFor="let c of r.cuisine">{{ c }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Promo Banner ───────────────────────────────────────────────── -->
+<div class="promo-banner-strip">
+  <h2>🎁 Get ₹100 Off Your Next Order!</h2>
+  <p>Use code FOODIE100 at checkout. Valid on orders above ₹299.</p>
+  <button class="btn btn-gold" routerLink="/user/deals">View All Deals</button>
 </div>

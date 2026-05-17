@@ -1,0 +1,71 @@
+$gold: #f9b303;
+$font-serif: 'Libre Baskerville', Georgia, serif;
+$font-sans: 'DM Sans', sans-serif;
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #eee;
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+}
+
+.logo-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  background: #1a1a1a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-family: $font-serif;
+  font-size: 18px;
+}
+
+.logo-text {
+  font-family: $font-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #2a2a2a;
+}
+
+.logo-sub {
+  font-size: 0.7rem;
+  color: #888;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.user-icon {
+  width: 36px;
+  height: 36px;
+  background: #1a1a1a;
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-family: $font-sans;
+
+  &:hover { background: #333; }
+}
