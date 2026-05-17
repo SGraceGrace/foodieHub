@@ -27,4 +27,8 @@ public interface UserRepo extends JpaRepository<User, Long> {
                           @Param("status") UserStatus status,
                           @Param("search") String search,
                           Pageable pageable);
+
+  @Query("SELECT u FROM User u WHERE u.role.roleName = 'RESTAURANT_OWNER' " +
+         "AND (:status IS NULL OR u.status = :status)")
+  Page<User> findRestaurantOwners(@Param("status") UserStatus status, Pageable pageable);
 }

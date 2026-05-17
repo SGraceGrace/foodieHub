@@ -33,6 +33,7 @@ export interface AdminUserResponse {
   phone: string;
   roleName: string;
   status: string;
+  restaurantName?: string;
 }
 
 export interface PaginatedResponse<T> {

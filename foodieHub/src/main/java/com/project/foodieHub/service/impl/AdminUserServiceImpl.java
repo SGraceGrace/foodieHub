@@ -93,6 +93,34 @@ public class AdminUserServiceImpl implements AdminUserService {
         return activityLogService.getLogs();
     }
 
+    @Override
+    public PaginatedResponse<AdminUserResponseDTO> getRestaurantOwners(String status, int page, int size) {
+        UserStatus userStatus = (status != null && !status.isBlank()) ? UserStatus.valueOf(status) : null;
+        Page<User> result = userRepo.findRestaurantOwners(
+                userStatus, PageRequest.of(page, size, Sort.by("id").descending()));
+        List<AdminUserResponseDTO> content = result.getContent().stream().map(this::toDTO).toList();
+        return new PaginatedResponse<>(content, result.getNumber(), result.getTotalPages(),
+                result.getTotalElements(), result.getSize());
+    }
+
+    @Override
+    public AdminUserResponseDTO approveOwner(Long id) {
+        User user = findUser(id);
+        user.setStatus(UserStatus.ACTIVE);
+        User saved = userRepo.save(user);
+        activityLogService.log("APPROVE_OWNER", "User", id, "email: " + user.getEmail());
+        return toDTO(saved);
+    }
+
+    @Override
+    public AdminUserResponseDTO rejectOwner(Long id) {
+        User user = findUser(id);
+        user.setStatus(UserStatus.INACTIVE);
+        User saved = userRepo.save(user);
+        activityLogService.log("REJECT_OWNER", "User", id, "email: " + user.getEmail());
+        return toDTO(saved);
+    }
+
     private User findUser(Long id) {
         return userRepo.findById(id)
                 .orElseThrow(() -> new CommonException("User not found"));
@@ -106,7 +134,8 @@ public class AdminUserServiceImpl implements AdminUserService {
                 user.getEmail(),
                 user.getPhone(),
                 user.getRole().getRoleName(),
-                user.getStatus().name()
+                user.getStatus().name(),
+                user.getBio()
         );
     }
 }

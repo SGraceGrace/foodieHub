@@ -13,4 +13,5 @@ public class AdminUserResponseDTO {
     private String phone;
     private String roleName;
     private String status;
+    private String restaurantName;
 }

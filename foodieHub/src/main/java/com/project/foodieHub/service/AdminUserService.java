@@ -13,4 +13,7 @@ public interface AdminUserService {
     AdminUserResponseDTO unsuspendUser(Long id);
     AdminUserResponseDTO createAdmin(CreateAdminRequestDTO request);
     List<ActivityLogDTO> getActivityLogs();
+    PaginatedResponse<AdminUserResponseDTO> getRestaurantOwners(String status, int page, int size);
+    AdminUserResponseDTO approveOwner(Long id);
+    AdminUserResponseDTO rejectOwner(Long id);
 }

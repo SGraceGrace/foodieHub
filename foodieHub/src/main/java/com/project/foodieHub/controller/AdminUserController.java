@@ -54,4 +54,28 @@ public class AdminUserController {
         return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
                 adminUserService.getActivityLogs(), HttpStatus.OK.value(), null));
     }
+
+    @GetMapping("api/v1/admin/restaurant-owners")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<BaseAPIResponse> getRestaurantOwners(
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+                adminUserService.getRestaurantOwners(status, page, size), HttpStatus.OK.value(), null));
+    }
+
+    @PutMapping("api/v1/admin/restaurant-owners/{id}/approve")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<BaseAPIResponse> approveOwner(@PathVariable Long id) {
+        return ResponseEntity.ok(new BaseAPIResponse("Owner approved",
+                adminUserService.approveOwner(id), HttpStatus.OK.value(), null));
+    }
+
+    @PutMapping("api/v1/admin/restaurant-owners/{id}/reject")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<BaseAPIResponse> rejectOwner(@PathVariable Long id) {
+        return ResponseEntity.ok(new BaseAPIResponse("Owner rejected",
+                adminUserService.rejectOwner(id), HttpStatus.OK.value(), null));
+    }
 }
