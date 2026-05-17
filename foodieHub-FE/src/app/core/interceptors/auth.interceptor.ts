@@ -31,7 +31,7 @@ export function authInterceptor(
   const loginService = inject(LoginService);
   const router = inject(Router);
 
-  if (req.url.includes('/login') || req.url.includes('/signup')) {
+  if (req.url.includes('/login') || req.url.includes('/signup') || req.url.includes('/contact')) {
     return next(req);
   }
 

@@ -59,7 +59,9 @@
         [class.focused]="focused"
       ></textarea>
 
-      <button type="submit" class="btn-gold btn-full">Send Message →</button>
+      <button type="submit" class="btn-gold btn-full" [disabled]="loading">
+        {{ loading ? 'Sending...' : 'Send Message →' }}
+      </button>
     </form>
   </div>
 
