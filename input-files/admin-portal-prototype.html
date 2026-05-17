@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoodieHub Admin Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #f9b303;
+  --gold-dark: #e0a000;
+  --text: #4e4e4e;
+  --text-dark: #2a2a2a;
+  --text-light: #888;
+  --success: #248f28;
+  --error: #ff1100;
+  --warning: #ff9800;
+  --shadow: 0 2px 10px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.14);
+  --radius: 10px;
+  --font-serif: 'Libre Baskerville', Georgia, serif;
+  --font-sans: 'DM Sans', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font-sans); color: var(--text); background: white; }
+
+/* PAGE SYSTEM */
+.page { display: none; min-height: 100vh; }
+.page.show { display: block; }
+.content-section { display: none; }
+.content-section.show { display: block; }
+
+/* HEADER */
+.header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; border-bottom: 1px solid #eee; background: white; position: sticky; top: 0; z-index: 100; box-shadow: var(--shadow); }
+.logo-area { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.logo-icon { width: 40px; height: 40px; background: #1a1a1a; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-family: var(--font-serif); font-size: 18px; }
+.logo-text { font-family: var(--font-serif); font-size: 1.2rem; font-weight: 700; color: var(--text-dark); }
+.logo-sub { font-size: 0.7rem; color: var(--text-light); }
+.header-right { display: flex; gap: 15px; align-items: center; }
+.header-btn { border: 1px solid #ddd; padding: 7px 14px; border-radius: 6px; background: white; cursor: pointer; font-size: 0.85rem; color: var(--text); font-family: var(--font-sans); }
+.header-btn:hover { border-color: var(--gold); color: var(--gold); }
+.user-icon { width: 36px; height: 36px; background: #1a1a1a; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
+
+/* AUTH PAGES */
+.auth-bg { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; background: linear-gradient(135deg, rgba(26,26,26,0.15) 0%, rgba(26,26,26,0.05) 100%), #f5f5f5; }
+.auth-card { display: grid; grid-template-columns: 1fr 1fr; background: white; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-lg); max-width: 900px; width: 100%; }
+.auth-left { padding: 3rem 2.5rem; }
+.auth-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 2rem; }
+.auth-divider { width: 1px; height: 40px; background: #ddd; }
+.auth-title { font-family: var(--font-serif); font-size: 1.4rem; color: var(--text-dark); margin-bottom: 1.5rem; text-align: center; }
+.input-field { display: flex; align-items: center; gap: 10px; border: 1.5px solid #000; border-radius: 8px; padding: 11px 14px; margin-bottom: 1rem; background: white; }
+.input-field:focus-within { border-color: #1a1a1a; }
+.input-field span { color: var(--text-light); }
+.input-field input { flex: 1; border: none; outline: none; font-family: var(--font-sans); font-size: 0.9rem; color: var(--text); background: transparent; }
+.input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; border: none; border-radius: 8px; font-family: var(--font-sans); font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.95rem; }
+.btn-primary { background: #1a1a1a; color: white; width: 100%; }
+.btn-primary:hover { background: #000; }
+.btn-outline { background: transparent; border: 1.5px solid #ddd; color: var(--text); width: 100%; }
+.btn-outline:hover { border-color: #1a1a1a; color: #1a1a1a; }
+.auth-or { text-align: center; color: var(--text-light); margin: 1rem 0; font-size: 0.85rem; }
+.auth-footer { text-align: center; margin-top: 1rem; font-size: 0.85rem; color: var(--text-light); }
+.auth-footer a { color: #1a1a1a; cursor: pointer; font-weight: 600; }
+.auth-right { background: linear-gradient(135deg, rgba(26,26,26,0.12), rgba(26,26,26,0.04)); padding: 3rem 2.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.promo-card { background: white; border-radius: 12px; padding: 1.5rem; text-align: center; box-shadow: var(--shadow); }
+.promo-emoji { font-size: 64px; margin-bottom: 1rem; }
+.promo-title { font-family: var(--font-serif); font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem; }
+.promo-desc { font-size: 0.8rem; color: var(--text-light); line-height: 1.5; }
+
+/* DASHBOARD */
+.dashboard { display: grid; grid-template-columns: 240px 1fr; gap: 0; min-height: calc(100vh - 70px); }
+.sidebar { background: #1a1a1a; color: white; padding: 1.5rem 1rem; overflow-y: auto; max-height: calc(100vh - 70px); }
+.sidebar-title { font-family: var(--font-serif); font-weight: 700; font-size: 0.95rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 8px; color: var(--gold); }
+.sidebar-title span { background: var(--gold); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #1a1a1a; font-size: 12px; }
+.nav-btn { width: 100%; text-align: left; padding: 10px 10px; border: none; background: transparent; color: rgba(255,255,255,0.7); cursor: pointer; border-radius: 6px; margin-bottom: 8px; font-family: var(--font-sans); font-size: 0.85rem; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
+.nav-btn:hover { background: rgba(249,179,3,0.15); color: var(--gold); }
+.nav-btn.active { background: rgba(249,179,3,0.15); color: var(--gold); }
+.nav-btn span { font-size: 1rem; }
+.logout-btn { margin-top: auto; color: rgba(255,255,255,0.4); }
+
+/* MAIN CONTENT */
+.main { padding: 2rem; background: #f5f5f5; overflow-y: auto; max-height: calc(100vh - 70px); }
+.page-title { font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center; }
+
+/* STATS GRID */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+.stat-box { background: white; padding: 1.2rem; border-radius: 10px; box-shadow: var(--shadow); }
+.stat-label { font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+.stat-value { font-family: var(--font-serif); font-size: 1.8rem; font-weight: 700; color: var(--text-dark); }
+.stat-change { font-size: 0.75rem; color: var(--success); margin-top: 3px; }
+.stat-error { color: var(--error); }
+
+/* TABLES */
+.table-box { background: white; border-radius: 10px; padding: 1.5rem; box-shadow: var(--shadow); }
+.table-box h3 { font-family: var(--font-serif); font-size: 1.1rem; margin-bottom: 1rem; }
+.table-search { margin-bottom: 1.5rem; display: flex; gap: 10px; }
+.search-input { flex: 1; padding: 10px; border: 1.5px solid #ddd; border-radius: 6px; font-family: var(--font-sans); font-size: 0.9rem; }
+.search-input:focus { outline: none; border-color: #1a1a1a; }
+.table-wrapper { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+table th { background: #f9f9f9; padding: 12px; text-align: left; font-size: 0.75rem; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #eee; }
+table td { padding: 12px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+table tr:hover { background: #f9f9f9; }
+
+/* STATUS BADGES */
+.badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+.badge-success { background: #e8f5e9; color: var(--success); }
+.badge-warning { background: #fff3e0; color: var(--warning); }
+.badge-error { background: #ffebee; color: var(--error); }
+.badge-info { background: #e3f2fd; color: #1565c0; }
+
+/* ACTION BUTTONS */
+.action-btn { padding: 5px 10px; border-radius: 5px; border: none; font-size: 0.75rem; cursor: pointer; font-weight: 600; font-family: var(--font-sans); margin-right: 4px; }
+.btn-view { background: #e3f2fd; color: #1565c0; }
+.btn-approve { background: #e8f5e9; color: var(--success); }
+.btn-reject { background: #ffebee; color: var(--error); }
+.btn-suspend { background: #fff3e0; color: var(--warning); }
+.btn-refund { background: #f3e5f5; color: #7b1fa2; }
+
+/* MODAL */
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
+.modal.show { display: flex; }
+.modal-content { background: white; border-radius: 12px; padding: 2rem; max-width: 600px; width: 90%; position: relative; box-shadow: var(--shadow-lg); }
+.modal-title { font-family: var(--font-serif); font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem; }
+.close-btn { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-light); }
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; margin-bottom: 5px; letter-spacing: 0.5px; }
+.form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1.5px solid #ddd; border-radius: 6px; font-family: var(--font-sans); font-size: 0.9rem; color: var(--text); outline: none; }
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: #1a1a1a; }
+.modal-actions { display: flex; gap: 10px; margin-top: 1.5rem; }
+.modal-actions .btn { width: 100%; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1a1a1a; color: white; padding: 12px 24px; border-radius: 50px; font-size: 0.85rem; display: none; z-index: 9999; box-shadow: var(--shadow-lg); }
+.toast.show { display: block; animation: slideUp 0.3s ease; }
+@keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+/* EMPTY STATE */
+.empty-state { text-align: center; padding: 3rem; color: var(--text-light); }
+.empty-state-icon { font-size: 4rem; margin-bottom: 1rem; }
+
+/* FILTER BUTTONS */
+.filter-btns { display: flex; gap: 8px; margin-bottom: 1rem; }
+.filter-btn { padding: 7px 14px; border: 1px solid #ddd; border-radius: 6px; background: white; cursor: pointer; font-size: 0.85rem; font-family: var(--font-sans); }
+.filter-btn.active { background: #1a1a1a; color: white; border-color: #1a1a1a; }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- LOGIN PAGE -->
+<div class="page show" id="page-login">
+<div class="auth-bg">
+<div class="auth-card">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <div class="logo-icon">F</div>
+      <div class="auth-divider"></div>
+      <div>
+        <div class="logo-text">foodiehub</div>
+        <div class="logo-sub">Admin Portal</div>
+      </div>
+    </div>
+    <div class="auth-title">Admin Login</div>
+    <div class="input-field">
+      <span>📧</span>
+      <input type="email" placeholder="Email" id="email-login" value="admin@foodiehub.com">
+    </div>
+    <div class="input-field">
+      <span>🔒</span>
+      <input type="password" placeholder="Password" id="pass-login" value="admin123">
+    </div>
+    <button class="btn btn-primary" onclick="login()">Login</button>
+    <div class="auth-or">or</div>
+    <button class="btn btn-outline" onclick="notify('⚠️ Admin signup disabled for security')">Request Admin Access</button>
+    <div class="auth-footer"><a onclick="notify('🔄 Password reset coming soon')">Forgot password?</a></div>
+  </div>
+  <div class="auth-right">
+    <div class="promo-card">
+      <div class="promo-emoji">🛡️</div>
+      <div class="promo-title">Admin Only</div>
+      <div class="promo-desc">Manage platform operations, handle disputes, and maintain platform integrity.</div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- ADMIN DASHBOARD PAGE -->
+<div class="page" id="page-dashboard">
+<header class="header">
+  <div class="logo-area" onclick="goTab('tab-dashboard')">
+    <div class="logo-icon">F</div>
+    <div>
+      <div class="logo-text">foodiehub</div>
+      <div class="logo-sub">Admin Portal</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="header-btn" onclick="notify('📞 Support coming soon')">Help</button>
+    <div class="user-icon" onclick="logout()">AD</div>
+  </div>
+</header>
+
+<div class="dashboard">
+  <div class="sidebar">
+    <div class="sidebar-title"><span>⚙️</span> Admin</div>
+    <button class="nav-btn active" onclick="goTab('tab-dashboard')"><span>📊</span>Dashboard</button>
+    <button class="nav-btn" onclick="goTab('tab-users')"><span>👥</span>Users</button>
+    <button class="nav-btn" onclick="goTab('tab-restaurants')"><span>🍛</span>Restaurants</button>
+    <button class="nav-btn" onclick="goTab('tab-orders')"><span>📦</span>Orders</button>
+    <button class="nav-btn" onclick="goTab('tab-payments')"><span>💳</span>Payments</button>
+    <button class="nav-btn" onclick="goTab('tab-support')"><span>💬</span>Support Tickets</button>
+    <button class="nav-btn" onclick="goTab('tab-reports')"><span>📈</span>Reports</button>
+    <button class="nav-btn logout-btn" onclick="logout()"><span>🚪</span>Logout</button>
+  </div>
+
+  <div class="main">
+    <!-- DASHBOARD TAB -->
+    <div class="content-section show" id="tab-dashboard">
+      <div class="page-title">
+        <div>Platform Overview 📊</div>
+        <button class="btn btn-outline" style="width: auto; padding: 8px 14px; font-size: 0.85rem;" onclick="notify('🔄 Refreshing stats...')">Refresh</button>
+      </div>
+      
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-label">Total Orders Today</div>
+          <div class="stat-value">2,847</div>
+          <div class="stat-change">↑ 23% vs yesterday</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Total Revenue</div>
+          <div class="stat-value">₹4.2L</div>
+          <div class="stat-change">↑ 18% vs yesterday</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Active Users</div>
+          <div class="stat-value">12,340</div>
+          <div class="stat-change">↑ 5% this week</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Active Restaurants</div>
+          <div class="stat-value">342</div>
+          <div class="stat-change stat-error">2 suspended today</div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <div class="table-box">
+          <h3>Recent Orders 📦</h3>
+          <div class="table-wrapper">
+            <table>
+              <th>Order ID</th><th>Customer</th><th>Amount</th><th>Status</th><th>Action</th>
+              <tr>
+                <td>#9842</td><td>Priya S</td><td>₹730</td><td><span class="badge badge-success">Delivered</span></td><td><button class="action-btn btn-view" onclick="notify('👁️ Viewing order details...')">View</button></td>
+              </tr>
+              <tr>
+                <td>#9841</td><td>Rajesh K</td><td>₹1,240</td><td><span class="badge badge-warning">Pending</span></td><td><button class="action-btn btn-view" onclick="notify('👁️ Viewing order details...')">View</button></td>
+              </tr>
+              <tr>
+                <td>#9840</td><td>Ananya M</td><td>₹560</td><td><span class="badge badge-error">Cancelled</span></td><td><button class="action-btn btn-refund" onclick="openRefundModal()">Refund</button></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="table-box">
+          <h3>Pending Approvals ⏳</h3>
+          <div class="table-wrapper">
+            <table>
+              <th>Type</th><th>Name</th><th>Action</th>
+              <tr>
+                <td><span class="badge badge-info">Restaurant</span></td><td>Taj Mahal Foods</td><td><button class="action-btn btn-approve" onclick="notify('✅ Restaurant approved!')">Approve</button><button class="action-btn btn-reject" onclick="notify('❌ Restaurant rejected')">Reject</button></td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-info">Driver</span></td><td>Amit Kumar</td><td><button class="action-btn btn-approve" onclick="notify('✅ Driver approved!')">Approve</button><button class="action-btn btn-reject" onclick="notify('❌ Driver rejected')">Reject</button></td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- USERS TAB -->
+    <div class="content-section" id="tab-users">
+      <div class="page-title">User Management 👥</div>
+      
+      <div class="table-box">
+        <div class="table-search">
+          <input type="text" class="search-input" placeholder="Search by name, email, or phone">
+          <select style="padding: 10px; border: 1.5px solid #ddd; border-radius: 6px; font-family: var(--font-sans); cursor: pointer;">
+            <option>All Users</option>
+            <option>Active</option>
+            <option>Suspended</option>
+            <option>Inactive</option>
+          </select>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <th>User ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Orders</th><th>Total Spent</th><th>Status</th><th>Actions</th>
+            <tr>
+              <td>#U001</td><td>Rajesh Kumar</td><td>rajesh@email.com</td><td>98765 43210</td><td>47</td><td>₹12,430</td><td><span class="badge badge-success">Active</span></td><td><button class="action-btn btn-view" onclick="notify('👁️ Viewing user profile...')">View</button><button class="action-btn btn-suspend" onclick="notify('⚠️ User suspended')">Suspend</button></td>
+            </tr>
+            <tr>
+              <td>#U002</td><td>Priya Singh</td><td>priya@email.com</td><td>98765 12340</td><td>82</td><td>₹28,950</td><td><span class="badge badge-success">Active</span></td><td><button class="action-btn btn-view" onclick="notify('👁️ Viewing user profile...')">View</button><button class="action-btn btn-suspend" onclick="notify('⚠️ User suspended')">Suspend</button></td>
+            </tr>
+            <tr>
+              <td>#U003</td><td>Ananya Mehta</td><td>ananya@email.com</td><td>98765 56780</td><td>2</td><td>₹890</td><td><span class="badge badge-warning">Suspended</span></td><td><button class="action-btn btn-view" onclick="notify('👁️ Viewing user profile...')">View</button><button class="action-btn btn-approve" onclick="notify('✅ User unsuspended')">Unsuspend</button></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESTAURANTS TAB -->
+    <div class="content-section" id="tab-restaurants">
+      <div class="page-title">
+        <div>Restaurant Management 🍛</div>
+        <button class="btn btn-primary" style="width: auto; padding: 10px 20px;" onclick="notify('➕ Add restaurant coming soon')">+ Add Restaurant</button>
+      </div>
+      
+      <div class="table-box">
+        <div class="table-search">
+          <input type="text" class="search-input" placeholder="Search restaurants...">
+          <select style="padding: 10px; border: 1.5px solid #ddd; border-radius: 6px; font-family: var(--font-sans); cursor: pointer;">
+            <option>All Restaurants</option>
+            <option>Approved</option>
+            <option>Pending</option>
+            <option>Suspended</option>
+          </select>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <th>Restaurant</th><th>Owner</th><th>Cuisine</th><th>Orders</th><th>Rating</th><th>Status</th><th>Actions</th>
+            <tr>
+              <td>Spice Garden</td><td>Raj Kumar</td><td>Indian</td><td>234</td><td>4.8 ⭐</td><td><span class="badge badge-success">Active</span></td><td><button class="action-btn btn-view" onclick="notify('👁️ Viewing restaurant...')">View</button><button class="action-btn btn-suspend" onclick="notify('⚠️ Restaurant suspended')">Suspend</button></td>
+            </tr>
+            <tr>
+              <td>Pizza Paradise</td><td>Marco D</td><td>Italian</td><td>412</td><td>4.6 ⭐</td><td><span class="badge badge-success">Active</span></td><td><button class="action-btn btn-view" onclick="notify('👁️ Viewing restaurant...')">View</button><button class="action-btn btn-suspend" onclick="notify('⚠️ Restaurant suspended')">Suspend</button></td>
+            </tr>
+            <tr>
+              <td>Taj Mahal Foods</td><td>Ahmed Ali</td><td>Indian</td><td>0</td><td>-</td><td><span class="badge badge-info">Pending</span></td><td><button class="action-btn btn-approve" onclick="notify('✅ Restaurant approved!')">Approve</button><button class="action-btn btn-reject" onclick="notify('❌ Restaurant rejected')">Reject</button></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDERS TAB -->
+    <div class="content-section" id="tab-orders">
+      <div class="page-title">Order Management 📦</div>
+      
+      <div class="filter-btns">
+        <button class="filter-btn active" onclick="notify('🔄 Filtering...')">All</button>
+        <button class="filter-btn" onclick="notify('🔄 Filtering...')">Placed</button>
+        <button class="filter-btn" onclick="notify('🔄 Filtering...')">Confirmed</button>
+        <button class="filter-btn" onclick="notify('🔄 Filtering...')">Delivered</button>
+        <button class="filter-btn" onclick="notify('🔄 Filtering...')">Cancelled</button>
+      </div>
+
+      <div class="table-box">
+        <div class="table-search">
+          <input type="text" class="search-input" placeholder="Search by order ID...">
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <th>Order ID</th><th>Customer</th><th>Restaurant</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th>
+            <tr>
+              <td>#9842</td><td>Priya Singh</td><td>Spice Garden</td><td>₹730</td><td><span class="badge badge-success">Delivered</span></td><td>Dec 16</td><td><button class="action-btn btn-view" onclick="notify('👁️ Viewing order details...')">View</button></td>
+            </tr>
+            <tr>
+              <td>#9841</td><td>Rajesh Kumar</td><td>Pizza Paradise</td><td>₹1,240</td><td><span class="badge badge-warning">Out for Delivery</span></td><td>Dec 16</td><td><button class="action-btn btn-view" onclick="notify('👁️ Viewing order details...')">View</button><button class="action-btn btn-suspend" onclick="notify('📍 Tracking order...')">Track</button></td>
+            </tr>
+            <tr>
+              <td>#9840</td><td>Ananya Mehta</td><td>Spice Garden</td><td>₹560</td><td><span class="badge badge-error">Cancelled</span></td><td>Dec 15</td><td><button class="action-btn btn-refund" onclick="openRefundModal()">Refund</button><button class="action-btn btn-view" onclick="notify('👁️ Viewing order details...')">View</button></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYMENTS TAB -->
+    <div class="content-section" id="tab-payments">
+      <div class="page-title">Payment Management 💳</div>
+      
+      <div class="table-box">
+        <div class="table-search">
+          <input type="text" class="search-input" placeholder="Search by transaction ID...">
+          <select style="padding: 10px; border: 1.5px solid #ddd; border-radius: 6px; font-family: var(--font-sans); cursor: pointer;">
+            <option>All</option>
+            <option>Success</option>
+            <option>Pending</option>
+            <option>Failed</option>
+          </select>
+        </div>
+
+        <div class="table-wrapper">
+          <table>
+            <th>Transaction ID</th><th>Order ID</th><th>Customer</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th><th>Actions</th>
+            <tr>
+              <td>TXN001</td><td>#9842</td><td>Priya Singh</td><td>₹730</td><td>Card</td><td><span class="badge badge-success">Success</span></td><td>Dec 16</td><td><button class="action-btn btn-view" onclick="notify('👁️ Viewing transaction...')">View</button></td>
+            </tr>
+            <tr>
+              <td>TXN002</td><td>#9841</td><td>Rajesh Kumar</td><td>₹1,240</td><td>UPI</td><td><span class="badge badge-success">Success</span></td><td>Dec 16</td><td><button class="action-btn btn-view" onclick="notify('👁️ Viewing transaction...')">View</button></td>
+            </tr>
+            <tr>
+              <td>TXN003</td><td>#9839</td><td>Amit Das</td><td>₹450</td><td>Wallet</td><td><span class="badge badge-error">Failed</span></td><td>Dec 15</td><td><button class="action-btn btn-view" onclick="notify('👁️ Viewing transaction...')">View</button><button class="action-btn btn-approve" onclick="notify('🔄 Retrying payment...')">Retry</button></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUPPORT TICKETS TAB -->
+    <div class="content-section" id="tab-support">
+      <div class="page-title">Support Tickets 💬</div>
+      
+      <div class="filter-btns">
+        <button class="filter-btn active" onclick="notify('🔄 Filtering...')">Open</button>
+        <button class="filter-btn" onclick="notify('🔄 Filtering...')">In Progress</button>
+        <button class="filter-btn" onclick="notify('🔄 Filtering...')">Resolved</button>
+      </div>
+
+      <div class="table-box">
+        <div class="table-wrapper">
+          <table>
+            <th>Ticket ID</th><th>Customer</th><th>Category</th><th>Issue</th><th>Status</th><th>Created</th><th>Actions</th>
+            <tr>
+              <td>#SUP001</td><td>Priya Singh</td><td>Order</td><td>Order not delivered</td><td><span class="badge badge-warning">Open</span></td><td>Dec 16</td><td><button class="action-btn btn-view" onclick="openTicketModal()">View</button><button class="action-btn btn-refund" onclick="notify('💰 Refund issued')">Refund</button></td>
+            </tr>
+            <tr>
+              <td>#SUP002</td><td>Rajesh Kumar</td><td>Payment</td><td>Charged twice</td><td><span class="badge badge-warning">In Progress</span></td><td>Dec 15</td><td><button class="action-btn btn-view" onclick="openTicketModal()">View</button></td>
+            </tr>
+            <tr>
+              <td>#SUP003</td><td>Ananya Mehta</td><td>Food Quality</td><td>Food was cold</td><td><span class="badge badge-success">Resolved</span></td><td>Dec 14</td><td><button class="action-btn btn-view" onclick="openTicketModal()">View</button></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS TAB -->
+    <div class="content-section" id="tab-reports">
+      <div class="page-title">Reports & Analytics 📈</div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+        <div class="table-box">
+          <h3>Generate Reports</h3>
+          <div class="form-group">
+            <label>Report Type</label>
+            <select>
+              <option>Daily Revenue</option>
+              <option>Weekly Summary</option>
+              <option>Restaurant Performance</option>
+              <option>Driver Performance</option>
+              <option>User Activity</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Date Range</label>
+            <input type="date">
+            <span style="color: var(--text-light); font-size: 0.8rem; margin-top: 3px; display: block;">to</span>
+            <input type="date" style="margin-top: 5px;">
+          </div>
+          <button class="btn btn-primary" onclick="notify('📥 Report generated! Download starting...')">Generate Report</button>
+        </div>
+
+        <div class="table-box">
+          <h3>Export Data</h3>
+          <button class="btn btn-outline" style="margin-bottom: 0.5rem;" onclick="notify('📥 Exporting orders...')">📊 Export Orders (CSV)</button>
+          <button class="btn btn-outline" style="margin-bottom: 0.5rem; margin-top: 0.5rem;" onclick="notify('📥 Exporting users...')">👥 Export Users (CSV)</button>
+          <button class="btn btn-outline" style="margin-bottom: 0.5rem; margin-top: 0.5rem;" onclick="notify('📥 Exporting restaurants...')">🍛 Export Restaurants (CSV)</button>
+          <button class="btn btn-outline" style="margin-bottom: 0.5rem; margin-top: 0.5rem;" onclick="notify('📥 Exporting payments...')">💳 Export Payments (CSV)</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div>
+
+<!-- REFUND MODAL -->
+<div class="modal" id="modal-refund">
+<div class="modal-content">
+  <button class="close-btn" onclick="closeRefundModal()">✕</button>
+  <div class="modal-title">Process Refund 💰</div>
+  <div class="form-group">
+    <label>Order ID</label>
+    <input type="text" value="#9840" readonly>
+  </div>
+  <div class="form-group">
+    <label>Customer</label>
+    <input type="text" value="Ananya Mehta" readonly>
+  </div>
+  <div class="form-group">
+    <label>Amount to Refund</label>
+    <input type="number" value="560" readonly>
+  </div>
+  <div class="form-group">
+    <label>Refund Reason</label>
+    <select>
+      <option>Order Not Delivered</option>
+      <option>Wrong Order Delivered</option>
+      <option>Food Quality Issue</option>
+      <option>Customer Request</option>
+      <option>Payment Error</option>
+      <option>Other</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Notes (Optional)</label>
+    <textarea placeholder="Add notes about this refund..." style="min-height: 80px;"></textarea>
+  </div>
+  <div class="modal-actions">
+    <button class="btn btn-primary" onclick="processRefund()">Process Refund</button>
+    <button class="btn btn-outline" onclick="closeRefundModal()">Cancel</button>
+  </div>
+</div>
+</div>
+
+<!-- TICKET MODAL -->
+<div class="modal" id="modal-ticket">
+<div class="modal-content">
+  <button class="close-btn" onclick="closeTicketModal()">✕</button>
+  <div class="modal-title">Support Ticket Details</div>
+  <div style="background: #f9f9f9; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+    <strong>Ticket ID:</strong> #SUP001<br>
+    <strong>Customer:</strong> Priya Singh<br>
+    <strong>Category:</strong> Order Issue<br>
+    <strong>Status:</strong> <span class="badge badge-warning">Open</span><br>
+    <strong>Created:</strong> Dec 16, 2024 at 2:30 PM
+  </div>
+  <div style="margin-bottom: 1rem;">
+    <strong>Issue Description:</strong><br>
+    <p style="color: var(--text-light); margin-top: 0.5rem;">Order #9840 was marked as delivered but I didn't receive it. The driver might have delivered to the wrong address. Please help me recover my food or process a refund.</p>
+  </div>
+  <div class="form-group">
+    <label>Resolution</label>
+    <select>
+      <option>--- Select ---</option>
+      <option>Full Refund</option>
+      <option>Replacement Order Credit</option>
+      <option>Partial Refund + Credit</option>
+      <option>No Action Required</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Admin Response</label>
+    <textarea placeholder="Type your response..." style="min-height: 80px;"></textarea>
+  </div>
+  <div class="modal-actions">
+    <button class="btn btn-primary" onclick="resolveTicket()">Resolve Ticket</button>
+    <button class="btn btn-outline" onclick="closeTicketModal()">Close</button>
+  </div>
+</div>
+</div>
+
+<script>
+function goTab(id) {
+  document.querySelectorAll('.content-section').forEach(s => s.classList.remove('show'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  
+  document.getElementById(id).classList.add('show');
+  event.target.closest('.nav-btn').classList.add('active');
+}
+
+function login() {
+  const email = document.getElementById('email-login').value;
+  const pass = document.getElementById('pass-login').value;
+  if (!email || !pass) {
+    notify('❌ Fill all fields');
+    return;
+  }
+  document.getElementById('page-login').classList.remove('show');
+  document.getElementById('page-dashboard').classList.add('show');
+  notify('🎉 Admin login successful!');
+}
+
+function logout() {
+  if (confirm('Logout from admin panel?')) {
+    document.getElementById('page-dashboard').classList.remove('show');
+    document.getElementById('page-login').classList.add('show');
+    notify('👋 Logged out from admin panel');
+  }
+}
+
+function openRefundModal() {
+  document.getElementById('modal-refund').classList.add('show');
+}
+
+function closeRefundModal() {
+  document.getElementById('modal-refund').classList.remove('show');
+}
+
+function processRefund() {
+  closeRefundModal();
+  notify('✅ Refund processed! Amount credited to customer wallet.');
+}
+
+function openTicketModal() {
+  document.getElementById('modal-ticket').classList.add('show');
+}
+
+function closeTicketModal() {
+  document.getElementById('modal-ticket').classList.remove('show');
+}
+
+function resolveTicket() {
+  closeTicketModal();
+  notify('✅ Support ticket resolved!');
+}
+
+function notify(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
