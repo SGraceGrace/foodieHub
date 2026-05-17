@@ -116,7 +116,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     for (const r of restaurants) {
       const firstItem = r.menu?.[0]?.items?.[0];
       if (!firstItem) continue;
-      const cuisine = r.cuisine[0] ?? 'default';
+      const cuisine = r.cuisine?.[0] ?? 'default';
       dishes.push({
         emoji: CUISINE_EMOJI[cuisine] ?? CUISINE_EMOJI['default'],
         name: firstItem.name,
@@ -132,11 +132,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   getEmoji(r: Restaurant): string {
-    return CUISINE_EMOJI[r.cuisine[0]] ?? CUISINE_EMOJI['default'];
+    return CUISINE_EMOJI[r.cuisine?.[0]] ?? CUISINE_EMOJI['default'];
   }
 
   getBg(r: Restaurant): string {
-    return CUISINE_BG[r.cuisine[0]] ?? CUISINE_BG['default'];
+    return CUISINE_BG[r.cuisine?.[0]] ?? CUISINE_BG['default'];
   }
 
   starsArray(rating: number): boolean[] {
