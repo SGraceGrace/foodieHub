@@ -375,6 +375,26 @@ These are the questions you'll get — here's what to say:
 
 ---
 
+## 📐 Coding Conventions (Always Follow These)
+
+### Pagination — mandatory for every table
+Every API endpoint that returns a list **and** every UI table must be paginated. No exceptions.
+
+**Backend (Spring Boot):**
+- Controller accepts `@RequestParam(defaultValue = "0") int page` and `@RequestParam(defaultValue = "10") int size`
+- Service receives a `Pageable` (`PageRequest.of(page, size)`)
+- Repository uses Spring Data `Page<T>` return types
+- Response is always wrapped in `PaginatedResponse<T>` (the shared DTO with `content`, `currentPage`, `totalPages`, `totalElements`, `pageSize`)
+
+**Frontend (Angular):**
+- Service method sends `page` and `size` as `HttpParams`
+- Return type is `Observable<ApiResponse<PaginatedResponse<T>>>`
+- Component holds a `pagination` state object: `{ currentPage, totalPages, totalElements, pageSize }`
+- Template renders prev/next page buttons and a "Showing X–Y of Z" info line
+- Always assign `p.content ?? []` (never `p.content` directly) to guard against undefined
+
+---
+
 ## ✅ Definition of Done (POC)
 
 Your POC is interview-ready when:
