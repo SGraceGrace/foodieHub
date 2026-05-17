@@ -6,6 +6,7 @@ import com.project.foodieHub.dto.SignUpRequestDTO;
 import com.project.foodieHub.entity.User;
 import com.project.foodieHub.enums.Role;
 import com.project.foodieHub.enums.UserStatus;
+import com.project.foodieHub.exception_handler.AccountPendingException;
 import com.project.foodieHub.exception_handler.BadCredentialsException;
 import com.project.foodieHub.exception_handler.CommonException;
 import com.project.foodieHub.exception_handler.UserAlreadyExistsException;
@@ -44,6 +45,12 @@ public class AuthServiceImpl implements AuthService {
   @Override
   @Transactional
   public JwtResponseDTO login(LoginRequestDTO loginRequestDTO) {
+    userRepo.findByUserName(loginRequestDTO.getUsername())
+        .filter(u -> u.getStatus() == UserStatus.PENDING)
+        .ifPresent(u -> {
+          throw new AccountPendingException("Your account is pending admin approval. You'll be notified once approved.");
+        });
+
     try {
       authenticationManager.authenticate(
           new UsernamePasswordAuthenticationToken(loginRequestDTO.getUsername(),

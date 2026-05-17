@@ -14,6 +14,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
+  @ExceptionHandler(AccountPendingException.class)
+  public ResponseEntity<BaseAPIResponse> accountPendingException(AccountPendingException e) {
+    var response = new BaseAPIResponse();
+    response.setErrorMsg(List.of(e.getMessage()));
+    response.setHttpCode(HttpStatus.FORBIDDEN.value());
+    return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+  }
+
   @ExceptionHandler(BadCredentialsException.class)
   public ResponseEntity<BaseAPIResponse> badCredentialsException(BadCredentialsException e) {
     var response = new BaseAPIResponse();

@@ -11,9 +11,13 @@ import com.project.foodieHub.repo.RoleRepo;
 import com.project.foodieHub.repo.UserRepo;
 import com.project.foodieHub.service.PartnerService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +49,12 @@ public class PartnerServiceImpl implements PartnerService {
         owner.setStatus(UserStatus.PENDING);
         owner.setAuthProvider(AuthProvider.LOCAL);
 
-        userRepo.save(owner);
+        var tempAuth = new UsernamePasswordAuthenticationToken(dto.getEmail(), null, Collections.emptyList());
+        SecurityContextHolder.getContext().setAuthentication(tempAuth);
+        try {
+            userRepo.save(owner);
+        } finally {
+            SecurityContextHolder.clearContext();
+        }
     }
 }
