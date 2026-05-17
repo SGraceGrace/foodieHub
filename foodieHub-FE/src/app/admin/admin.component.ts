@@ -5,7 +5,7 @@ import { ToastrService } from 'ngx-toastr';
 import { AdminService, CreateAdminRequest, SlideRequest } from './admin.service';
 import { ActivityLog, AdminUserResponse, PaginatedResponse, Slide } from '../model/restaurant.model';
 
-type Tab = 'dashboard' | 'users' | 'restaurants' | 'orders' | 'payments' | 'support' | 'reports' | 'slides' | 'activity-log';
+type Tab = 'dashboard' | 'users' | 'restaurants' | 'restaurant-owners' | 'orders' | 'payments' | 'support' | 'reports' | 'slides' | 'activity-log';
 
 @Component({
   selector: 'app-admin',
@@ -30,6 +30,11 @@ export class AdminComponent implements OnInit {
   createAdminForm: CreateAdminRequest = this.emptyAdminForm();
   adminFormErrors = { firstName: '', email: '', password: '' };
 
+  // Restaurant Owners
+  owners: AdminUserResponse[] = [];
+  ownerStatusFilter = 'PENDING';
+  ownerPagination = { currentPage: 0, totalPages: 0, totalElements: 0, pageSize: 10 };
+
   // Activity Log
   activityLogs: ActivityLog[] = [];
 
@@ -47,6 +52,7 @@ export class AdminComponent implements OnInit {
   goTab(tab: Tab) {
     this.activeTab = tab;
     if (tab === 'users') this.loadUsers();
+    if (tab === 'restaurant-owners') this.loadOwners();
     if (tab === 'slides') this.loadSlides();
     if (tab === 'activity-log') this.loadActivityLogs();
   }
@@ -96,6 +102,55 @@ export class AdminComponent implements OnInit {
         this.toastr.success('User unsuspended.');
       },
       error: () => this.toastr.error('Failed to unsuspend user.'),
+    });
+  }
+
+  // ── Restaurant Owners ────────────────────────────────────────────
+
+  loadOwners(page = 0) {
+    this.adminService.getRestaurantOwners(this.ownerStatusFilter || undefined, page, this.ownerPagination.pageSize).subscribe({
+      next: (res) => {
+        const p: PaginatedResponse<AdminUserResponse> = res.data;
+        this.owners = p.content;
+        this.ownerPagination = { currentPage: p.currentPage, totalPages: p.totalPages, totalElements: p.totalElements, pageSize: p.pageSize };
+      },
+      error: () => this.toastr.error('Failed to load restaurant owners.'),
+    });
+  }
+
+  get ownerPageNumbers(): number[] {
+    const { currentPage, totalPages } = this.ownerPagination;
+    const pages: number[] = [];
+    for (let i = Math.max(0, currentPage - 2); i <= Math.min(totalPages - 1, currentPage + 2); i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  ownerPagingStart(): number { return this.ownerPagination.currentPage * this.ownerPagination.pageSize + 1; }
+  ownerPagingEnd(): number { return Math.min((this.ownerPagination.currentPage + 1) * this.ownerPagination.pageSize, this.ownerPagination.totalElements); }
+
+  approveOwner(owner: AdminUserResponse) {
+    if (!confirm(`Approve ${owner.restaurantName || owner.firstName + ' ' + owner.lastName}?`)) return;
+    this.adminService.approveOwner(owner.id).subscribe({
+      next: (res) => {
+        const idx = this.owners.findIndex((o) => o.id === owner.id);
+        if (idx !== -1) this.owners[idx] = res.data;
+        this.toastr.success('Owner approved.');
+      },
+      error: () => this.toastr.error('Failed to approve owner.'),
+    });
+  }
+
+  rejectOwner(owner: AdminUserResponse) {
+    if (!confirm(`Reject ${owner.restaurantName || owner.firstName + ' ' + owner.lastName}?`)) return;
+    this.adminService.rejectOwner(owner.id).subscribe({
+      next: (res) => {
+        const idx = this.owners.findIndex((o) => o.id === owner.id);
+        if (idx !== -1) this.owners[idx] = res.data;
+        this.toastr.success('Owner rejected.');
+      },
+      error: () => this.toastr.error('Failed to reject owner.'),
     });
   }
 
@@ -170,6 +225,8 @@ export class AdminComponent implements OnInit {
       CREATE_ADMIN: 'Created Admin',
       SUSPEND_USER: 'Suspended User',
       UNSUSPEND_USER: 'Unsuspended User',
+      APPROVE_OWNER: 'Approved Owner',
+      REJECT_OWNER: 'Rejected Owner',
     };
     return labels[action] ?? action;
   }
@@ -178,6 +235,8 @@ export class AdminComponent implements OnInit {
     if (action === 'CREATE_ADMIN') return 'log-badge create';
     if (action === 'SUSPEND_USER') return 'log-badge suspend';
     if (action === 'UNSUSPEND_USER') return 'log-badge restore';
+    if (action === 'APPROVE_OWNER') return 'log-badge create';
+    if (action === 'REJECT_OWNER') return 'log-badge suspend';
     return 'log-badge';
   }
 

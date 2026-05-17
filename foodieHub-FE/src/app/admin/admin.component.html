@@ -13,6 +13,9 @@
     <button class="nav-btn" [class.active]="activeTab === 'restaurants'" (click)="goTab('restaurants')">
       <span>🍛</span> Restaurants
     </button>
+    <button class="nav-btn" [class.active]="activeTab === 'restaurant-owners'" (click)="goTab('restaurant-owners')">
+      <span>🤝</span> Restaurant Owners
+    </button>
     <button class="nav-btn" [class.active]="activeTab === 'orders'" (click)="goTab('orders')">
       <span>📦</span> Orders
     </button>
@@ -168,6 +171,66 @@
             <tr><td colspan="7" class="empty-cell">No restaurants found</td></tr>
           </tbody>
         </table>
+      </div>
+    </ng-container>
+
+    <!-- RESTAURANT OWNERS TAB -->
+    <ng-container *ngIf="activeTab === 'restaurant-owners'">
+      <div class="page-title">Restaurant Owner Approvals</div>
+      <div class="table-box">
+        <div class="table-toolbar">
+          <select class="filter-select" [(ngModel)]="ownerStatusFilter" (change)="loadOwners(0)">
+            <option value="PENDING">Pending</option>
+            <option value="ACTIVE">Approved</option>
+            <option value="INACTIVE">Rejected</option>
+            <option value="">All</option>
+          </select>
+        </div>
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Owner Name</th><th>Email</th><th>Phone</th><th>Restaurant</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let owner of owners">
+              <td>#{{ owner.id }}</td>
+              <td>{{ owner.firstName }} {{ owner.lastName }}</td>
+              <td>{{ owner.email }}</td>
+              <td>{{ owner.phone || '—' }}</td>
+              <td>{{ owner.restaurantName || '—' }}</td>
+              <td>
+                <span class="badge"
+                  [class.warning]="owner.status === 'PENDING'"
+                  [class.success]="owner.status === 'ACTIVE'"
+                  [class.error]="owner.status === 'INACTIVE'">
+                  {{ owner.status === 'PENDING' ? 'Pending' : owner.status === 'ACTIVE' ? 'Approved' : 'Rejected' }}
+                </span>
+              </td>
+              <td>
+                <button class="action-btn approve" *ngIf="owner.status === 'PENDING'" (click)="approveOwner(owner)">Approve</button>
+                <button class="action-btn suspend" *ngIf="owner.status === 'PENDING'" (click)="rejectOwner(owner)">Reject</button>
+                <button class="action-btn approve" *ngIf="owner.status === 'INACTIVE'" (click)="approveOwner(owner)">Approve</button>
+              </td>
+            </tr>
+            <tr *ngIf="owners.length === 0">
+              <td colspan="7" class="empty-cell">No restaurant owners found</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="table-footer" *ngIf="ownerPagination.totalElements > 0">
+          <div class="pagination-info">
+            Showing {{ ownerPagingStart() }}–{{ ownerPagingEnd() }} of {{ ownerPagination.totalElements }} owners
+          </div>
+          <div class="pagination" *ngIf="ownerPagination.totalPages > 1">
+            <button class="page-btn" [disabled]="ownerPagination.currentPage === 0"
+              (click)="loadOwners(ownerPagination.currentPage - 1)">&#8249;</button>
+            <button class="page-btn" *ngFor="let p of ownerPageNumbers"
+              [class.active]="p === ownerPagination.currentPage"
+              (click)="loadOwners(p)">{{ p + 1 }}</button>
+            <button class="page-btn" [disabled]="ownerPagination.currentPage === ownerPagination.totalPages - 1"
+              (click)="loadOwners(ownerPagination.currentPage + 1)">&#8250;</button>
+          </div>
+        </div>
       </div>
     </ng-container>
 

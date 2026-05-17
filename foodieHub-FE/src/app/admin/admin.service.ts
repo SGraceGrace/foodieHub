@@ -78,4 +78,22 @@ export class AdminService {
   getActivityLogs(): Observable<ApiResponse<ActivityLog[]>> {
     return this.http.get<ApiResponse<ActivityLog[]>>(this.logsBase);
   }
+
+  // Restaurant Owners
+  private ownersBase = `${environment.apiBaseUrl}/api/v1/admin/restaurant-owners`;
+
+  getRestaurantOwners(status?: string, page = 0, size = 10): Observable<ApiResponse<PaginatedResponse<AdminUserResponse>>> {
+    let params = new HttpParams();
+    if (status) params = params.set('status', status);
+    params = params.set('page', page.toString()).set('size', size.toString());
+    return this.http.get<ApiResponse<PaginatedResponse<AdminUserResponse>>>(this.ownersBase, { params });
+  }
+
+  approveOwner(id: number): Observable<ApiResponse<AdminUserResponse>> {
+    return this.http.put<ApiResponse<AdminUserResponse>>(`${this.ownersBase}/${id}/approve`, {});
+  }
+
+  rejectOwner(id: number): Observable<ApiResponse<AdminUserResponse>> {
+    return this.http.put<ApiResponse<AdminUserResponse>>(`${this.ownersBase}/${id}/reject`, {});
+  }
 }
