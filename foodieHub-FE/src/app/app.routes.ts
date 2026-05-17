@@ -3,6 +3,7 @@ import { NotFoundComponent } from './not-found/not-found.component';
 import { guestGuard } from './core/guard/guest.guard';
 import { authGuard } from './core/guard/auth.guard';
 import { adminGuard } from './core/guard/admin.guard';
+import { partnerGuard } from './partner/partner.guard';
 
 export const routes: Routes = [
   {
@@ -50,6 +51,22 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./admin/admin.component').then((m) => m.AdminComponent),
     canActivate: [adminGuard],
+  },
+  {
+    path: 'partner/login',
+    loadComponent: () =>
+      import('./partner/partner-login/partner-login.component').then((m) => m.PartnerLoginComponent),
+  },
+  {
+    path: 'partner/signup',
+    loadComponent: () =>
+      import('./partner/partner-signup/partner-signup.component').then((m) => m.PartnerSignupComponent),
+  },
+  {
+    path: 'partner',
+    loadComponent: () =>
+      import('./partner/partner-dashboard/partner-dashboard.component').then((m) => m.PartnerDashboardComponent),
+    canActivate: [partnerGuard],
   },
   {
     path: '**',

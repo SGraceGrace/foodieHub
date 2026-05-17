@@ -1,0 +1,50 @@
+<div class="auth-bg">
+  <div class="auth-card">
+
+    <div class="auth-left">
+      <div class="auth-brand">
+        <div class="logo-icon">F</div>
+        <div class="divider"></div>
+        <div>
+          <div class="brand-name">foodiehub</div>
+          <div class="brand-sub">Restaurant Partner</div>
+        </div>
+      </div>
+
+      <h2 class="auth-title">Welcome Back!</h2>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="input-field">
+          <span>📧</span>
+          <input type="email" placeholder="Email" formControlName="email" autocomplete="email" />
+        </div>
+
+        <div class="input-field">
+          <span>🔒</span>
+          <input [type]="showPassword ? 'text' : 'password'" placeholder="Password"
+            formControlName="password" autocomplete="current-password" />
+          <span class="eye" (click)="showPassword = !showPassword">{{ showPassword ? '🙈' : '👁️' }}</span>
+        </div>
+
+        <button class="btn btn-gold" type="submit" [disabled]="form.invalid">Login</button>
+      </form>
+
+      <div class="auth-footer">
+        New partner? <a routerLink="/partner/signup">Register your restaurant</a>
+      </div>
+    </div>
+
+    <div class="auth-right">
+      <div class="promo-card">
+        <div class="promo-emoji">🍽️</div>
+        <div class="promo-title">Grow Your Business</div>
+        <div class="promo-desc">Reach thousands of hungry customers and increase your revenue on FoodieHub.</div>
+        <div class="promo-stats">
+          <div class="stat"><span class="stat-val">1,200+</span><span class="stat-lbl">Restaurants</span></div>
+          <div class="stat"><span class="stat-val">50K+</span><span class="stat-lbl">Customers</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

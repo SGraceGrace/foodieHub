@@ -1,0 +1,78 @@
+<div class="auth-bg">
+  <div class="auth-card">
+
+    <div class="auth-left">
+      <div class="auth-brand">
+        <div class="logo-icon">F</div>
+        <div class="divider"></div>
+        <div>
+          <div class="brand-name">foodiehub</div>
+          <div class="brand-sub">Restaurant Partner</div>
+        </div>
+      </div>
+
+      <h2 class="auth-title">Register Your Restaurant</h2>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="input-row">
+          <div class="input-field">
+            <span>👤</span>
+            <input type="text" placeholder="First Name" formControlName="firstName" />
+          </div>
+          <div class="input-field">
+            <span>👤</span>
+            <input type="text" placeholder="Last Name" formControlName="lastName" />
+          </div>
+        </div>
+
+        <div class="input-field">
+          <span>🍛</span>
+          <input type="text" placeholder="Restaurant Name" formControlName="restaurantName" />
+        </div>
+
+        <div class="input-field">
+          <span>📧</span>
+          <input type="email" placeholder="Email" formControlName="email" autocomplete="email" />
+        </div>
+
+        <div class="input-field">
+          <span>📞</span>
+          <input type="tel" placeholder="Phone" formControlName="phone" />
+        </div>
+
+        <div class="input-field">
+          <span>🔒</span>
+          <input [type]="showPassword ? 'text' : 'password'" placeholder="Password"
+            formControlName="password" autocomplete="new-password" />
+          <span class="eye" (click)="showPassword = !showPassword">{{ showPassword ? '🙈' : '👁️' }}</span>
+        </div>
+
+        <div class="pw-rules" *ngIf="form.get('password')?.dirty">
+          <div [class.ok]="pwHasLength">{{ pwHasLength ? '✓' : '○' }} Min 8 characters</div>
+          <div [class.ok]="pwHasUppercase">{{ pwHasUppercase ? '✓' : '○' }} One uppercase letter</div>
+          <div [class.ok]="pwHasNumber">{{ pwHasNumber ? '✓' : '○' }} One number</div>
+        </div>
+
+        <button class="btn btn-gold" type="submit" [disabled]="form.invalid">Create Account</button>
+      </form>
+
+      <div class="auth-footer">
+        Already a partner? <a routerLink="/partner/login">Login</a>
+      </div>
+    </div>
+
+    <div class="auth-right">
+      <div class="promo-card">
+        <div class="promo-emoji">🎉</div>
+        <div class="promo-title">Join 1,200+ Partners</div>
+        <div class="promo-desc">Start selling on FoodieHub and reach hungry customers today. Your application will be reviewed within 24 hours.</div>
+        <div class="steps">
+          <div class="step"><span class="step-num">1</span><span>Register your restaurant</span></div>
+          <div class="step"><span class="step-num">2</span><span>Admin reviews & approves</span></div>
+          <div class="step"><span class="step-num">3</span><span>Start receiving orders!</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
