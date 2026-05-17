@@ -215,15 +215,31 @@
         </div>
         <table>
           <thead>
-            <tr><th>ID</th><th>Owner Name</th><th>Email</th><th>Phone</th><th>Restaurant</th><th>Status</th><th>Actions</th></tr>
+            <tr>
+              <th>ID</th>
+              <th>Owner</th>
+              <th>Contact</th>
+              <th>Restaurant</th>
+              <th>Address</th>
+              <th>FSSAI / GST</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
           </thead>
           <tbody>
             <tr *ngFor="let owner of owners">
               <td>#{{ owner.id }}</td>
               <td>{{ owner.firstName }} {{ owner.lastName }}</td>
-              <td>{{ owner.email }}</td>
-              <td>{{ owner.phone || '—' }}</td>
+              <td>
+                <div>{{ owner.email }}</div>
+                <div class="sub-text">{{ owner.phone || '—' }}</div>
+              </td>
               <td>{{ owner.restaurantName || '—' }}</td>
+              <td class="address-cell">{{ owner.restaurantAddress || '—' }}</td>
+              <td>
+                <div>{{ owner.fssaiNumber || '—' }}</div>
+                <div class="sub-text" *ngIf="owner.gstNumber">GST: {{ owner.gstNumber }}</div>
+              </td>
               <td>
                 <span class="badge"
                   [class.warning]="owner.status === 'PENDING'"
@@ -239,7 +255,7 @@
               </td>
             </tr>
             <tr *ngIf="owners.length === 0">
-              <td colspan="7" class="empty-cell">No restaurant owners found</td>
+              <td colspan="8" class="empty-cell">No restaurant owners found</td>
             </tr>
           </tbody>
         </table>

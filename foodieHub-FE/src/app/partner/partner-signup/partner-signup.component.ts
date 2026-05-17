@@ -23,12 +23,15 @@ export class PartnerSignupComponent {
     private router: Router,
   ) {
     this.form = this.fb.group({
-      firstName:      ['', Validators.required],
-      lastName:       ['', Validators.required],
-      restaurantName: ['', Validators.required],
-      email:          ['', [Validators.required, Validators.email]],
-      phone:          ['', Validators.required],
-      password:       ['', [
+      firstName:         ['', Validators.required],
+      lastName:          ['', Validators.required],
+      restaurantName:    ['', Validators.required],
+      restaurantAddress: ['', Validators.required],
+      fssaiNumber:       ['', [Validators.required, Validators.pattern('^[0-9]{14}$')]],
+      gstNumber:         [''],
+      email:             ['', [Validators.required, Validators.email]],
+      phone:             ['', Validators.required],
+      password:          ['', [
         Validators.required,
         Validators.minLength(8),
         Validators.pattern('^(?=.*[A-Z])(?=.*[0-9]).{8,}$'),
@@ -54,4 +57,9 @@ export class PartnerSignupComponent {
   get pwHasLength():   boolean { return this.pwdValue.length >= 8; }
   get pwHasUppercase():boolean { return /[A-Z]/.test(this.pwdValue); }
   get pwHasNumber():   boolean { return /[0-9]/.test(this.pwdValue); }
+
+  get fssaiInvalid(): boolean {
+    const ctrl = this.form.get('fssaiNumber');
+    return !!(ctrl?.invalid && ctrl?.dirty);
+  }
 }

@@ -34,6 +34,9 @@ export interface AdminUserResponse {
   roleName: string;
   status: string;
   restaurantName?: string;
+  restaurantAddress?: string;
+  fssaiNumber?: string;
+  gstNumber?: string;
 }
 
 export interface PaginatedResponse<T> {

@@ -135,7 +135,10 @@ public class AdminUserServiceImpl implements AdminUserService {
                 user.getPhone(),
                 user.getRole().getRoleName(),
                 user.getStatus().name(),
-                user.getBio()
+                user.getBio(),
+                user.getRestaurantAddress(),
+                user.getFssaiNumber(),
+                user.getGstNumber()
         );
     }
 }

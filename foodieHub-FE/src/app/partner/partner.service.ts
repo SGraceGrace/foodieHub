@@ -12,6 +12,9 @@ export interface PartnerRegisterRequest {
   password: string;
   phone: string;
   restaurantName: string;
+  restaurantAddress: string;
+  fssaiNumber: string;
+  gstNumber?: string;
 }
 
 @Injectable({ providedIn: 'root' })

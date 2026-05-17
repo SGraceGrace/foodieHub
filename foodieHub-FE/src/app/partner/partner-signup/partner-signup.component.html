@@ -31,6 +31,25 @@
         </div>
 
         <div class="input-field">
+          <span>📍</span>
+          <input type="text" placeholder="Restaurant Address" formControlName="restaurantAddress" />
+        </div>
+
+        <div class="input-row">
+          <div>
+            <div class="input-field" [class.field-error]="fssaiInvalid">
+              <span>📋</span>
+              <input type="text" placeholder="FSSAI Number (14 digits)" formControlName="fssaiNumber" maxlength="14" />
+            </div>
+            <div class="field-hint" *ngIf="fssaiInvalid">Must be exactly 14 digits</div>
+          </div>
+          <div class="input-field">
+            <span>🏷️</span>
+            <input type="text" placeholder="GST Number (optional)" formControlName="gstNumber" />
+          </div>
+        </div>
+
+        <div class="input-field">
           <span>📧</span>
           <input type="email" placeholder="Email" formControlName="email" autocomplete="email" />
         </div>

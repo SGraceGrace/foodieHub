@@ -65,6 +65,9 @@ $font-sans: 'DM Sans', sans-serif;
   .eye { cursor: pointer; }
 }
 
+.field-error { border-color: #e53935 !important; }
+.field-hint  { font-size: 0.73rem; color: #e53935; margin-top: -0.6rem; margin-bottom: 0.85rem; padding-left: 2px; }
+
 .pw-rules {
   font-size: 0.78rem; margin-bottom: .85rem; color: $text-light;
   display: flex; flex-direction: column; gap: 3px;

@@ -54,6 +54,9 @@ public class PartnerServiceImpl implements PartnerService {
         owner.setPassword(passwordEncoder.encode(dto.getPassword()));
         owner.setPhone(dto.getPhone());
         owner.setBio(dto.getRestaurantName());
+        owner.setRestaurantAddress(dto.getRestaurantAddress());
+        owner.setFssaiNumber(dto.getFssaiNumber());
+        owner.setGstNumber(dto.getGstNumber());
         owner.setRole(ownerRole);
         owner.setStatus(UserStatus.PENDING);
         owner.setAuthProvider(AuthProvider.LOCAL);

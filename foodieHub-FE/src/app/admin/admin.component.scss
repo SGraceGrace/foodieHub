@@ -186,6 +186,8 @@ table {
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: #fafafa; }
   .empty-cell { text-align: center; color: $text-light; padding: 2rem; font-size: .88rem; }
+  .sub-text { font-size: 0.75rem; color: $text-light; margin-top: 2px; }
+  .address-cell { max-width: 180px; white-space: normal; font-size: 0.82rem; }
 }
 
 // ── Badges ────────────────────────────────────────────────────────

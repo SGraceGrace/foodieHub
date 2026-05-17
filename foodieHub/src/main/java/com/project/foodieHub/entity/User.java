@@ -82,6 +82,15 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "bio", length = 500)
     private String bio;
 
+    @Column(name = "restaurant_address", length = 500)
+    private String restaurantAddress;
+
+    @Column(name = "fssai_number", length = 20)
+    private String fssaiNumber;
+
+    @Column(name = "gst_number", length = 20)
+    private String gstNumber;
+
     @Column(name = "auth_provider")
     @Enumerated(EnumType.STRING)
     private AuthProvider authProvider = AuthProvider.LOCAL;
