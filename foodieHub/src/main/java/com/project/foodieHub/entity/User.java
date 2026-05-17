@@ -63,7 +63,7 @@ public class User extends BaseEntity implements UserDetails {
     @JoinColumn(name = "role_id", nullable = false) // Foreign Key
     private Roles role;
 
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", nullable = false, columnDefinition = "VARCHAR(50)")
     @Enumerated(value = EnumType.STRING)
     private UserStatus status;
 
