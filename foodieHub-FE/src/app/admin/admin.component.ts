@@ -40,6 +40,7 @@ export class AdminComponent implements OnInit {
   owners: AdminUserResponse[] = [];
   ownerStatusFilter = '';
   ownerPagination = { currentPage: 0, totalPages: 0, totalElements: 0, pageSize: 10 };
+  pendingOwnerCount = 0;
 
   // Activity Log
   activityLogs: ActivityLog[] = [];
@@ -53,7 +54,16 @@ export class AdminComponent implements OnInit {
 
   constructor(private adminService: AdminService, private toastr: ToastrService) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.loadPendingOwnerCount();
+  }
+
+  loadPendingOwnerCount() {
+    this.adminService.getPendingOwnerCount().subscribe({
+      next: count => this.pendingOwnerCount = count,
+      error: () => {}
+    });
+  }
 
   goTab(tab: Tab) {
     this.activeTab = tab;
@@ -169,6 +179,7 @@ export class AdminComponent implements OnInit {
         const idx = this.owners.findIndex((o) => o.id === owner.id);
         if (idx !== -1) this.owners[idx] = res.data;
         this.toastr.success('Owner approved.');
+        this.loadPendingOwnerCount();
       },
       error: () => this.toastr.error('Failed to approve owner.'),
     });
@@ -181,6 +192,7 @@ export class AdminComponent implements OnInit {
         const idx = this.owners.findIndex((o) => o.id === owner.id);
         if (idx !== -1) this.owners[idx] = res.data;
         this.toastr.success('Owner rejected.');
+        this.loadPendingOwnerCount();
       },
       error: () => this.toastr.error('Failed to reject owner.'),
     });

@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { ApiResponse } from '../model/apiResponse.model';
 import { ActivityLog, AdminUserResponse, PaginatedResponse, Restaurant, Slide } from '../model/restaurant.model';
@@ -97,6 +98,12 @@ export class AdminService {
     if (status) params = params.set('status', status);
     params = params.set('page', page.toString()).set('size', size.toString());
     return this.http.get<ApiResponse<PaginatedResponse<AdminUserResponse>>>(this.ownersBase, { params });
+  }
+
+  getPendingOwnerCount(): Observable<number> {
+    return this.getRestaurantOwners('PENDING', 0, 1).pipe(
+      map(res => res.data?.totalElements ?? 0)
+    );
   }
 
   approveOwner(id: number): Observable<ApiResponse<AdminUserResponse>> {

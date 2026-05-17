@@ -10,8 +10,11 @@ import com.project.foodieHub.exception_handler.UserAlreadyExistsException;
 import com.project.foodieHub.repo.RoleRepo;
 import com.project.foodieHub.repo.UserRepo;
 import com.project.foodieHub.service.PartnerService;
+import com.project.foodieHub.messaging.PartnerRegisteredEvent;
+import com.project.foodieHub.messaging.RabbitMQConfig;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -32,6 +35,7 @@ public class PartnerServiceImpl implements PartnerService {
     private final RoleRepo roleRepo;
     private final PasswordEncoder passwordEncoder;
     private final RestTemplate restTemplate;
+    private final RabbitTemplate rabbitTemplate;
 
     @Value("${food.service.url}")
     private String foodServiceUrl;
@@ -71,6 +75,21 @@ public class PartnerServiceImpl implements PartnerService {
         }
 
         createRestaurantInFoodService(dto.getRestaurantName(), saved.getId());
+        publishPartnerRegisteredEvent(dto, saved);
+    }
+
+    private void publishPartnerRegisteredEvent(PartnerRegisterRequestDTO dto, User saved) {
+        var event = new PartnerRegisteredEvent(
+                saved.getFirstName() + " " + saved.getLastName(),
+                saved.getEmail(),
+                saved.getPhone(),
+                dto.getRestaurantName(),
+                dto.getRestaurantAddress(),
+                dto.getFssaiNumber(),
+                dto.getGstNumber()
+        );
+        rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.PARTNER_RKEY, event);
+        log.info("Published partner.registered event for: {}", saved.getEmail());
     }
 
     private void createRestaurantInFoodService(String restaurantName, Long ownerId) {

@@ -17,6 +17,7 @@
     </button>
     <button class="nav-btn" [class.active]="activeTab === 'restaurant-owners'" (click)="goTab('restaurant-owners')">
       <span>🤝</span> Restaurant Owners
+      <span class="pending-badge" *ngIf="pendingOwnerCount > 0">{{ pendingOwnerCount }}</span>
     </button>
     <button class="nav-btn" [class.active]="activeTab === 'orders'" (click)="goTab('orders')">
       <span>📦</span> Orders

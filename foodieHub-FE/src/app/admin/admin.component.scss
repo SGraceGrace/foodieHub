@@ -53,6 +53,21 @@ $font-sans: 'DM Sans', sans-serif;
   &:hover { background: rgba(249,179,3,.12); color: $gold; }
   &.active { background: rgba(249,179,3,.15); color: $gold; }
 
+  .pending-badge {
+    margin-left: auto;
+    background: #e53935;
+    color: white;
+    font-size: 0.68rem;
+    font-weight: 700;
+    min-width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+  }
+
   span { font-size: 1rem; }
 }
 
