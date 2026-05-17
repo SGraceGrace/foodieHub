@@ -25,6 +25,16 @@ export interface Restaurant {
   menu?: MenuCategory[];
 }
 
+export interface AdminUserResponse {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  roleName: string;
+  status: string;
+}
+
 export interface Slide {
   id: number;
   title: string;

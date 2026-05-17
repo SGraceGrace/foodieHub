@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { AdminService, SlideRequest } from './admin.service';
-import { Slide } from '../model/restaurant.model';
+import { AdminUserResponse, Slide } from '../model/restaurant.model';
 
 type Tab = 'dashboard' | 'users' | 'restaurants' | 'orders' | 'payments' | 'support' | 'reports' | 'slides';
 
@@ -16,6 +16,11 @@ type Tab = 'dashboard' | 'users' | 'restaurants' | 'orders' | 'payments' | 'supp
 })
 export class AdminComponent implements OnInit {
   activeTab: Tab = 'dashboard';
+
+  // Users
+  users: AdminUserResponse[] = [];
+  userSearch = '';
+  userStatusFilter = '';
 
   // Slides
   slides: Slide[] = [];
@@ -32,6 +37,39 @@ export class AdminComponent implements OnInit {
 
   goTab(tab: Tab) {
     this.activeTab = tab;
+    if (tab === 'users') this.loadUsers();
+  }
+
+  // ── Users ────────────────────────────────────────────────────────
+
+  loadUsers() {
+    this.adminService.getUsers(this.userStatusFilter, this.userSearch).subscribe({
+      next: (res) => (this.users = res.data ?? []),
+      error: () => this.toastr.error('Failed to load users.'),
+    });
+  }
+
+  suspendUser(user: AdminUserResponse) {
+    if (!confirm(`Suspend ${user.firstName} ${user.lastName}?`)) return;
+    this.adminService.suspendUser(user.id).subscribe({
+      next: (res) => {
+        const idx = this.users.findIndex((u) => u.id === user.id);
+        if (idx !== -1) this.users[idx] = res.data;
+        this.toastr.success('User suspended.');
+      },
+      error: () => this.toastr.error('Failed to suspend user.'),
+    });
+  }
+
+  unsuspendUser(user: AdminUserResponse) {
+    this.adminService.unsuspendUser(user.id).subscribe({
+      next: (res) => {
+        const idx = this.users.findIndex((u) => u.id === user.id);
+        if (idx !== -1) this.users[idx] = res.data;
+        this.toastr.success('User unsuspended.');
+      },
+      error: () => this.toastr.error('Failed to unsuspend user.'),
+    });
   }
 
   // ── Slides ──────────────────────────────────────────────────────

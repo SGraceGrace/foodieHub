@@ -84,17 +84,36 @@
       <div class="page-title">User Management</div>
       <div class="table-box">
         <div class="table-toolbar">
-          <input class="search-input" type="text" placeholder="Search by name, email or phone..." />
-          <select class="filter-select">
-            <option>All Users</option>
-            <option>Active</option>
-            <option>Suspended</option>
+          <input class="search-input" type="text" placeholder="Search by name or email..."
+            [(ngModel)]="userSearch" (keyup.enter)="loadUsers()" />
+          <select class="filter-select" [(ngModel)]="userStatusFilter" (change)="loadUsers()">
+            <option value="">All Users</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Suspended</option>
           </select>
         </div>
         <table>
-          <thead><tr><th>User ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Orders</th><th>Total Spent</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead>
+            <tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Status</th><th>Actions</th></tr>
+          </thead>
           <tbody>
-            <tr><td colspan="8" class="empty-cell">No users found</td></tr>
+            <tr *ngFor="let user of users">
+              <td>#{{ user.id }}</td>
+              <td>{{ user.firstName }} {{ user.lastName }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.phone || '—' }}</td>
+              <td>{{ user.roleName }}</td>
+              <td><span class="badge" [class.success]="user.status === 'ACTIVE'" [class.warning]="user.status === 'INACTIVE'">
+                {{ user.status === 'ACTIVE' ? 'Active' : 'Suspended' }}
+              </span></td>
+              <td>
+                <button class="action-btn suspend" *ngIf="user.status === 'ACTIVE'" (click)="suspendUser(user)">Suspend</button>
+                <button class="action-btn approve" *ngIf="user.status === 'INACTIVE'" (click)="unsuspendUser(user)">Unsuspend</button>
+              </td>
+            </tr>
+            <tr *ngIf="users.length === 0">
+              <td colspan="7" class="empty-cell">No users found</td>
+            </tr>
           </tbody>
         </table>
       </div>
