@@ -8,11 +8,14 @@ import com.project.foodieHub.entity.User;
 import com.project.foodieHub.enums.Role;
 import com.project.foodieHub.enums.UserStatus;
 import com.project.foodieHub.exception_handler.CommonException;
+import com.project.foodieHub.messaging.OwnerStatusEvent;
+import com.project.foodieHub.messaging.RabbitMQConfig;
 import com.project.foodieHub.repo.RoleRepo;
 import com.project.foodieHub.repo.UserRepo;
 import com.project.foodieHub.service.ActivityLogService;
 import com.project.foodieHub.service.AdminUserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -30,6 +33,7 @@ public class AdminUserServiceImpl implements AdminUserService {
     private final RoleRepo roleRepo;
     private final PasswordEncoder passwordEncoder;
     private final ActivityLogService activityLogService;
+    private final RabbitTemplate rabbitTemplate;
 
     @Override
     public PaginatedResponse<AdminUserResponseDTO> getUsers(String status, String search, String role, int page, int size) {
@@ -109,6 +113,7 @@ public class AdminUserServiceImpl implements AdminUserService {
         user.setStatus(UserStatus.ACTIVE);
         User saved = userRepo.save(user);
         activityLogService.log("APPROVE_OWNER", "User", id, "email: " + user.getEmail());
+        publishOwnerStatus(saved, "APPROVED");
         return toDTO(saved);
     }
 
@@ -118,7 +123,18 @@ public class AdminUserServiceImpl implements AdminUserService {
         user.setStatus(UserStatus.INACTIVE);
         User saved = userRepo.save(user);
         activityLogService.log("REJECT_OWNER", "User", id, "email: " + user.getEmail());
+        publishOwnerStatus(saved, "REJECTED");
         return toDTO(saved);
+    }
+
+    private void publishOwnerStatus(User user, String status) {
+        var event = new OwnerStatusEvent(
+                user.getEmail(),
+                user.getFirstName() + " " + user.getLastName(),
+                user.getBio(),
+                status
+        );
+        rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.OWNER_STATUS_RKEY, event);
     }
 
     private User findUser(Long id) {

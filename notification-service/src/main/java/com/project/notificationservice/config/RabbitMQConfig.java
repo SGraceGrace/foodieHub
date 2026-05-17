@@ -1,6 +1,7 @@
 package com.project.notificationservice.config;
 
 import com.project.notificationservice.event.OrderPlacedEvent;
+import com.project.notificationservice.event.OwnerStatusEvent;
 import com.project.notificationservice.event.PartnerRegisteredEvent;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
@@ -22,6 +23,8 @@ public class RabbitMQConfig {
     public static final String EXCHANGE            = "foodiehub.exchange";
     public static final String PARTNER_QUEUE       = "partner.registered.queue";
     public static final String PARTNER_RKEY        = "partner.registered";
+    public static final String OWNER_STATUS_QUEUE  = "owner.status.queue";
+    public static final String OWNER_STATUS_RKEY   = "owner.status";
     public static final String ORDER_PLACED_QUEUE  = "order.placed.queue";
     public static final String ORDER_PLACED_RKEY   = "order.placed";
 
@@ -36,6 +39,11 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue ownerStatusQueue() {
+        return new Queue(OWNER_STATUS_QUEUE, true);
+    }
+
+    @Bean
     public Queue orderPlacedQueue() {
         return new Queue(ORDER_PLACED_QUEUE, true);
     }
@@ -43,6 +51,11 @@ public class RabbitMQConfig {
     @Bean
     public Binding partnerRegisteredBinding(Queue partnerRegisteredQueue, TopicExchange foodiehubExchange) {
         return BindingBuilder.bind(partnerRegisteredQueue).to(foodiehubExchange).with(PARTNER_RKEY);
+    }
+
+    @Bean
+    public Binding ownerStatusBinding(Queue ownerStatusQueue, TopicExchange foodiehubExchange) {
+        return BindingBuilder.bind(ownerStatusQueue).to(foodiehubExchange).with(OWNER_STATUS_RKEY);
     }
 
     @Bean
@@ -59,6 +72,7 @@ public class RabbitMQConfig {
         // Map producer class names → local event classes
         Map<String, Class<?>> idClassMapping = new HashMap<>();
         idClassMapping.put("com.project.foodieHub.messaging.PartnerRegisteredEvent", PartnerRegisteredEvent.class);
+        idClassMapping.put("com.project.foodieHub.messaging.OwnerStatusEvent",       OwnerStatusEvent.class);
         idClassMapping.put("com.project.orderservice.messaging.OrderPlacedEvent",    OrderPlacedEvent.class);
         typeMapper.setIdClassMapping(idClassMapping);
 

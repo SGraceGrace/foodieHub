@@ -2,6 +2,7 @@ package com.project.notificationservice.listener;
 
 import com.project.notificationservice.config.RabbitMQConfig;
 import com.project.notificationservice.event.OrderPlacedEvent;
+import com.project.notificationservice.event.OwnerStatusEvent;
 import com.project.notificationservice.event.PartnerRegisteredEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +38,24 @@ public class NotificationListener {
         }
     }
 
+    // ── Owner approved/rejected → notify owner ───────────────────
+
+    @RabbitListener(queues = RabbitMQConfig.OWNER_STATUS_QUEUE)
+    public void onOwnerStatus(OwnerStatusEvent event) {
+        try {
+            SimpleMailMessage msg = new SimpleMailMessage();
+            msg.setTo(event.getOwnerEmail());
+            msg.setSubject("APPROVED".equals(event.getStatus())
+                    ? "Your Restaurant Has Been Approved! 🎉"
+                    : "FoodieHub Registration Update");
+            msg.setText(buildOwnerStatusEmail(event));
+            mailSender.send(msg);
+            log.info("Owner status email sent to {} — status: {}", event.getOwnerEmail(), event.getStatus());
+        } catch (Exception e) {
+            log.error("Failed to send owner status email to {}: {}", event.getOwnerEmail(), e.getMessage());
+        }
+    }
+
     // ── Order placed → notify customer ────────────────────────────
 
     @RabbitListener(queues = RabbitMQConfig.ORDER_PLACED_QUEUE)
@@ -54,6 +73,36 @@ public class NotificationListener {
     }
 
     // ── Email bodies ──────────────────────────────────────────────
+
+    private String buildOwnerStatusEmail(OwnerStatusEvent e) {
+        if ("APPROVED".equals(e.getStatus())) {
+            return """
+                    Hi %s,
+
+                    Great news! Your restaurant "%s" has been approved on FoodieHub. 🎉
+
+                    You can now log in to your partner portal and start setting up your menu.
+
+                    Login: http://localhost:4200/partner/login
+
+                    Welcome aboard!
+
+                    — FoodieHub Team
+                    """.formatted(e.getOwnerName(), e.getRestaurantName());
+        } else {
+            return """
+                    Hi %s,
+
+                    Thank you for registering "%s" on FoodieHub.
+
+                    After reviewing your application, we are unable to approve your registration at this time.
+                    Please ensure your FSSAI license and business details are valid and contact support if you
+                    believe this is a mistake.
+
+                    — FoodieHub Team
+                    """.formatted(e.getOwnerName(), e.getRestaurantName());
+        }
+    }
 
     private String buildPartnerEmail(PartnerRegisteredEvent e) {
         return """
