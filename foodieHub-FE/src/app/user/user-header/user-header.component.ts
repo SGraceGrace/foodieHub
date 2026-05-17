@@ -63,7 +63,7 @@ export class UserHeaderComponent implements OnInit {
     this.menuOpen = false;
     this.userService.logout().subscribe({
       next: (response) => {
-        this.toaster.success(response || 'Logged out successfully');
+        this.toaster.success('Logged out successfully');
         this.tokenService.clearTokens();
         this.router.navigateByUrl('/login');
       },

@@ -49,3 +49,7 @@ jwt:
 refresh:
   token:
     expiration: ${REFRESH_TOKEN_EXPIRATION}
+
+logging:
+  level:
+    org.springframework.security: DEBUG

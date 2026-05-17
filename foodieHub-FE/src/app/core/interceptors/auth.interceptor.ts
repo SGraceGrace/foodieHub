@@ -44,6 +44,7 @@ export function authInterceptor(
     });
   } else {
     router.navigateByUrl('/login');
+    return throwError(() => new Error('No token'));
   }
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {

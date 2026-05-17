@@ -2,7 +2,6 @@ package com.project.foodieHub.config;
 
 import com.project.foodieHub.filter.AuthFilter;
 import com.project.foodieHub.service.impl.UserDetailsServiceImpl;
-import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,7 +23,6 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
-import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableWebSecurity
@@ -44,15 +42,7 @@ public class SecurityConfig {
   @Bean
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
     return httpSecurity.csrf(AbstractHttpConfigurer::disable)
-        .cors(cors -> cors.configurationSource(request -> {
-          CorsConfiguration corsConfiguration = new CorsConfiguration();
-          corsConfiguration.setAllowedOrigins(List.of("http://localhost:4200")); //Allow all origins
-          corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
-          corsConfiguration.setAllowedHeaders(List.of("*"));
-          corsConfiguration.addExposedHeader("Authorization");
-          corsConfiguration.addExposedHeader("X-Refresh-Token");
-          return corsConfiguration;
-        }))
+        .cors(AbstractHttpConfigurer::disable)
         .authorizeHttpRequests(request -> request.requestMatchers("/api/v1/auth/login", "/api/v1/auth/signup", "/api/v1/refresh-token", "/oauth2/**", "/login/oauth2/**").permitAll())
         .authorizeHttpRequests(request -> request.requestMatchers("/api/v1/**").authenticated())
         .oauth2Login(httpSecurityOAuth2LoginConfigurer -> httpSecurityOAuth2LoginConfigurer

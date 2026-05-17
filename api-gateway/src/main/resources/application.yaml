@@ -3,37 +3,54 @@ spring:
     name: api-gateway
   cloud:
     gateway:
-      mvc:
-        routes:
-          - id: user-service
+      server:
+        webmvc:
+          routes:
+          - id: user-service-auth
             uri: http://localhost:8081
             predicates:
-              - Path=/api/auth/**, /api/users/**
+              - Path=/api/v1/auth/**
+
+          - id: user-service-users
+            uri: http://localhost:8081
+            predicates:
+              - Path=/api/v1/user, /api/v1/user/**
+
+          - id: user-service-refresh
+            uri: http://localhost:8081
+            predicates:
+              - Path=/api/v1/refresh-token/**
+
+          - id: user-service-oauth2
+            uri: http://localhost:8081
+            predicates:
+              - Path=/oauth2/**, /login/oauth2/**
 
           - id: food-service
             uri: http://localhost:8082
             predicates:
-              - Path=/api/restaurants/**, /api/cuisines/**, /api/search/**
+              - Path=/api/restaurants/**
 
-          - id: order-service
+          - id: food-service-cuisines
+            uri: http://localhost:8082
+            predicates:
+              - Path=/api/cuisines/**
+
+          - id: food-service-search
+            uri: http://localhost:8082
+            predicates:
+              - Path=/api/search/**
+
+          - id: order-service-cart
             uri: http://localhost:8083
             predicates:
-              - Path=/api/cart/**, /api/orders/**
+              - Path=/api/cart/**
 
-        globalcors:
-          corsConfigurations:
-            '[/**]':
-              allowedOrigins:
-                - "http://localhost:4200"
-              allowedMethods:
-                - GET
-                - POST
-                - PUT
-                - DELETE
-                - OPTIONS
-              allowedHeaders:
-                - "*"
-              allowCredentials: true
+          - id: order-service-orders
+            uri: http://localhost:8083
+            predicates:
+              - Path=/api/orders/**
+
 
 server:
   port: 8080

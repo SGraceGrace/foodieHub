@@ -75,6 +75,11 @@ export class SignupComponent implements OnInit, OnDestroy {
   }
 
   onSubmit() {
+    if (this.signupForm.invalid) {
+      this.signupForm.markAllAsTouched();
+      this.showRules = true;
+      return;
+    }
     if (this.signupForm.valid) {
       const { firstName, lastName, email, pwd } = this.signupForm.getRawValue();
       const signupRequest: Signup = {

@@ -6,6 +6,6 @@ export function toUserDetails(data: any): UserDetails {
     firstName: data.firstName,
     lastName: data.lastName,
     email: data.email,
-    role: data.role.roleName,
+    role: data.role,
   };
 }

@@ -43,7 +43,7 @@
             </span>
           </div>
 
-          <div class="rules-panel" *ngIf="showRules && pwd?.invalid && (pwd?.dirty || pwd?.touched)">
+          <div class="rules-panel" *ngIf="showRules && pwd?.invalid">
             <div [class.valid]="isMinLength"><span>{{ isMinLength ? '✓' : '✗' }}</span> At least 8 characters</div>
             <div [class.valid]="isMaxLength"><span>{{ isMaxLength ? '✓' : '✗' }}</span> No more than 15 characters</div>
             <div [class.valid]="hasUppercase"><span>{{ hasUppercase ? '✓' : '✗' }}</span> One uppercase letter</div>
