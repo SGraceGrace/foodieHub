@@ -35,6 +35,14 @@ export interface AdminUserResponse {
   status: string;
 }
 
+export interface PaginatedResponse<T> {
+  content: T[];
+  currentPage: number;
+  totalPages: number;
+  totalElements: number;
+  pageSize: number;
+}
+
 export interface ActivityLog {
   id: number;
   actorEmail: string;

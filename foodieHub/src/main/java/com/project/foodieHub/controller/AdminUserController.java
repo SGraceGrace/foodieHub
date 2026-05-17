@@ -19,9 +19,12 @@ public class AdminUserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BaseAPIResponse> getUsers(
             @RequestParam(required = false) String status,
-            @RequestParam(required = false) String search) {
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) String role,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
-                adminUserService.getUsers(status, search), HttpStatus.OK.value(), null));
+                adminUserService.getUsers(status, search, role, page, size), HttpStatus.OK.value(), null));
     }
 
     @PostMapping("api/v1/admin/users/create-admin")

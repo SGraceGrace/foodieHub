@@ -3,6 +3,7 @@ package com.project.foodieHub.service.impl;
 import com.project.foodieHub.dto.ActivityLogDTO;
 import com.project.foodieHub.dto.AdminUserResponseDTO;
 import com.project.foodieHub.dto.CreateAdminRequestDTO;
+import com.project.foodieHub.dto.PaginatedResponse;
 import com.project.foodieHub.entity.User;
 import com.project.foodieHub.enums.Role;
 import com.project.foodieHub.enums.UserStatus;
@@ -12,6 +13,9 @@ import com.project.foodieHub.repo.UserRepo;
 import com.project.foodieHub.service.ActivityLogService;
 import com.project.foodieHub.service.AdminUserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,13 +32,18 @@ public class AdminUserServiceImpl implements AdminUserService {
     private final ActivityLogService activityLogService;
 
     @Override
-    public List<AdminUserResponseDTO> getUsers(String status, String search) {
+    public PaginatedResponse<AdminUserResponseDTO> getUsers(String status, String search, String role, int page, int size) {
         UserStatus userStatus = (status != null && !status.isBlank()) ? UserStatus.valueOf(status) : null;
         String searchTerm = (search != null && !search.isBlank()) ? search : null;
-        return userRepo.findNonAdminUsers(userStatus, searchTerm)
-                .stream()
-                .map(this::toDTO)
-                .toList();
+        String roleName = (role != null && !role.isBlank()) ? role : null;
+
+        Page<User> result = userRepo.findAllUsers(
+                roleName, userStatus, searchTerm,
+                PageRequest.of(page, size, Sort.by("id").descending()));
+
+        List<AdminUserResponseDTO> content = result.getContent().stream().map(this::toDTO).toList();
+        return new PaginatedResponse<>(content, result.getNumber(), result.getTotalPages(),
+                result.getTotalElements(), result.getSize());
     }
 
     @Override

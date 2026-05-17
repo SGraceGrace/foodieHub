@@ -88,9 +88,14 @@
       <div class="table-box">
         <div class="table-toolbar">
           <input class="search-input" type="text" placeholder="Search by name or email..."
-            [(ngModel)]="userSearch" (keyup.enter)="loadUsers()" />
-          <select class="filter-select" [(ngModel)]="userStatusFilter" (change)="loadUsers()">
-            <option value="">All Users</option>
+            [(ngModel)]="userSearch" (keyup.enter)="loadUsers(0)" />
+          <select class="filter-select" [(ngModel)]="userRoleFilter" (change)="loadUsers(0)">
+            <option value="">All Roles</option>
+            <option value="ADMIN">Admin</option>
+            <option value="END_USERS">End User</option>
+          </select>
+          <select class="filter-select" [(ngModel)]="userStatusFilter" (change)="loadUsers(0)">
+            <option value="">All Status</option>
             <option value="ACTIVE">Active</option>
             <option value="INACTIVE">Suspended</option>
           </select>
@@ -106,10 +111,16 @@
               <td>{{ user.firstName }} {{ user.lastName }}</td>
               <td>{{ user.email }}</td>
               <td>{{ user.phone || '—' }}</td>
-              <td>{{ user.roleName }}</td>
-              <td><span class="badge" [class.success]="user.status === 'ACTIVE'" [class.warning]="user.status === 'INACTIVE'">
-                {{ user.status === 'ACTIVE' ? 'Active' : 'Suspended' }}
-              </span></td>
+              <td>
+                <span class="badge" [class.info]="user.roleName === 'ADMIN'" [class.success]="user.roleName !== 'ADMIN'">
+                  {{ user.roleName === 'ADMIN' ? 'Admin' : 'End User' }}
+                </span>
+              </td>
+              <td>
+                <span class="badge" [class.success]="user.status === 'ACTIVE'" [class.warning]="user.status === 'INACTIVE'">
+                  {{ user.status === 'ACTIVE' ? 'Active' : 'Suspended' }}
+                </span>
+              </td>
               <td>
                 <button class="action-btn suspend" *ngIf="user.status === 'ACTIVE'" (click)="suspendUser(user)">Suspend</button>
                 <button class="action-btn approve" *ngIf="user.status === 'INACTIVE'" (click)="unsuspendUser(user)">Unsuspend</button>
@@ -120,6 +131,21 @@
             </tr>
           </tbody>
         </table>
+
+        <div class="table-footer" *ngIf="pagination.totalElements > 0">
+          <div class="pagination-info">
+            Showing {{ pagingStart() }}–{{ pagingEnd() }} of {{ pagination.totalElements }} users
+          </div>
+          <div class="pagination" *ngIf="pagination.totalPages > 1">
+            <button class="page-btn" [disabled]="pagination.currentPage === 0"
+              (click)="loadUsers(pagination.currentPage - 1)">&#8249;</button>
+            <button class="page-btn" *ngFor="let p of pageNumbers"
+              [class.active]="p === pagination.currentPage"
+              (click)="loadUsers(p)">{{ p + 1 }}</button>
+            <button class="page-btn" [disabled]="pagination.currentPage === pagination.totalPages - 1"
+              (click)="loadUsers(pagination.currentPage + 1)">&#8250;</button>
+          </div>
+        </div>
       </div>
     </ng-container>
 

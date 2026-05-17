@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { AdminService, CreateAdminRequest, SlideRequest } from './admin.service';
-import { ActivityLog, AdminUserResponse, Slide } from '../model/restaurant.model';
+import { ActivityLog, AdminUserResponse, PaginatedResponse, Slide } from '../model/restaurant.model';
 
 type Tab = 'dashboard' | 'users' | 'restaurants' | 'orders' | 'payments' | 'support' | 'reports' | 'slides' | 'activity-log';
 
@@ -21,6 +21,8 @@ export class AdminComponent implements OnInit {
   users: AdminUserResponse[] = [];
   userSearch = '';
   userStatusFilter = '';
+  userRoleFilter = '';
+  pagination = { currentPage: 0, totalPages: 0, totalElements: 0, pageSize: 10 };
 
   // Create Admin modal
   showCreateAdminModal = false;
@@ -52,12 +54,28 @@ export class AdminComponent implements OnInit {
 
   // ── Users ────────────────────────────────────────────────────────
 
-  loadUsers() {
-    this.adminService.getUsers(this.userStatusFilter, this.userSearch).subscribe({
-      next: (res) => (this.users = res.data ?? []),
+  loadUsers(page = 0) {
+    this.adminService.getUsers(this.userStatusFilter, this.userSearch, this.userRoleFilter, page, this.pagination.pageSize).subscribe({
+      next: (res) => {
+        const p: PaginatedResponse<AdminUserResponse> = res.data;
+        this.users = p.content;
+        this.pagination = { currentPage: p.currentPage, totalPages: p.totalPages, totalElements: p.totalElements, pageSize: p.pageSize };
+      },
       error: () => this.toastr.error('Failed to load users.'),
     });
   }
+
+  get pageNumbers(): number[] {
+    const { currentPage, totalPages } = this.pagination;
+    const pages: number[] = [];
+    for (let i = Math.max(0, currentPage - 2); i <= Math.min(totalPages - 1, currentPage + 2); i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  pagingStart(): number { return this.pagination.currentPage * this.pagination.pageSize + 1; }
+  pagingEnd(): number { return Math.min((this.pagination.currentPage + 1) * this.pagination.pageSize, this.pagination.totalElements); }
 
   suspendUser(user: AdminUserResponse) {
     if (!confirm(`Suspend ${user.firstName} ${user.lastName}?`)) return;

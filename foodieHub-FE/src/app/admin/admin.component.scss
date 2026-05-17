@@ -414,6 +414,47 @@ table {
   color: $text-dark; margin-bottom: 1.5rem;
 }
 
+// ── Table footer: pagination + info ──────────────────────────────
+.table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1rem;
+  padding-top: .75rem;
+  border-top: 1px solid $border;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+
+.pagination-info {
+  font-size: .78rem;
+  color: $text-light;
+}
+
+.pagination {
+  display: flex;
+  gap: 4px;
+}
+
+.page-btn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1.5px solid $border;
+  border-radius: 6px;
+  background: white;
+  color: $text;
+  font-size: .82rem;
+  font-family: $font-sans;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all .15s;
+
+  &:hover:not(:disabled):not(.active) { border-color: #1a1a1a; color: #1a1a1a; }
+  &.active { background: #1a1a1a; color: white; border-color: #1a1a1a; }
+  &:disabled { opacity: .35; cursor: default; }
+}
+
 // ── Password field with eye toggle ───────────────────────────────
 .password-wrapper {
   position: relative;

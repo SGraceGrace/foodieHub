@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiResponse } from '../model/apiResponse.model';
-import { ActivityLog, AdminUserResponse, Slide } from '../model/restaurant.model';
+import { ActivityLog, AdminUserResponse, PaginatedResponse, Slide } from '../model/restaurant.model';
 
 export interface SlideRequest {
   title: string;
@@ -53,11 +53,13 @@ export class AdminService {
   }
 
   // Users
-  getUsers(status?: string, search?: string): Observable<ApiResponse<AdminUserResponse[]>> {
+  getUsers(status?: string, search?: string, role?: string, page = 0, size = 10): Observable<ApiResponse<PaginatedResponse<AdminUserResponse>>> {
     let params = new HttpParams();
     if (status) params = params.set('status', status);
     if (search) params = params.set('search', search);
-    return this.http.get<ApiResponse<AdminUserResponse[]>>(this.usersBase, { params });
+    if (role) params = params.set('role', role);
+    params = params.set('page', page.toString()).set('size', size.toString());
+    return this.http.get<ApiResponse<PaginatedResponse<AdminUserResponse>>>(this.usersBase, { params });
   }
 
   createAdmin(payload: CreateAdminRequest): Observable<ApiResponse<AdminUserResponse>> {
