@@ -1,13 +1,11 @@
-package com.project.foodieHub.controller;
+package com.project.foodservice.controller;
 
-import com.project.foodieHub.dto.BaseAPIResponse;
-import com.project.foodieHub.dto.SlideRequestDTO;
-import com.project.foodieHub.service.SlideService;
-import jakarta.validation.Valid;
+import com.project.foodservice.dto.BaseAPIResponse;
+import com.project.foodservice.dto.SlideRequestDTO;
+import com.project.foodservice.service.SlideService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -22,33 +20,28 @@ public class SlideController {
     }
 
     @GetMapping("api/v1/admin/slides")
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BaseAPIResponse> getAllSlides() {
         return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", slideService.getAllSlides(), HttpStatus.OK.value(), null));
     }
 
     @PostMapping("api/v1/admin/slides")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<BaseAPIResponse> create(@Valid @RequestBody SlideRequestDTO dto) {
+    public ResponseEntity<BaseAPIResponse> create(@RequestBody SlideRequestDTO dto) {
         return ResponseEntity.ok(new BaseAPIResponse("Slide created", slideService.create(dto), HttpStatus.OK.value(), null));
     }
 
     @PutMapping("api/v1/admin/slides/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<BaseAPIResponse> update(@PathVariable Long id, @Valid @RequestBody SlideRequestDTO dto) {
+    public ResponseEntity<BaseAPIResponse> update(@PathVariable String id, @RequestBody SlideRequestDTO dto) {
         return ResponseEntity.ok(new BaseAPIResponse("Slide updated", slideService.update(id, dto), HttpStatus.OK.value(), null));
     }
 
     @DeleteMapping("api/v1/admin/slides/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<BaseAPIResponse> delete(@PathVariable Long id) {
+    public ResponseEntity<BaseAPIResponse> delete(@PathVariable String id) {
         slideService.delete(id);
         return ResponseEntity.ok(new BaseAPIResponse("Slide deleted", null, HttpStatus.OK.value(), null));
     }
 
     @PutMapping("api/v1/admin/slides/{id}/toggle")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<BaseAPIResponse> toggle(@PathVariable Long id) {
+    public ResponseEntity<BaseAPIResponse> toggle(@PathVariable String id) {
         return ResponseEntity.ok(new BaseAPIResponse("Slide updated", slideService.toggleActive(id), HttpStatus.OK.value(), null));
     }
 }

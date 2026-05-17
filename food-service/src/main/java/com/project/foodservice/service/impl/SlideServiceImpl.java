@@ -1,10 +1,9 @@
-package com.project.foodieHub.service.impl;
+package com.project.foodservice.service.impl;
 
-import com.project.foodieHub.dto.SlideRequestDTO;
-import com.project.foodieHub.entity.Slide;
-import com.project.foodieHub.exception_handler.CommonException;
-import com.project.foodieHub.repo.SlideRepo;
-import com.project.foodieHub.service.SlideService;
+import com.project.foodservice.document.Slide;
+import com.project.foodservice.dto.SlideRequestDTO;
+import com.project.foodservice.repo.SlideRepo;
+import com.project.foodservice.service.SlideService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -32,25 +31,25 @@ public class SlideServiceImpl implements SlideService {
     }
 
     @Override
-    public Slide update(Long id, SlideRequestDTO dto) {
+    public Slide update(String id, SlideRequestDTO dto) {
         Slide slide = findById(id);
         return slideRepo.save(map(slide, dto));
     }
 
     @Override
-    public void delete(Long id) {
+    public void delete(String id) {
         slideRepo.delete(findById(id));
     }
 
     @Override
-    public Slide toggleActive(Long id) {
+    public Slide toggleActive(String id) {
         Slide slide = findById(id);
         slide.setActive(!slide.isActive());
         return slideRepo.save(slide);
     }
 
-    private Slide findById(Long id) {
-        return slideRepo.findById(id).orElseThrow(() -> new CommonException("Slide not found"));
+    private Slide findById(String id) {
+        return slideRepo.findById(id).orElseThrow(() -> new RuntimeException("Slide not found"));
     }
 
     private Slide map(Slide slide, SlideRequestDTO dto) {

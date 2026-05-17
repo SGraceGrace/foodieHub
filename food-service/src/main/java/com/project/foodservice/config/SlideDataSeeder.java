@@ -1,7 +1,7 @@
-package com.project.foodieHub.config;
+package com.project.foodservice.config;
 
-import com.project.foodieHub.entity.Slide;
-import com.project.foodieHub.repo.SlideRepo;
+import com.project.foodservice.document.Slide;
+import com.project.foodservice.repo.SlideRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;

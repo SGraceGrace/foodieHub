@@ -40,15 +40,15 @@ export class AdminService {
     return this.http.post<ApiResponse<Slide>>(this.base, payload);
   }
 
-  updateSlide(id: number, payload: SlideRequest): Observable<ApiResponse<Slide>> {
+  updateSlide(id: string, payload: SlideRequest): Observable<ApiResponse<Slide>> {
     return this.http.put<ApiResponse<Slide>>(`${this.base}/${id}`, payload);
   }
 
-  deleteSlide(id: number): Observable<ApiResponse<null>> {
+  deleteSlide(id: string): Observable<ApiResponse<null>> {
     return this.http.delete<ApiResponse<null>>(`${this.base}/${id}`);
   }
 
-  toggleSlide(id: number): Observable<ApiResponse<Slide>> {
+  toggleSlide(id: string): Observable<ApiResponse<Slide>> {
     return this.http.put<ApiResponse<Slide>>(`${this.base}/${id}/toggle`, {});
   }
 

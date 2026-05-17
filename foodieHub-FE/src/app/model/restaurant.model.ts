@@ -54,7 +54,7 @@ export interface ActivityLog {
 }
 
 export interface Slide {
-  id: number;
+  id: string;
   title: string;
   highlightWord: string;
   description: string;
