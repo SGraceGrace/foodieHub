@@ -28,6 +28,9 @@
     <button class="nav-btn" [class.active]="activeTab==='orders'" (click)="goTab('orders')">
       <span>📦</span> Live Orders
     </button>
+    <button class="nav-btn" [class.active]="activeTab==='restaurants'" (click)="goTab('restaurants')">
+      <span>🏪</span> Restaurants
+    </button>
     <button class="nav-btn" [class.active]="activeTab==='menu'" (click)="goTab('menu')">
       <span>🍽️</span> Menu
     </button>
@@ -90,6 +93,84 @@
           <div class="empty-icon">🚧</div>
           <p>Order management is coming soon.</p>
           <p class="empty-sub">You'll be able to accept, prepare, and mark orders ready from here.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Restaurants Tab ───────────────────────────────────── -->
+    <div *ngIf="activeTab === 'restaurants'">
+      <div class="tab-header">
+        <div class="page-title" style="margin:0">My Restaurants 🏪</div>
+        <button class="btn-primary" (click)="openCreateForm()" *ngIf="!showCreateForm">
+          + Add Restaurant
+        </button>
+      </div>
+
+      <!-- Create form -->
+      <div class="create-form section-box" *ngIf="showCreateForm">
+        <h3 class="section-title">New Restaurant</h3>
+        <div class="form-group">
+          <label class="form-label">Restaurant Name</label>
+          <input
+            class="form-input"
+            type="text"
+            [(ngModel)]="newRestaurantName"
+            placeholder="e.g. Spice Garden"
+            (keyup.enter)="submitCreate()"
+          />
+        </div>
+        <div class="form-error" *ngIf="createError">{{ createError }}</div>
+        <div class="form-actions">
+          <button class="btn-primary" (click)="submitCreate()" [disabled]="creating">
+            {{ creating ? 'Creating…' : 'Create Restaurant' }}
+          </button>
+          <button class="btn-secondary" (click)="cancelCreate()" [disabled]="creating">Cancel</button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div class="section-box" *ngIf="restaurantsLoading">
+        <div class="empty-state"><p>Loading…</p></div>
+      </div>
+
+      <!-- List -->
+      <div class="section-box" *ngIf="!restaurantsLoading">
+        <div *ngIf="restaurants.length === 0" class="empty-state">
+          <div class="empty-icon">🏪</div>
+          <p>No restaurants yet.</p>
+          <p class="empty-sub">Click "Add Restaurant" to register your first location.</p>
+        </div>
+
+        <table class="data-table" *ngIf="restaurants.length > 0">
+          <thead>
+            <tr>
+              <th>Restaurant Name</th>
+              <th>Cuisine</th>
+              <th>Rating</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of restaurants">
+              <td class="col-name">{{ r.name }}</td>
+              <td>{{ r.cuisine?.join(', ') || '—' }}</td>
+              <td>{{ r.rating ? (r.rating | number:'1.1-1') : '—' }}</td>
+              <td>
+                <span class="badge" [class.badge-success]="r.isOpen" [class.badge-muted]="!r.isOpen">
+                  {{ r.isOpen ? 'Open' : 'Closed' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="pagination-bar" *ngIf="restaurantPagination.totalPages > 1">
+          <button class="page-btn" (click)="prevPage()" [disabled]="restaurantPagination.currentPage === 0">← Prev</button>
+          <span class="page-info">
+            Showing {{ restaurantStartRow }}–{{ restaurantEndRow }} of {{ restaurantPagination.totalElements }}
+          </span>
+          <button class="page-btn" (click)="nextPage()" [disabled]="restaurantPagination.currentPage >= restaurantPagination.totalPages - 1">Next →</button>
         </div>
       </div>
     </div>

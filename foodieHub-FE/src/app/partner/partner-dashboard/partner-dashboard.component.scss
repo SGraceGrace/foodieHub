@@ -208,3 +208,110 @@ p { font-size: 0.9rem; line-height: 1.6; }
 }
 
 .badge-success { background: #e8f5e9; color: $success; }
+.badge-muted   { background: #f0f0f0; color: $text-light; }
+
+// ── Buttons ───────────────────────────────────────────────────────
+.btn-primary {
+  background: $gold;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+  &:hover:not(:disabled) { background: $gold-dark; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.btn-secondary {
+  background: white;
+  color: $text;
+  border: 1px solid $border;
+  padding: 8px 18px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .15s;
+  &:hover:not(:disabled) { background: $bg; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+// ── Create form ───────────────────────────────────────────────────
+.create-form { margin-bottom: 1.5rem; max-width: 480px; }
+
+.form-group  { margin-bottom: 1rem; }
+.form-label  { display: block; font-size: 0.8rem; color: $text-light; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 6px; }
+
+.form-input {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid $border;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  color: $text-dark;
+  outline: none;
+  transition: border-color .15s;
+  &:focus { border-color: $gold; }
+}
+
+.form-error  { font-size: 0.8rem; color: #e53935; margin-bottom: .75rem; }
+
+.form-actions { display: flex; gap: 10px; }
+
+// ── Data table ────────────────────────────────────────────────────
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  th {
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    color: $text-light;
+    border-bottom: 1px solid $border;
+  }
+
+  td {
+    padding: 12px 12px;
+    color: $text-dark;
+    border-bottom: 1px solid $border;
+    vertical-align: middle;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: #fafafa; }
+
+  .col-name { font-weight: 600; }
+}
+
+// ── Pagination ────────────────────────────────────────────────────
+.pagination-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid $border;
+}
+
+.page-info { font-size: 0.8rem; color: $text-light; }
+
+.page-btn {
+  background: white;
+  border: 1px solid $border;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  cursor: pointer;
+  color: $text;
+  transition: background .15s;
+  &:hover:not(:disabled) { background: $bg; }
+  &:disabled { opacity: 0.4; cursor: not-allowed; }
+}

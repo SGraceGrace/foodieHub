@@ -2,6 +2,7 @@ package com.project.foodservice.service.impl;
 
 import com.project.foodservice.document.Restaurant;
 import com.project.foodservice.dto.PaginatedResponse;
+import com.project.foodservice.dto.RestaurantCreateRequestDTO;
 import com.project.foodservice.repo.RestaurantRepo;
 import com.project.foodservice.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
@@ -38,5 +40,18 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .distinct()
                 .sorted()
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public Restaurant create(RestaurantCreateRequestDTO request) {
+        Restaurant restaurant = new Restaurant();
+        restaurant.setName(request.getName());
+        restaurant.setOwnerId(request.getOwnerId());
+        return restaurantRepo.save(restaurant);
+    }
+
+    @Override
+    public PaginatedResponse<Restaurant> getByOwner(String ownerId, Pageable pageable) {
+        return PaginatedResponse.of(restaurantRepo.findByOwnerId(ownerId, pageable));
     }
 }

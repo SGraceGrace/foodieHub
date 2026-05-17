@@ -13,6 +13,8 @@ public class Restaurant {
     @Id
     private String id;
 
+    private String ownerId;
+
     private String name;
     private List<String> cuisine;
     private double rating;

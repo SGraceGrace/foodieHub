@@ -13,4 +13,6 @@ public interface RestaurantRepo extends MongoRepository<Restaurant, String> {
 
     @Query(value = "{}", fields = "{ 'cuisine': 1 }")
     List<Restaurant> findAllCuisineFields();
+
+    Page<Restaurant> findByOwnerId(String ownerId, Pageable pageable);
 }

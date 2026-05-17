@@ -38,7 +38,7 @@ export class AdminComponent implements OnInit {
 
   // Restaurant Owners
   owners: AdminUserResponse[] = [];
-  ownerStatusFilter = 'PENDING';
+  ownerStatusFilter = '';
   ownerPagination = { currentPage: 0, totalPages: 0, totalElements: 0, pageSize: 10 };
 
   // Activity Log

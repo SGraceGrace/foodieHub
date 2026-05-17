@@ -1,6 +1,7 @@
 package com.project.foodservice.controller;
 
 import com.project.foodservice.dto.BaseAPIResponse;
+import com.project.foodservice.dto.RestaurantCreateRequestDTO;
 import com.project.foodservice.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -33,5 +34,21 @@ public class RestaurantController {
     @GetMapping("/cuisines")
     public ResponseEntity<BaseAPIResponse> getCuisines() {
         return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", restaurantService.getCuisines(), HttpStatus.OK.value(), null));
+    }
+
+    @PostMapping
+    public ResponseEntity<BaseAPIResponse> create(@RequestBody RestaurantCreateRequestDTO request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new BaseAPIResponse("SUCCESS", restaurantService.create(request), HttpStatus.CREATED.value(), null));
+    }
+
+    @GetMapping("/owner/{ownerId}")
+    public ResponseEntity<BaseAPIResponse> getByOwner(
+            @PathVariable String ownerId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+                restaurantService.getByOwner(ownerId, PageRequest.of(page, size)),
+                HttpStatus.OK.value(), null));
     }
 }
