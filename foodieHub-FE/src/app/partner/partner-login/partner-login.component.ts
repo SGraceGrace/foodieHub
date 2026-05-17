@@ -71,7 +71,12 @@ export class PartnerLoginComponent {
       },
       error: (err) => {
         const msg = err?.error?.errorMsg;
-        this.toastr.error(Array.isArray(msg) ? msg.join('\n') : msg || 'Invalid credentials.');
+        const text = Array.isArray(msg) ? msg.join('\n') : msg;
+        if (err?.status === 403) {
+          this.toastr.warning(text || 'Your account is pending approval.', 'Pending Approval');
+        } else {
+          this.toastr.error(text || 'Invalid credentials.');
+        }
       },
     });
   }
