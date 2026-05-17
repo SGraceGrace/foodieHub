@@ -4,13 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { AdminService, CreateAdminRequest, SlideRequest } from './admin.service';
 import { ActivityLog, AdminUserResponse, PaginatedResponse, Slide } from '../model/restaurant.model';
+import { AdminHeaderComponent } from './admin-header/admin-header.component';
 
 type Tab = 'dashboard' | 'users' | 'restaurants' | 'restaurant-owners' | 'orders' | 'payments' | 'support' | 'reports' | 'slides' | 'activity-log';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, AdminHeaderComponent],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.scss',
 })
