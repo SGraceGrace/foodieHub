@@ -1,0 +1,210 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+$gold:      #f9b303;
+$gold-dark: #e0a000;
+$text:      #4e4e4e;
+$text-dark: #2a2a2a;
+$text-light:#888;
+$border:    #e8e8e8;
+$bg:        #f5f5f5;
+$success:   #248f28;
+$font-serif:'Libre Baskerville', Georgia, serif;
+$font-sans: 'DM Sans', sans-serif;
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: $font-sans; }
+
+// ── Header ────────────────────────────────────────────────────────
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid $border;
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo-area { display: flex; align-items: center; gap: 10px; }
+
+.logo-icon {
+  width: 38px; height: 38px;
+  background: $gold; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-family: $font-serif; font-size: 17px;
+}
+
+.logo-text { font-family: $font-serif; font-size: 1.1rem; font-weight: 700; color: $text-dark; }
+.logo-sub  { font-size: 0.68rem; color: $text-light; }
+
+.header-right { display: flex; align-items: center; gap: 12px; }
+
+.owner-name { font-size: 0.85rem; color: $text; font-weight: 500; }
+
+.user-icon {
+  width: 34px; height: 34px;
+  background: $gold; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 0.8rem;
+  cursor: pointer;
+  &:hover { background: $gold-dark; }
+}
+
+// ── Layout ────────────────────────────────────────────────────────
+.layout {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  min-height: calc(100vh - 65px);
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────
+.sidebar {
+  background: #1a1a1a;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: $font-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 1.5rem;
+}
+
+.sidebar-icon {
+  width: 26px; height: 26px;
+  background: $gold; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 11px; font-weight: 700;
+  flex-shrink: 0;
+}
+
+.nav-btn {
+  width: 100%;
+  text-align: left;
+  padding: 9px 10px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.65);
+  cursor: pointer;
+  border-radius: 6px;
+  margin-bottom: 4px;
+  font-family: $font-sans;
+  font-size: 0.84rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all .15s;
+
+  span { font-size: 1rem; }
+  &:hover  { background: rgba(249,179,3,.15); color: $gold; }
+  &.active { background: rgba(249,179,3,.15); color: $gold; }
+}
+
+.logout-btn {
+  margin-top: auto;
+  color: rgba(255,255,255,0.3);
+  &:hover { background: rgba(255,0,0,.1); color: #ff6b6b; }
+}
+
+// ── Main ──────────────────────────────────────────────────────────
+.main {
+  padding: 2rem;
+  background: $bg;
+  overflow-y: auto;
+}
+
+.page-title {
+  font-family: $font-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin-bottom: 1.5rem;
+}
+
+// ── Stats grid ────────────────────────────────────────────────────
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 1.2rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+
+.stat-label { font-size: 0.72rem; color: $text-light; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+.stat-value { font-family: $font-serif; font-size: 1.6rem; font-weight: 700; color: $text-dark; }
+.stat-note  { font-size: 0.7rem; color: $text-light; margin-top: 4px; }
+
+// ── Section box ───────────────────────────────────────────────────
+.section-box {
+  background: white;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+
+.section-title {
+  font-family: $font-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin-bottom: 1rem;
+}
+
+.tab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+// ── Empty state ───────────────────────────────────────────────────
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: $text-light;
+}
+
+.empty-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+
+p { font-size: 0.9rem; line-height: 1.6; }
+.empty-sub { font-size: 0.8rem; margin-top: .4rem; color: lighten($text-light, 10%); }
+
+// ── Settings ──────────────────────────────────────────────────────
+.settings-box { max-width: 560px; }
+
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: .75rem 0;
+  border-bottom: 1px solid $border;
+  font-size: 0.88rem;
+
+  &:last-child { border-bottom: none; }
+}
+
+.info-label { width: 130px; min-width: 130px; color: $text-light; font-size: 0.8rem; text-transform: uppercase; letter-spacing: .4px; }
+.info-val   { color: $text-dark; font-weight: 500; }
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge-success { background: #e8f5e9; color: $success; }
