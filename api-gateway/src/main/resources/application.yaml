@@ -31,10 +31,25 @@ spring:
             predicates:
               - Path=/api/v1/contact
 
-          - id: food-service
+          - id: user-service-slides-public
+            uri: http://localhost:8081
+            predicates:
+              - Path=/api/v1/slides
+
+          - id: user-service-slides-admin
+            uri: http://localhost:8081
+            predicates:
+              - Path=/api/v1/admin/slides, /api/v1/admin/slides/**
+
+          - id: user-service-admin-users
+            uri: http://localhost:8081
+            predicates:
+              - Path=/api/v1/admin/users, /api/v1/admin/users/**
+
+          - id: food-service-restaurants
             uri: http://localhost:8082
             predicates:
-              - Path=/api/restaurants/**
+              - Path=/api/v1/restaurants, /api/v1/restaurants/**
 
           - id: food-service-cuisines
             uri: http://localhost:8082
