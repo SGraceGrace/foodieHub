@@ -51,6 +51,11 @@ spring:
             predicates:
               - Path=/api/v1/admin/activity-logs
 
+          - id: user-service-partner
+            uri: http://localhost:8081
+            predicates:
+              - Path=/api/v1/partner/**
+
           - id: food-service-restaurants
             uri: http://localhost:8082
             predicates:
