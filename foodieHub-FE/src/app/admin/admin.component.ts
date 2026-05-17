@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { AdminService, CreateAdminRequest, SlideRequest } from './admin.service';
-import { ActivityLog, AdminUserResponse, PaginatedResponse, Slide } from '../model/restaurant.model';
+import { ActivityLog, AdminUserResponse, PaginatedResponse, Restaurant, Slide } from '../model/restaurant.model';
 import { AdminHeaderComponent } from './admin-header/admin-header.component';
 
 type Tab = 'dashboard' | 'users' | 'restaurants' | 'restaurant-owners' | 'orders' | 'payments' | 'support' | 'reports' | 'slides' | 'activity-log';
@@ -31,6 +31,11 @@ export class AdminComponent implements OnInit {
   createAdminForm: CreateAdminRequest = this.emptyAdminForm();
   adminFormErrors = { firstName: '', email: '', password: '' };
 
+  // Restaurants
+  restaurants: Restaurant[] = [];
+  restaurantSearch = '';
+  restaurantPagination = { currentPage: 0, totalPages: 0, totalElements: 0, pageSize: 10 };
+
   // Restaurant Owners
   owners: AdminUserResponse[] = [];
   ownerStatusFilter = 'PENDING';
@@ -53,6 +58,7 @@ export class AdminComponent implements OnInit {
   goTab(tab: Tab) {
     this.activeTab = tab;
     if (tab === 'users') this.loadUsers();
+    if (tab === 'restaurants') this.loadRestaurants();
     if (tab === 'restaurant-owners') this.loadOwners();
     if (tab === 'slides') this.loadSlides();
     if (tab === 'activity-log') this.loadActivityLogs();
@@ -105,6 +111,31 @@ export class AdminComponent implements OnInit {
       error: () => this.toastr.error('Failed to unsuspend user.'),
     });
   }
+
+  // ── Restaurants ───────────────────────────────────────────────────
+
+  loadRestaurants(page = 0) {
+    this.adminService.getRestaurants(this.restaurantSearch, page, this.restaurantPagination.pageSize).subscribe({
+      next: (res) => {
+        const p: PaginatedResponse<Restaurant> = res.data;
+        this.restaurants = p.content;
+        this.restaurantPagination = { currentPage: p.currentPage, totalPages: p.totalPages, totalElements: p.totalElements, pageSize: p.pageSize };
+      },
+      error: () => this.toastr.error('Failed to load restaurants.'),
+    });
+  }
+
+  get restaurantPageNumbers(): number[] {
+    const { currentPage, totalPages } = this.restaurantPagination;
+    const pages: number[] = [];
+    for (let i = Math.max(0, currentPage - 2); i <= Math.min(totalPages - 1, currentPage + 2); i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  restaurantPagingStart(): number { return this.restaurantPagination.currentPage * this.restaurantPagination.pageSize + 1; }
+  restaurantPagingEnd(): number { return Math.min((this.restaurantPagination.currentPage + 1) * this.restaurantPagination.pageSize, this.restaurantPagination.totalElements); }
 
   // ── Restaurant Owners ────────────────────────────────────────────
 

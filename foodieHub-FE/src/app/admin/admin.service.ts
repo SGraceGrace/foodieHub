@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiResponse } from '../model/apiResponse.model';
-import { ActivityLog, AdminUserResponse, PaginatedResponse, Slide } from '../model/restaurant.model';
+import { ActivityLog, AdminUserResponse, PaginatedResponse, Restaurant, Slide } from '../model/restaurant.model';
 
 export interface SlideRequest {
   title: string;
@@ -72,6 +72,16 @@ export class AdminService {
 
   unsuspendUser(id: number): Observable<ApiResponse<AdminUserResponse>> {
     return this.http.put<ApiResponse<AdminUserResponse>>(`${this.usersBase}/${id}/unsuspend`, {});
+  }
+
+  // Restaurants
+  private restaurantsBase = `${environment.apiBaseUrl}/api/v1/restaurants`;
+
+  getRestaurants(search?: string, page = 0, size = 10): Observable<ApiResponse<PaginatedResponse<Restaurant>>> {
+    let params = new HttpParams();
+    if (search) params = params.set('search', search);
+    params = params.set('page', page.toString()).set('size', size.toString());
+    return this.http.get<ApiResponse<PaginatedResponse<Restaurant>>>(this.restaurantsBase, { params });
   }
 
   // Activity Logs

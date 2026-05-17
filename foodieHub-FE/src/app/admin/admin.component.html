@@ -159,20 +159,45 @@
       <div class="page-title">Restaurant Management</div>
       <div class="table-box">
         <div class="table-toolbar">
-          <input class="search-input" type="text" placeholder="Search restaurants..." />
-          <select class="filter-select">
-            <option>All Restaurants</option>
-            <option>Approved</option>
-            <option>Pending</option>
-            <option>Suspended</option>
-          </select>
+          <input class="search-input" type="text" placeholder="Search restaurants..."
+            [(ngModel)]="restaurantSearch" (keyup.enter)="loadRestaurants(0)" />
         </div>
         <table>
-          <thead><tr><th>Restaurant</th><th>Owner</th><th>Cuisine</th><th>Orders</th><th>Rating</th><th>Status</th><th>Actions</th></tr></thead>
+          <thead>
+            <tr><th>Restaurant</th><th>Cuisine</th><th>Rating</th><th>Delivery Time</th><th>Status</th></tr>
+          </thead>
           <tbody>
-            <tr><td colspan="7" class="empty-cell">No restaurants found</td></tr>
+            <tr *ngFor="let r of restaurants">
+              <td>{{ r.name }}</td>
+              <td>{{ r.cuisine?.join(', ') || '—' }}</td>
+              <td>{{ r.rating ?? '—' }}</td>
+              <td>{{ r.deliveryTime ? r.deliveryTime + ' min' : '—' }}</td>
+              <td>
+                <span class="badge" [class.success]="r.isOpen" [class.warning]="!r.isOpen">
+                  {{ r.isOpen ? 'Open' : 'Closed' }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="restaurants.length === 0">
+              <td colspan="5" class="empty-cell">No restaurants found</td>
+            </tr>
           </tbody>
         </table>
+
+        <div class="table-footer" *ngIf="restaurantPagination.totalElements > 0">
+          <div class="pagination-info">
+            Showing {{ restaurantPagingStart() }}–{{ restaurantPagingEnd() }} of {{ restaurantPagination.totalElements }} restaurants
+          </div>
+          <div class="pagination" *ngIf="restaurantPagination.totalPages > 1">
+            <button class="page-btn" [disabled]="restaurantPagination.currentPage === 0"
+              (click)="loadRestaurants(restaurantPagination.currentPage - 1)">&#8249;</button>
+            <button class="page-btn" *ngFor="let p of restaurantPageNumbers"
+              [class.active]="p === restaurantPagination.currentPage"
+              (click)="loadRestaurants(p)">{{ p + 1 }}</button>
+            <button class="page-btn" [disabled]="restaurantPagination.currentPage === restaurantPagination.totalPages - 1"
+              (click)="loadRestaurants(restaurantPagination.currentPage + 1)">&#8250;</button>
+          </div>
+        </div>
       </div>
     </ng-container>
 
