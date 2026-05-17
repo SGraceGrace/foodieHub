@@ -99,7 +99,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.selectedCuisine = cuisine ?? 'All';
     this.homeService.getRestaurants(cuisine).subscribe({
       next: (res) => {
-        this.restaurants = res.data ?? [];
+        this.restaurants = res.data?.content ?? [];
         if (!cuisine) this.buildPopularDishes(this.restaurants);
       },
     });
