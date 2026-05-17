@@ -80,13 +80,15 @@ function handle401(
     refreshSubject.next(null);
 
     return loginService.refreshToken({ refreshToken }).pipe(
-      switchMap((tokens) => {
+      switchMap((response) => {
         isRefreshing = false;
-        tokenService.setTokens(tokens.accessToken, tokens.refreshToken);
-        refreshSubject.next(tokens.accessToken);
+        const newAccessToken = response.headers.get('Authorization') ?? '';
+        const newRefreshToken = response.headers.get('X-Refresh-Token') ?? '';
+        tokenService.setTokens(newAccessToken, newRefreshToken);
+        refreshSubject.next(newAccessToken);
         return next(
           request.clone({
-            setHeaders: { Authorization: `Bearer ${tokens.accessToken}` },
+            setHeaders: { Authorization: newAccessToken },
           })
         );
       }),
@@ -104,7 +106,7 @@ function handle401(
       switchMap((token) =>
         next(
           request.clone({
-            setHeaders: { Authorization: `Bearer ${token}` },
+            setHeaders: { Authorization: token! },
           })
         )
       )

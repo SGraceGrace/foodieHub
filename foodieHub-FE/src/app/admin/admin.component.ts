@@ -42,13 +42,12 @@ export class AdminComponent implements OnInit {
 
   constructor(private adminService: AdminService, private toastr: ToastrService) {}
 
-  ngOnInit() {
-    this.loadSlides();
-  }
+  ngOnInit() {}
 
   goTab(tab: Tab) {
     this.activeTab = tab;
     if (tab === 'users') this.loadUsers();
+    if (tab === 'slides') this.loadSlides();
     if (tab === 'activity-log') this.loadActivityLogs();
   }
 
