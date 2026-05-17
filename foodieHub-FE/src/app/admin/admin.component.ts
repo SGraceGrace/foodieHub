@@ -2,10 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { AdminService, SlideRequest } from './admin.service';
-import { AdminUserResponse, Slide } from '../model/restaurant.model';
+import { AdminService, CreateAdminRequest, SlideRequest } from './admin.service';
+import { ActivityLog, AdminUserResponse, Slide } from '../model/restaurant.model';
 
-type Tab = 'dashboard' | 'users' | 'restaurants' | 'orders' | 'payments' | 'support' | 'reports' | 'slides';
+type Tab = 'dashboard' | 'users' | 'restaurants' | 'orders' | 'payments' | 'support' | 'reports' | 'slides' | 'activity-log';
 
 @Component({
   selector: 'app-admin',
@@ -21,6 +21,15 @@ export class AdminComponent implements OnInit {
   users: AdminUserResponse[] = [];
   userSearch = '';
   userStatusFilter = '';
+
+  // Create Admin modal
+  showCreateAdminModal = false;
+  showAdminPassword = false;
+  createAdminForm: CreateAdminRequest = this.emptyAdminForm();
+  adminFormErrors = { firstName: '', email: '', password: '' };
+
+  // Activity Log
+  activityLogs: ActivityLog[] = [];
 
   // Slides
   slides: Slide[] = [];
@@ -38,6 +47,7 @@ export class AdminComponent implements OnInit {
   goTab(tab: Tab) {
     this.activeTab = tab;
     if (tab === 'users') this.loadUsers();
+    if (tab === 'activity-log') this.loadActivityLogs();
   }
 
   // ── Users ────────────────────────────────────────────────────────
@@ -70,6 +80,88 @@ export class AdminComponent implements OnInit {
       },
       error: () => this.toastr.error('Failed to unsuspend user.'),
     });
+  }
+
+  // ── Create Admin ─────────────────────────────────────────────────
+
+  openCreateAdmin() {
+    this.createAdminForm = this.emptyAdminForm();
+    this.adminFormErrors = { firstName: '', email: '', password: '' };
+    this.showAdminPassword = false;
+    this.showCreateAdminModal = true;
+  }
+
+  submitCreateAdmin() {
+    if (!this.validateAdminForm()) return;
+    this.adminService.createAdmin(this.createAdminForm).subscribe({
+      next: () => {
+        this.toastr.success('Admin user created successfully.');
+        this.showCreateAdminModal = false;
+        this.loadUsers();
+      },
+      error: (err) => this.toastr.error(err?.error?.message || 'Failed to create admin.'),
+    });
+  }
+
+  private validateAdminForm(): boolean {
+    this.adminFormErrors = { firstName: '', email: '', password: '' };
+    let valid = true;
+
+    if (!this.createAdminForm.firstName.trim()) {
+      this.adminFormErrors.firstName = 'First name is required.';
+      valid = false;
+    }
+
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!this.createAdminForm.email.trim()) {
+      this.adminFormErrors.email = 'Email is required.';
+      valid = false;
+    } else if (!emailRe.test(this.createAdminForm.email)) {
+      this.adminFormErrors.email = 'Enter a valid email address.';
+      valid = false;
+    }
+
+    const pw = this.createAdminForm.password;
+    if (!pw) {
+      this.adminFormErrors.password = 'Password is required.';
+      valid = false;
+    } else if (pw.length < 8) {
+      this.adminFormErrors.password = 'Must be at least 8 characters.';
+      valid = false;
+    } else if (!/[A-Z]/.test(pw)) {
+      this.adminFormErrors.password = 'Must contain at least one uppercase letter.';
+      valid = false;
+    } else if (!/[0-9]/.test(pw)) {
+      this.adminFormErrors.password = 'Must contain at least one number.';
+      valid = false;
+    }
+
+    return valid;
+  }
+
+  // ── Activity Log ──────────────────────────────────────────────────
+
+  loadActivityLogs() {
+    this.adminService.getActivityLogs().subscribe({
+      next: (res) => (this.activityLogs = res.data ?? []),
+      error: () => this.toastr.error('Failed to load activity logs.'),
+    });
+  }
+
+  actionLabel(action: string): string {
+    const labels: Record<string, string> = {
+      CREATE_ADMIN: 'Created Admin',
+      SUSPEND_USER: 'Suspended User',
+      UNSUSPEND_USER: 'Unsuspended User',
+    };
+    return labels[action] ?? action;
+  }
+
+  actionClass(action: string): string {
+    if (action === 'CREATE_ADMIN') return 'log-badge create';
+    if (action === 'SUSPEND_USER') return 'log-badge suspend';
+    if (action === 'UNSUSPEND_USER') return 'log-badge restore';
+    return 'log-badge';
   }
 
   // ── Slides ──────────────────────────────────────────────────────
@@ -137,6 +229,14 @@ export class AdminComponent implements OnInit {
   }
 
   clearForm() { this.form = this.emptyForm(); }
+
+  get pwHasLength(): boolean { return this.createAdminForm.password.length >= 8; }
+  get pwHasUppercase(): boolean { return /[A-Z]/.test(this.createAdminForm.password); }
+  get pwHasNumber(): boolean { return /[0-9]/.test(this.createAdminForm.password); }
+
+  private emptyAdminForm(): CreateAdminRequest {
+    return { firstName: '', lastName: '', email: '', password: '' };
+  }
 
   private emptyForm(): SlideRequest {
     return { title: '', highlightWord: '', description: '', btn1Text: '', btn2Text: '', emoji: '🍛', badgeIcon: '⚡', badgeText: '', displayOrder: 0 };

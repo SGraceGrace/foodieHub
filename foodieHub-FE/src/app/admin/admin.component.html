@@ -28,6 +28,9 @@
     <button class="nav-btn" [class.active]="activeTab === 'slides'" (click)="goTab('slides')">
       <span>🖼️</span> Slideshow
     </button>
+    <button class="nav-btn" [class.active]="activeTab === 'activity-log'" (click)="goTab('activity-log')">
+      <span>📋</span> Activity Log
+    </button>
   </div>
 
   <!-- Main Content -->
@@ -91,6 +94,7 @@
             <option value="ACTIVE">Active</option>
             <option value="INACTIVE">Suspended</option>
           </select>
+          <button class="btn-inline-primary" (click)="openCreateAdmin()">+ Create Admin</button>
         </div>
         <table>
           <thead>
@@ -314,6 +318,91 @@
       </div>
     </ng-container>
 
+    <!-- ACTIVITY LOG TAB -->
+    <ng-container *ngIf="activeTab === 'activity-log'">
+      <div class="page-title">Activity Log</div>
+      <div class="table-box">
+        <table>
+          <thead>
+            <tr><th>Time</th><th>Actor</th><th>Action</th><th>Target</th><th>Details</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let log of activityLogs">
+              <td style="white-space:nowrap">{{ log.createdAt | date:'yyyy-MM-dd HH:mm' }}</td>
+              <td>{{ log.actorEmail }}</td>
+              <td><span [class]="actionClass(log.action)">{{ actionLabel(log.action) }}</span></td>
+              <td>{{ log.targetEntity }} #{{ log.targetId }}</td>
+              <td>{{ log.details }}</td>
+            </tr>
+            <tr *ngIf="activityLogs.length === 0">
+              <td colspan="5" class="empty-cell">No activity recorded yet</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </ng-container>
+
+  </div>
+</div>
+
+<!-- Create Admin Modal -->
+<div class="modal" [class.show]="showCreateAdminModal">
+  <div class="modal-content">
+    <button class="modal-close" (click)="showCreateAdminModal = false">✕</button>
+    <div class="modal-title">Create Admin User</div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>First Name <span class="required">*</span></label>
+        <input type="text" placeholder="First name" [(ngModel)]="createAdminForm.firstName"
+          [class.input-error]="adminFormErrors.firstName" />
+        <div class="field-error" *ngIf="adminFormErrors.firstName">{{ adminFormErrors.firstName }}</div>
+      </div>
+      <div class="form-group">
+        <label>Last Name</label>
+        <input type="text" placeholder="Last name" [(ngModel)]="createAdminForm.lastName" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Email <span class="required">*</span></label>
+      <input type="email" placeholder="admin@example.com" [(ngModel)]="createAdminForm.email"
+        [class.input-error]="adminFormErrors.email" />
+      <div class="field-error" *ngIf="adminFormErrors.email">{{ adminFormErrors.email }}</div>
+    </div>
+
+    <div class="form-group">
+      <label>Password <span class="required">*</span></label>
+      <div class="password-wrapper">
+        <input [type]="showAdminPassword ? 'text' : 'password'"
+          placeholder="Min 8 chars, 1 uppercase, 1 number"
+          [(ngModel)]="createAdminForm.password"
+          [class.input-error]="adminFormErrors.password" />
+        <button type="button" class="eye-btn" (click)="showAdminPassword = !showAdminPassword"
+          [title]="showAdminPassword ? 'Hide password' : 'Show password'">
+          <svg *ngIf="!showAdminPassword" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <svg *ngIf="showAdminPassword" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+            <line x1="1" y1="1" x2="23" y2="23"/>
+          </svg>
+        </button>
+      </div>
+      <div class="field-error" *ngIf="adminFormErrors.password">{{ adminFormErrors.password }}</div>
+      <div class="pw-hints">
+        <span [class.hint-ok]="pwHasLength">8+ characters</span>
+        <span [class.hint-ok]="pwHasUppercase">Uppercase</span>
+        <span [class.hint-ok]="pwHasNumber">Number</span>
+      </div>
+    </div>
+
+    <div class="form-actions" style="margin-top:1.5rem">
+      <button class="btn-primary" (click)="submitCreateAdmin()">Create Admin</button>
+      <button class="btn-outline" (click)="showCreateAdminModal = false">Cancel</button>
+    </div>
   </div>
 </div>
 

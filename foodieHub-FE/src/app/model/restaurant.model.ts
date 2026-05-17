@@ -35,6 +35,16 @@ export interface AdminUserResponse {
   status: string;
 }
 
+export interface ActivityLog {
+  id: number;
+  actorEmail: string;
+  action: string;
+  targetEntity: string;
+  targetId: number;
+  details: string;
+  createdAt: string;
+}
+
 export interface Slide {
   id: number;
   title: string;

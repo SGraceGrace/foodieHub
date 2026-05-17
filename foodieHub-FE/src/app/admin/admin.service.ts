@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiResponse } from '../model/apiResponse.model';
-import { AdminUserResponse, Slide } from '../model/restaurant.model';
+import { ActivityLog, AdminUserResponse, Slide } from '../model/restaurant.model';
 
 export interface SlideRequest {
   title: string;
@@ -17,10 +17,18 @@ export interface SlideRequest {
   displayOrder: number;
 }
 
+export interface CreateAdminRequest {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AdminService {
   private base = `${environment.apiBaseUrl}/api/v1/admin/slides`;
   private usersBase = `${environment.apiBaseUrl}/api/v1/admin/users`;
+  private logsBase = `${environment.apiBaseUrl}/api/v1/admin/activity-logs`;
 
   constructor(private http: HttpClient) {}
 
@@ -52,11 +60,20 @@ export class AdminService {
     return this.http.get<ApiResponse<AdminUserResponse[]>>(this.usersBase, { params });
   }
 
+  createAdmin(payload: CreateAdminRequest): Observable<ApiResponse<AdminUserResponse>> {
+    return this.http.post<ApiResponse<AdminUserResponse>>(`${this.usersBase}/create-admin`, payload);
+  }
+
   suspendUser(id: number): Observable<ApiResponse<AdminUserResponse>> {
     return this.http.put<ApiResponse<AdminUserResponse>>(`${this.usersBase}/${id}/suspend`, {});
   }
 
   unsuspendUser(id: number): Observable<ApiResponse<AdminUserResponse>> {
     return this.http.put<ApiResponse<AdminUserResponse>>(`${this.usersBase}/${id}/unsuspend`, {});
+  }
+
+  // Activity Logs
+  getActivityLogs(): Observable<ApiResponse<ActivityLog[]>> {
+    return this.http.get<ApiResponse<ActivityLog[]>>(this.logsBase);
   }
 }

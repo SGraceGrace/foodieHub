@@ -1,13 +1,20 @@
 package com.project.foodieHub.service.impl;
 
+import com.project.foodieHub.dto.ActivityLogDTO;
 import com.project.foodieHub.dto.AdminUserResponseDTO;
+import com.project.foodieHub.dto.CreateAdminRequestDTO;
 import com.project.foodieHub.entity.User;
+import com.project.foodieHub.enums.Role;
 import com.project.foodieHub.enums.UserStatus;
 import com.project.foodieHub.exception_handler.CommonException;
+import com.project.foodieHub.repo.RoleRepo;
 import com.project.foodieHub.repo.UserRepo;
+import com.project.foodieHub.service.ActivityLogService;
 import com.project.foodieHub.service.AdminUserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -16,6 +23,9 @@ import java.util.List;
 public class AdminUserServiceImpl implements AdminUserService {
 
     private final UserRepo userRepo;
+    private final RoleRepo roleRepo;
+    private final PasswordEncoder passwordEncoder;
+    private final ActivityLogService activityLogService;
 
     @Override
     public List<AdminUserResponseDTO> getUsers(String status, String search) {
@@ -31,14 +41,47 @@ public class AdminUserServiceImpl implements AdminUserService {
     public AdminUserResponseDTO suspendUser(Long id) {
         User user = findUser(id);
         user.setStatus(UserStatus.INACTIVE);
-        return toDTO(userRepo.save(user));
+        User saved = userRepo.save(user);
+        activityLogService.log("SUSPEND_USER", "User", id, "email: " + user.getEmail());
+        return toDTO(saved);
     }
 
     @Override
     public AdminUserResponseDTO unsuspendUser(Long id) {
         User user = findUser(id);
         user.setStatus(UserStatus.ACTIVE);
-        return toDTO(userRepo.save(user));
+        User saved = userRepo.save(user);
+        activityLogService.log("UNSUSPEND_USER", "User", id, "email: " + user.getEmail());
+        return toDTO(saved);
+    }
+
+    @Override
+    @Transactional
+    public AdminUserResponseDTO createAdmin(CreateAdminRequestDTO request) {
+        userRepo.findByUserName(request.getEmail()).ifPresent(u -> {
+            throw new CommonException("An account with this email already exists.");
+        });
+
+        var adminRole = roleRepo.findByRoleName(Role.ADMIN.name())
+                .orElseThrow(() -> new CommonException("Admin role not found."));
+
+        User newAdmin = new User();
+        newAdmin.setFirstName(request.getFirstName());
+        newAdmin.setLastName(request.getLastName());
+        newAdmin.setEmail(request.getEmail());
+        newAdmin.setUserName(request.getEmail());
+        newAdmin.setPassword(passwordEncoder.encode(request.getPassword()));
+        newAdmin.setRole(adminRole);
+        newAdmin.setStatus(UserStatus.ACTIVE);
+
+        User saved = userRepo.save(newAdmin);
+        activityLogService.log("CREATE_ADMIN", "User", saved.getId(), "email: " + saved.getEmail());
+        return toDTO(saved);
+    }
+
+    @Override
+    public List<ActivityLogDTO> getActivityLogs() {
+        return activityLogService.getLogs();
     }
 
     private User findUser(Long id) {

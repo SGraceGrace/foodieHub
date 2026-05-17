@@ -1,6 +1,7 @@
 package com.project.foodieHub.controller;
 
 import com.project.foodieHub.dto.BaseAPIResponse;
+import com.project.foodieHub.dto.CreateAdminRequestDTO;
 import com.project.foodieHub.service.AdminUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,13 @@ public class AdminUserController {
                 adminUserService.getUsers(status, search), HttpStatus.OK.value(), null));
     }
 
+    @PostMapping("api/v1/admin/users/create-admin")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<BaseAPIResponse> createAdmin(@RequestBody CreateAdminRequestDTO request) {
+        return ResponseEntity.ok(new BaseAPIResponse("Admin user created",
+                adminUserService.createAdmin(request), HttpStatus.OK.value(), null));
+    }
+
     @PutMapping("api/v1/admin/users/{id}/suspend")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<BaseAPIResponse> suspend(@PathVariable Long id) {
@@ -35,5 +43,12 @@ public class AdminUserController {
     public ResponseEntity<BaseAPIResponse> unsuspend(@PathVariable Long id) {
         return ResponseEntity.ok(new BaseAPIResponse("User unsuspended",
                 adminUserService.unsuspendUser(id), HttpStatus.OK.value(), null));
+    }
+
+    @GetMapping("api/v1/admin/activity-logs")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<BaseAPIResponse> getActivityLogs() {
+        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+                adminUserService.getActivityLogs(), HttpStatus.OK.value(), null));
     }
 }
