@@ -7,10 +7,11 @@ import { TokenService } from './core/shared/token.service';
 import { UserHeaderComponent } from "./user/user-header/user-header.component";
 import { AdminHeaderComponent } from "./admin/admin-header/admin-header.component";
 import { GlobalLoaderComponent } from "./core/shared/components/global-loader/global-loader.component";
+import { FooterComponent } from './footer/footer.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, CommonModule, HeaderComponent, UserHeaderComponent, AdminHeaderComponent, GlobalLoaderComponent],
+  imports: [RouterOutlet, CommonModule, HeaderComponent, UserHeaderComponent, AdminHeaderComponent, GlobalLoaderComponent, FooterComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -18,6 +19,7 @@ export class AppComponent {
   title = 'foodieHub-FE';
   currentUrl: string = '';
   showHeader: boolean = true;
+  showFooter: boolean = true;
 
   role$: any;
 
@@ -25,12 +27,15 @@ export class AppComponent {
     this.role$ = this.tokenService.userInfo$.pipe(
       map(user => user?.role?.roleName ?? 'guest')
     );
-    
+
     this.router.events.subscribe(event => {
       if (event instanceof NavigationEnd) {
         this.currentUrl = event.url;
         const path = event.urlAfterRedirects.split('?')[0];
-        this.showHeader = path !== '/login' && path !== '/signup' && path !== '/admin/login';
+        const noSharedLayout = path.startsWith('/admin') || path.startsWith('/partner');
+        const authPage = path === '/login' || path === '/signup';
+        this.showHeader = !noSharedLayout && !authPage;
+        this.showFooter = !noSharedLayout && !authPage;
       }
     });
   }

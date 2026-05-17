@@ -1,7 +1,8 @@
-<ng-container [ngSwitch]="role$ | async"  *ngIf="showHeader">
+<ng-container [ngSwitch]="role$ | async" *ngIf="showHeader">
   <app-header *ngSwitchCase="'guest'"></app-header>
   <app-user-header *ngSwitchCase="'END_USERS'"></app-user-header>
   <app-admin-header *ngSwitchCase="'ADMIN'"></app-admin-header>
 </ng-container>
 <app-global-loader></app-global-loader>
 <router-outlet></router-outlet>
+<app-footer *ngIf="showFooter"></app-footer>
