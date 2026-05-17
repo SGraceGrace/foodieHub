@@ -25,6 +25,12 @@ desktop.ini
 *.log
 logs/
 
+# ── Maven build output ────────────────────────────────────────────────────────
+target/
+*.jar
+*.war
+*.class
+
 # ── Docker local data ─────────────────────────────────────────────────────────
 docker/data/
 docker/volumes/
