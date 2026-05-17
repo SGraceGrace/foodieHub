@@ -14,14 +14,14 @@ export interface MenuCategory {
 export interface Restaurant {
   id: string;
   name: string;
-  cuisine: string[];
-  rating: number;
-  deliveryTime: number;
-  isOpen: boolean;
-  imageUrl: string;
-  address: string;
-  minOrder: number;
-  priceRange: string;
+  cuisine?: string[];
+  rating?: number;
+  deliveryTime?: number;
+  isOpen?: boolean;
+  imageUrl?: string;
+  address?: string;
+  minOrder?: number;
+  priceRange?: string;
   menu?: MenuCategory[];
 }
 
