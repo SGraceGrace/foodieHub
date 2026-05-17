@@ -33,7 +33,7 @@ export class AdminComponent implements OnInit {
 
   // Restaurants
   restaurants: Restaurant[] = [];
-  restaurantSearch = '';
+  restaurantCuisineFilter = '';
   restaurantPagination = { currentPage: 0, totalPages: 0, totalElements: 0, pageSize: 10 };
 
   // Restaurant Owners
@@ -115,10 +115,10 @@ export class AdminComponent implements OnInit {
   // ── Restaurants ───────────────────────────────────────────────────
 
   loadRestaurants(page = 0) {
-    this.adminService.getRestaurants(this.restaurantSearch, page, this.restaurantPagination.pageSize).subscribe({
+    this.adminService.getRestaurants(this.restaurantCuisineFilter, page, this.restaurantPagination.pageSize).subscribe({
       next: (res) => {
         const p: PaginatedResponse<Restaurant> = res.data;
-        this.restaurants = p.content;
+        this.restaurants = p.content ?? [];
         this.restaurantPagination = { currentPage: p.currentPage, totalPages: p.totalPages, totalElements: p.totalElements, pageSize: p.pageSize };
       },
       error: () => this.toastr.error('Failed to load restaurants.'),

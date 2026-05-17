@@ -3,6 +3,7 @@ package com.project.foodservice.controller;
 import com.project.foodservice.dto.BaseAPIResponse;
 import com.project.foodservice.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,8 +17,12 @@ public class RestaurantController {
 
     @GetMapping
     public ResponseEntity<BaseAPIResponse> getAll(
-            @RequestParam(required = false) String cuisine) {
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", restaurantService.getAll(cuisine), HttpStatus.OK.value(), null));
+            @RequestParam(required = false) String cuisine,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+                restaurantService.getAll(cuisine, PageRequest.of(page, size)),
+                HttpStatus.OK.value(), null));
     }
 
     @GetMapping("/{id}")

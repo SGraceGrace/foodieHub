@@ -1,9 +1,11 @@
 package com.project.foodservice.service.impl;
 
 import com.project.foodservice.document.Restaurant;
+import com.project.foodservice.dto.PaginatedResponse;
 import com.project.foodservice.repo.RestaurantRepo;
 import com.project.foodservice.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,11 +18,11 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final RestaurantRepo restaurantRepo;
 
     @Override
-    public List<Restaurant> getAll(String cuisine) {
+    public PaginatedResponse<Restaurant> getAll(String cuisine, Pageable pageable) {
         if (cuisine != null && !cuisine.isBlank()) {
-            return restaurantRepo.findByCuisineContainingIgnoreCase(cuisine);
+            return PaginatedResponse.of(restaurantRepo.findByCuisineContainingIgnoreCase(cuisine, pageable));
         }
-        return restaurantRepo.findAll();
+        return PaginatedResponse.of(restaurantRepo.findAll(pageable));
     }
 
     @Override

@@ -77,9 +77,9 @@ export class AdminService {
   // Restaurants
   private restaurantsBase = `${environment.apiBaseUrl}/api/v1/restaurants`;
 
-  getRestaurants(search?: string, page = 0, size = 10): Observable<ApiResponse<PaginatedResponse<Restaurant>>> {
+  getRestaurants(cuisine?: string, page = 0, size = 10): Observable<ApiResponse<PaginatedResponse<Restaurant>>> {
     let params = new HttpParams();
-    if (search) params = params.set('search', search);
+    if (cuisine) params = params.set('cuisine', cuisine);
     params = params.set('page', page.toString()).set('size', size.toString());
     return this.http.get<ApiResponse<PaginatedResponse<Restaurant>>>(this.restaurantsBase, { params });
   }
