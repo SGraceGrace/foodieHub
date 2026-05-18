@@ -25,7 +25,7 @@
         </div>
 
         <div class="notif-list" *ngIf="notifications.length > 0; else empty">
-          <div class="notif-item" *ngFor="let n of notifications" [class.activity]="n.type === 'ACTIVITY'" [class.pending]="n.type === 'PENDING_OWNER'">
+          <div class="notif-item" *ngFor="let n of notifications" [class.activity]="n.type === 'ACTIVITY'" [class.pending]="n.type === 'PENDING_OWNER'" (click)="openNotification(n)">
             <div class="notif-icon">
               <span *ngIf="n.type === 'PENDING_OWNER'">🏪</span>
               <span *ngIf="n.type === 'ACTIVITY'">📋</span>

@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit } from '@angular/core';
+import { Component, EventEmitter, HostListener, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { TokenService } from '../../core/shared/token.service';
@@ -12,6 +12,8 @@ import { AdminNotification } from '../../model/restaurant.model';
   styleUrl: './admin-header.component.scss'
 })
 export class AdminHeaderComponent implements OnInit {
+
+  @Output() navigateTab = new EventEmitter<string>();
 
   notifications: AdminNotification[] = [];
   unreadCount = 0;
@@ -47,6 +49,12 @@ export class AdminHeaderComponent implements OnInit {
   @HostListener('document:click')
   closeDropdown() {
     this.showDropdown = false;
+  }
+
+  openNotification(n: AdminNotification) {
+    this.showDropdown = false;
+    const tab = n.type === 'PENDING_OWNER' ? 'restaurant-owners' : 'activity-log';
+    this.navigateTab.emit(tab);
   }
 
   formatTime(timestamp: string): string {
