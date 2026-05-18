@@ -27,12 +27,6 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
 
   private pollInterval: ReturnType<typeof setInterval> | null = null;
 
-  // Dismissed keys are stored per day so they automatically clear the next day
-  private readonly storageKey = `dismissed_notifs_${new Date().toISOString().slice(0, 10)}`;
-  private dismissedKeys = new Set<string>(
-    JSON.parse(localStorage.getItem(this.storageKey) ?? '[]')
-  );
-
   constructor(
     private tokenService: TokenService,
     private router: Router,
@@ -53,19 +47,30 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
     if (this.pollInterval) clearInterval(this.pollInterval);
   }
 
-  // Only notifications the admin has not dismissed
-  get visibleNotifications(): AdminNotification[] {
-    return this.notifications.filter(n => !this.dismissedKeys.has(this.notifKey(n)));
-  }
-
   loadNotifications() {
     this.adminService.getNotifications().subscribe({
       next: res => {
         this.notifications = res.data ?? [];
-        this.unreadCount = this.visibleNotifications.length;
+        this.unreadCount = this.notifications.length;
         this.refreshPendingCounts();
       }
     });
+  }
+
+  dismiss(n: AdminNotification, event: Event) {
+    event.stopPropagation();
+    // Remove from UI immediately for instant feedback
+    this.notifications = this.notifications.filter(x => x.id !== n.id);
+    this.unreadCount = Math.max(0, this.unreadCount - 1);
+    // Persist to backend so it won't come back on next poll or on other devices
+    this.adminService.dismissNotification(n.id).subscribe({ error: () => {} });
+  }
+
+  clearAll(event: Event) {
+    event.stopPropagation();
+    this.notifications = [];
+    this.unreadCount = 0;
+    this.adminService.clearAllNotifications().subscribe({ error: () => {} });
   }
 
   private refreshPendingCounts() {
@@ -84,21 +89,6 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
         error: () => {},
       });
     }
-  }
-
-  dismiss(n: AdminNotification, event: Event) {
-    event.stopPropagation();
-    this.dismissedKeys.add(this.notifKey(n));
-    this.saveDismissed();
-    // Adjust badge so it never goes below 0
-    this.unreadCount = Math.max(0, this.unreadCount - 1);
-  }
-
-  clearAll(event: Event) {
-    event.stopPropagation();
-    this.notifications.forEach(n => this.dismissedKeys.add(this.notifKey(n)));
-    this.saveDismissed();
-    this.unreadCount = 0;
   }
 
   enablePushNotifications() {
@@ -143,14 +133,5 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
       this.tokenService.clearTokens();
       this.router.navigateByUrl('/admin/login');
     }
-  }
-
-  // Composite key — unique per notification within a day
-  private notifKey(n: AdminNotification): string {
-    return `${n.timestamp}_${n.type}_${n.message}`;
-  }
-
-  private saveDismissed() {
-    localStorage.setItem(this.storageKey, JSON.stringify([...this.dismissedKeys]));
   }
 }

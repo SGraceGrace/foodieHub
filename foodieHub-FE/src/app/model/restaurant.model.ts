@@ -60,6 +60,7 @@ export interface ActivityLog {
 }
 
 export interface AdminNotification {
+  id: number;
   type: 'ACTIVITY' | 'PENDING_OWNER' | 'PENDING_DRIVER';
   message: string;
   actorEmail?: string;

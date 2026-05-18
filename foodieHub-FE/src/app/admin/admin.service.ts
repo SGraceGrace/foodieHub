@@ -97,6 +97,14 @@ export class AdminService {
     return this.http.get<ApiResponse<AdminNotification[]>>(this.notificationsBase);
   }
 
+  dismissNotification(id: number): Observable<any> {
+    return this.http.delete(`${this.notificationsBase}/${id}`);
+  }
+
+  clearAllNotifications(): Observable<any> {
+    return this.http.delete(this.notificationsBase);
+  }
+
   // Restaurant Owners
   private ownersBase = `${environment.apiBaseUrl}/api/v1/admin/restaurant-owners`;
 

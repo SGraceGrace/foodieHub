@@ -5,7 +5,7 @@ import { LoadingService } from '../shared/loading.service';
 
 // Requests that run silently in the background — no loading overlay.
 const SILENT_URL_PATTERNS = [
-  '/api/v1/admin/notifications',
+  '/api/v1/admin/notifications',   // poll + dismiss + clear
   '/api/v1/admin/push-subscription',
 ];
 
