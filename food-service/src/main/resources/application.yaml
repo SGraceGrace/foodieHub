@@ -7,3 +7,8 @@ spring:
   data:
     mongodb:
       uri: mongodb://localhost:27017/foodiehub_food
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest

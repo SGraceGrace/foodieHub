@@ -1,4 +1,4 @@
-package com.project.foodieHub.messaging;
+package com.project.foodservice.messaging;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

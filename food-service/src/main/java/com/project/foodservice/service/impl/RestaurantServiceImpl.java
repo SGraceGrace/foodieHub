@@ -3,6 +3,7 @@ package com.project.foodservice.service.impl;
 import com.project.foodservice.document.Restaurant;
 import com.project.foodservice.dto.PaginatedResponse;
 import com.project.foodservice.dto.RestaurantCreateRequestDTO;
+import com.project.foodservice.enums.RestaurantStatus;
 import com.project.foodservice.repo.RestaurantRepo;
 import com.project.foodservice.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
@@ -22,9 +23,11 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public PaginatedResponse<Restaurant> getAll(String cuisine, Pageable pageable) {
         if (cuisine != null && !cuisine.isBlank()) {
-            return PaginatedResponse.of(restaurantRepo.findByCuisineContainingIgnoreCase(cuisine, pageable));
+            return PaginatedResponse.of(
+                restaurantRepo.findByStatusAndCuisineContainingIgnoreCase(RestaurantStatus.ACTIVE, cuisine, pageable)
+            );
         }
-        return PaginatedResponse.of(restaurantRepo.findAll(pageable));
+        return PaginatedResponse.of(restaurantRepo.findByStatus(RestaurantStatus.ACTIVE, pageable));
     }
 
     @Override
@@ -54,5 +57,12 @@ public class RestaurantServiceImpl implements RestaurantService {
     @Override
     public PaginatedResponse<Restaurant> getByOwner(String ownerId, Pageable pageable) {
         return PaginatedResponse.of(restaurantRepo.findByOwnerId(ownerId, pageable));
+    }
+
+    @Override
+    public void updateStatusByOwnerId(String ownerId, RestaurantStatus status) {
+        List<Restaurant> restaurants = restaurantRepo.findByOwnerId(ownerId);
+        restaurants.forEach(r -> r.setStatus(status));
+        restaurantRepo.saveAll(restaurants);
     }
 }

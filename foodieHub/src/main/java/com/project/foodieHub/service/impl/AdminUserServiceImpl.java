@@ -129,6 +129,7 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     private void publishOwnerStatus(User user, String status) {
         var event = new OwnerStatusEvent(
+                String.valueOf(user.getId()),
                 user.getEmail(),
                 user.getFirstName() + " " + user.getLastName(),
                 user.getBio(),

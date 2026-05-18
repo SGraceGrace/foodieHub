@@ -1,5 +1,6 @@
 package com.project.foodservice.document;
 
+import com.project.foodservice.enums.RestaurantStatus;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -25,4 +26,6 @@ public class Restaurant {
     private int minOrder;
     private String priceRange;
     private List<MenuCategory> menu;
+
+    private RestaurantStatus status = RestaurantStatus.PENDING;
 }
