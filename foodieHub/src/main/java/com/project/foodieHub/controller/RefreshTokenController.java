@@ -23,9 +23,12 @@ public class RefreshTokenController {
 
   @PostMapping
   public ResponseEntity<BaseAPIResponse> refreshToken(@Valid @RequestBody TokenRefreshRequest tokenRefreshRequest) {
+    var tokens = refreshTokenService.refreshToken(tokenRefreshRequest);
     var response = new BaseAPIResponse();
-    response.setData(refreshTokenService.refreshToken(tokenRefreshRequest));
     response.setSuccessMessage(SUCCESS);
-    return new ResponseEntity<>(response, HttpStatus.OK);
+    return ResponseEntity.ok()
+        .header("Authorization", "Bearer " + tokens.getAccessToken())
+        .header("X-Refresh-Token", tokens.getRefreshToken())
+        .body(response);
   }
 }
