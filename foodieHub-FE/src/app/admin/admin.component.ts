@@ -81,12 +81,15 @@ export class AdminComponent implements OnInit {
 
   goTab(tab: Tab) {
     this.activeTab = tab;
-    if (tab === 'users') this.loadUsers();
-    if (tab === 'restaurants') this.loadRestaurants();
-    if (tab === 'restaurant-owners') this.loadOwners();
-    if (tab === 'drivers') this.loadDrivers();
-    if (tab === 'slides') this.loadSlides();
-    if (tab === 'activity-log') this.loadActivityLogs();
+    // Only fetch when the tab has no data yet — prevents a visible reload
+    // every time a notification is clicked. Filter/search changes call the
+    // load functions directly, so fresh data is still fetched when needed.
+    if (tab === 'users'             && this.users.length === 0)        this.loadUsers();
+    if (tab === 'restaurants'       && this.restaurants.length === 0)  this.loadRestaurants();
+    if (tab === 'restaurant-owners' && this.owners.length === 0)       this.loadOwners();
+    if (tab === 'drivers'           && this.drivers.length === 0)      this.loadDrivers();
+    if (tab === 'slides'            && this.slides.length === 0)       this.loadSlides();
+    if (tab === 'activity-log'      && this.activityLogs.length === 0) this.loadActivityLogs();
   }
 
   // ── Users ────────────────────────────────────────────────────────
