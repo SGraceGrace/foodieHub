@@ -121,6 +121,12 @@ $font-sans: 'DM Sans', sans-serif;
   border-bottom: 1px solid #f0f0f0;
 }
 
+.notif-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .notif-title {
   font-size: 0.85rem;
   font-weight: 700;
@@ -148,14 +154,17 @@ $font-sans: 'DM Sans', sans-serif;
 
 .notif-item {
   display: flex;
+  align-items: flex-start;
   gap: 12px;
   padding: 12px 16px;
   border-bottom: 1px solid #f8f8f8;
   transition: background 0.15s;
   cursor: pointer;
+  position: relative;
 
   &:last-child { border-bottom: none; }
   &:hover { background: #f4f6ff; }
+  &:hover .dismiss-btn { opacity: 1; }
 
   &.pending .notif-icon { background: #fff7e6; }
   &.activity .notif-icon { background: #f0f4ff; }
@@ -214,6 +223,46 @@ $font-sans: 'DM Sans', sans-serif;
   color: #aaa;
   font-size: 0.85rem;
   font-family: $font-sans;
+}
+
+// ── Dismiss (×) button on each notification ────────────────────
+.dismiss-btn {
+  flex-shrink: 0;
+  opacity: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #aaa;
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+  margin-top: 1px;
+
+  &:hover {
+    color: #e53e3e;
+    background: #fff0f0;
+  }
+}
+
+// ── Clear all button ────────────────────────────────────────────
+.clear-all-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  font-size: 0.72rem;
+  font-family: $font-sans;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+  white-space: nowrap;
+
+  &:hover {
+    color: #e53e3e;
+    background: #fff0f0;
+  }
 }
 
 // ── Profile avatar ─────────────────────────────────────────────

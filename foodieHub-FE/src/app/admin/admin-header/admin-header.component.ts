@@ -25,6 +25,12 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
 
   private pollInterval: ReturnType<typeof setInterval> | null = null;
 
+  // Dismissed keys are stored per day so they automatically clear the next day
+  private readonly storageKey = `dismissed_notifs_${new Date().toISOString().slice(0, 10)}`;
+  private dismissedKeys = new Set<string>(
+    JSON.parse(localStorage.getItem(this.storageKey) ?? '[]')
+  );
+
   constructor(
     private tokenService: TokenService,
     private router: Router,
@@ -34,11 +40,8 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadNotifications();
-
-    // Re-poll every 30 s so the badge stays fresh even without push
     this.pollInterval = setInterval(() => this.loadNotifications(), 30_000);
 
-    // Initialise push (re-subscribes silently if already granted)
     this.pushSupported = this.pushService.isSupported;
     this.pushService.init();
     this.pushService.permission$.subscribe(p => this.pushPermission = p);
@@ -48,13 +51,33 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
     if (this.pollInterval) clearInterval(this.pollInterval);
   }
 
+  // Only notifications the admin has not dismissed
+  get visibleNotifications(): AdminNotification[] {
+    return this.notifications.filter(n => !this.dismissedKeys.has(this.notifKey(n)));
+  }
+
   loadNotifications() {
     this.adminService.getNotifications().subscribe({
       next: res => {
         this.notifications = res.data ?? [];
-        this.unreadCount = this.notifications.length;
+        this.unreadCount = this.visibleNotifications.length;
       }
     });
+  }
+
+  dismiss(n: AdminNotification, event: Event) {
+    event.stopPropagation();
+    this.dismissedKeys.add(this.notifKey(n));
+    this.saveDismissed();
+    // Adjust badge so it never goes below 0
+    this.unreadCount = Math.max(0, this.unreadCount - 1);
+  }
+
+  clearAll(event: Event) {
+    event.stopPropagation();
+    this.notifications.forEach(n => this.dismissedKeys.add(this.notifKey(n)));
+    this.saveDismissed();
+    this.unreadCount = 0;
   }
 
   enablePushNotifications() {
@@ -99,5 +122,14 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
       this.tokenService.clearTokens();
       this.router.navigateByUrl('/admin/login');
     }
+  }
+
+  // Composite key — unique per notification within a day
+  private notifKey(n: AdminNotification): string {
+    return `${n.timestamp}_${n.type}_${n.message}`;
+  }
+
+  private saveDismissed() {
+    localStorage.setItem(this.storageKey, JSON.stringify([...this.dismissedKeys]));
   }
 }
