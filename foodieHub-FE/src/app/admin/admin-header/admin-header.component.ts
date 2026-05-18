@@ -15,6 +15,8 @@ import { AdminNotification } from '../../model/restaurant.model';
 export class AdminHeaderComponent implements OnInit, OnDestroy {
 
   @Output() navigateTab = new EventEmitter<string>();
+  @Output() pendingOwnerCountChange = new EventEmitter<number>();
+  @Output() pendingDriverCountChange = new EventEmitter<number>();
 
   notifications: AdminNotification[] = [];
   unreadCount = 0;
@@ -61,8 +63,27 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
       next: res => {
         this.notifications = res.data ?? [];
         this.unreadCount = this.visibleNotifications.length;
+        this.refreshPendingCounts();
       }
     });
+  }
+
+  private refreshPendingCounts() {
+    const hasPendingOwner  = this.notifications.some(n => n.type === 'PENDING_OWNER');
+    const hasPendingDriver = this.notifications.some(n => n.type === 'PENDING_DRIVER');
+
+    if (hasPendingOwner) {
+      this.adminService.getPendingOwnerCount().subscribe({
+        next: count => this.pendingOwnerCountChange.emit(count),
+        error: () => {},
+      });
+    }
+    if (hasPendingDriver) {
+      this.adminService.getPendingDriverCount().subscribe({
+        next: count => this.pendingDriverCountChange.emit(count),
+        error: () => {},
+      });
+    }
   }
 
   dismiss(n: AdminNotification, event: Event) {
