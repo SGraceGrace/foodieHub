@@ -4,6 +4,7 @@ import { guestGuard } from './core/guard/guest.guard';
 import { authGuard } from './core/guard/auth.guard';
 import { adminGuard } from './core/guard/admin.guard';
 import { partnerGuard } from './partner/partner.guard';
+import { driverGuard } from './driver/driver.guard';
 
 export const routes: Routes = [
   {
@@ -67,6 +68,27 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./partner/partner-dashboard/partner-dashboard.component').then((m) => m.PartnerDashboardComponent),
     canActivate: [partnerGuard],
+  },
+  {
+    path: 'driver/login',
+    loadComponent: () =>
+      import('./driver/driver-login/driver-login.component').then((m) => m.DriverLoginComponent),
+  },
+  {
+    path: 'driver/register',
+    loadComponent: () =>
+      import('./driver/driver-signup/driver-signup.component').then((m) => m.DriverSignupComponent),
+  },
+  {
+    path: 'driver/kyc',
+    loadComponent: () =>
+      import('./driver/driver-kyc/driver-kyc.component').then((m) => m.DriverKycComponent),
+  },
+  {
+    path: 'driver',
+    loadComponent: () =>
+      import('./driver/driver-dashboard/driver-dashboard.component').then((m) => m.DriverDashboardComponent),
+    canActivate: [driverGuard],
   },
   {
     path: '**',

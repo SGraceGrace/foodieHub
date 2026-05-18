@@ -1,0 +1,32 @@
+.header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1rem 2rem;
+  background: white; border-bottom: 1px solid #e8e8e8;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  position: sticky; top: 0; z-index: 100;
+}
+
+.logo-area { display: flex; align-items: center; gap: 10px; }
+.logo-icon {
+  width: 40px; height: 40px; background: #1a1a1a; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 18px;
+  font-family: 'Libre Baskerville', Georgia, serif;
+}
+.logo-text { font-family: 'Libre Baskerville', Georgia, serif; font-size: 1.2rem; font-weight: 700; color: #2a2a2a; }
+.logo-sub { font-size: 0.7rem; color: #888; }
+
+.header-right { display: flex; gap: 12px; align-items: center; }
+
+.header-btn {
+  border: 1px solid #e8e8e8; padding: 7px 14px; border-radius: 6px;
+  background: white; cursor: pointer; font-size: 0.85rem; color: #4e4e4e;
+  &:hover { border-color: #f9b303; color: #f9b303; }
+}
+
+.user-avatar {
+  width: 36px; height: 36px; background: #f9b303; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 600; cursor: pointer; font-size: 0.9rem;
+  &:hover { opacity: 0.85; }
+}

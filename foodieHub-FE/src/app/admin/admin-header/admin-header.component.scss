@@ -53,6 +53,15 @@ $font-sans: 'DM Sans', sans-serif;
   gap: 15px;
 }
 
+// ── Enable push button ─────────────────────────────────────────
+.push-enable-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border: 1px solid #e8e8e8; border-radius: 6px;
+  background: white; cursor: pointer; font-size: 0.78rem; color: #555;
+  font-family: $font-sans; transition: all 0.2s;
+  &:hover { border-color: $gold; color: $gold; }
+}
+
 // ── Notification bell ──────────────────────────────────────────
 .notif-wrapper {
   position: relative;

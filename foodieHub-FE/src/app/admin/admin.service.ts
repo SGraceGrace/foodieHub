@@ -120,4 +120,33 @@ export class AdminService {
   rejectOwner(id: number): Observable<ApiResponse<AdminUserResponse>> {
     return this.http.put<ApiResponse<AdminUserResponse>>(`${this.ownersBase}/${id}/reject`, {});
   }
+
+  // Push subscriptions
+  savePushSubscription(subscription: object): Observable<any> {
+    return this.http.post(`${environment.apiBaseUrl}/api/v1/admin/push-subscription`, subscription);
+  }
+
+  // Drivers
+  private driversBase = `${environment.apiBaseUrl}/api/v1/admin/drivers`;
+
+  getDrivers(status?: string, page = 0, size = 10): Observable<ApiResponse<PaginatedResponse<AdminUserResponse>>> {
+    let params = new HttpParams();
+    if (status) params = params.set('status', status);
+    params = params.set('page', page.toString()).set('size', size.toString());
+    return this.http.get<ApiResponse<PaginatedResponse<AdminUserResponse>>>(this.driversBase, { params });
+  }
+
+  getPendingDriverCount(): Observable<number> {
+    return this.getDrivers('PENDING', 0, 1).pipe(
+      map(res => res.data?.totalElements ?? 0)
+    );
+  }
+
+  approveDriver(id: number): Observable<ApiResponse<AdminUserResponse>> {
+    return this.http.put<ApiResponse<AdminUserResponse>>(`${this.driversBase}/${id}/approve`, {});
+  }
+
+  rejectDriver(id: number): Observable<ApiResponse<AdminUserResponse>> {
+    return this.http.put<ApiResponse<AdminUserResponse>>(`${this.driversBase}/${id}/reject`, {});
+  }
 }

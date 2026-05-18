@@ -1,0 +1,115 @@
+<div class="auth-container">
+  <div class="auth-card">
+
+    <div class="auth-left">
+      <div class="auth-brand">
+        <div class="logo-icon">F</div>
+        <div class="auth-divider"></div>
+        <div>
+          <div class="logo-text">foodiehub</div>
+          <div class="logo-sub">Delivery Partner</div>
+        </div>
+      </div>
+
+      <h2 class="auth-title">Start Delivering</h2>
+
+      <!-- Step indicator -->
+      <div class="step-indicator">
+        <div class="step" [class.active]="step >= 1">
+          <div class="step-circle">1</div>
+          <div class="step-label">Personal Info</div>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" [class.active]="step >= 2">
+          <div class="step-circle">2</div>
+          <div class="step-label">Vehicle & Docs</div>
+        </div>
+      </div>
+
+      <!-- Step 1 -->
+      <form [formGroup]="step1Form" (ngSubmit)="nextStep()" *ngIf="step === 1">
+        <div class="input-field" [class.error]="fullName?.invalid && fullName?.touched">
+          <span>👤</span>
+          <input type="text" placeholder="Full Name" formControlName="fullName" />
+        </div>
+        <div class="field-error" *ngIf="fullName?.invalid && fullName?.touched">Full name is required</div>
+
+        <div class="input-field" [class.error]="email?.invalid && email?.touched">
+          <span>📧</span>
+          <input type="email" placeholder="Email" formControlName="email" />
+        </div>
+        <div class="field-error" *ngIf="email?.invalid && email?.touched">Valid email is required</div>
+
+        <div class="input-field" [class.error]="phone?.invalid && phone?.touched">
+          <span>📱</span>
+          <input type="tel" placeholder="Phone Number (10 digits)" formControlName="phone" maxlength="10" />
+        </div>
+        <div class="field-error" *ngIf="phone?.invalid && phone?.touched">Valid 10-digit phone required</div>
+
+        <button type="submit" class="btn btn-primary">Next →</button>
+        <div class="auth-footer">
+          <a routerLink="/driver/login">Already have an account? Login</a>
+        </div>
+      </form>
+
+      <!-- Step 2 -->
+      <form [formGroup]="step2Form" (ngSubmit)="onSubmit()" *ngIf="step === 2">
+        <div class="input-field" [class.error]="vehicleType?.invalid && vehicleType?.touched">
+          <span>🚗</span>
+          <select formControlName="vehicleType">
+            <option value="">Select Vehicle Type</option>
+            <option value="BIKE">🏍️ Bike</option>
+            <option value="SCOOTER">🛵 Scooter</option>
+            <option value="CAR">🚙 Car</option>
+          </select>
+        </div>
+        <div class="field-error" *ngIf="vehicleType?.invalid && vehicleType?.touched">Vehicle type is required</div>
+
+        <div class="input-field" [class.error]="licenseNumber?.invalid && licenseNumber?.touched">
+          <span>🪪</span>
+          <input type="text" placeholder="License Number" formControlName="licenseNumber" />
+        </div>
+        <div class="field-error" *ngIf="licenseNumber?.invalid && licenseNumber?.touched">License number is required</div>
+
+        <div class="input-field" [class.error]="bankAccount?.invalid && bankAccount?.touched">
+          <span>🏦</span>
+          <input type="text" placeholder="Bank Account Number" formControlName="bankAccount" />
+        </div>
+        <div class="field-error" *ngIf="bankAccount?.invalid && bankAccount?.touched">Bank account is required</div>
+
+        <div class="input-field" [class.error]="password?.invalid && password?.touched">
+          <span>🔒</span>
+          <input [type]="showPassword ? 'text' : 'password'" placeholder="Create Password" formControlName="password" />
+          <span class="eye-btn" (click)="showPassword = !showPassword">{{ showPassword ? '🙈' : '👁️' }}</span>
+        </div>
+        <div class="pw-rules" *ngIf="password?.dirty">
+          <span [class.ok]="pwHasLength">{{ pwHasLength ? '✅' : '○' }} 8–15 chars</span>
+          <span [class.ok]="pwHasUpper">{{ pwHasUpper ? '✅' : '○' }} Uppercase</span>
+          <span [class.ok]="pwHasLower">{{ pwHasLower ? '✅' : '○' }} Lowercase</span>
+          <span [class.ok]="pwHasNumber">{{ pwHasNumber ? '✅' : '○' }} Number</span>
+          <span [class.ok]="pwHasSpecial">{{ pwHasSpecial ? '✅' : '○' }} Special char</span>
+        </div>
+
+        <label class="terms-check">
+          <input type="checkbox" formControlName="agreeTerms" />
+          I agree to the terms and conditions
+        </label>
+        <div class="field-error" *ngIf="step2Form.get('agreeTerms')?.invalid && step2Form.get('agreeTerms')?.touched">
+          You must agree to continue
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create Account</button>
+        <button type="button" class="btn btn-outline" (click)="prevStep()">← Back</button>
+      </form>
+    </div>
+
+    <div class="auth-right">
+      <div class="promo-card">
+        <div class="promo-emoji">⚡</div>
+        <div class="promo-title">Quick Verification</div>
+        <div class="promo-desc">Upload documents. Get approved in 24–48 hours. Start earning immediately.</div>
+      </div>
+    </div>
+
+  </div>
+</div>

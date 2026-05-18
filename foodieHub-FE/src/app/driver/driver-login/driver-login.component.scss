@@ -1,0 +1,136 @@
+:host { display: block; min-height: 100vh; }
+
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(26,26,26,0.15) 0%, rgba(26,26,26,0.05) 100%), #f5f5f5;
+}
+
+.auth-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.14);
+  max-width: 860px;
+  width: 100%;
+}
+
+.auth-left { padding: 3rem 2.5rem; }
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 2rem;
+}
+
+.logo-icon {
+  width: 40px; height: 40px;
+  background: #1a1a1a;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 18px;
+  font-family: 'Libre Baskerville', Georgia, serif;
+}
+
+.logo-text { font-family: 'Libre Baskerville', Georgia, serif; font-size: 1.2rem; font-weight: 700; color: #2a2a2a; }
+.logo-sub { font-size: 0.7rem; color: #888; }
+
+.auth-divider { width: 1px; height: 40px; background: #e8e8e8; }
+
+.auth-title {
+  font-family: 'Libre Baskerville', Georgia, serif;
+  font-size: 1.4rem;
+  color: #2a2a2a;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.input-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1.5px solid #000;
+  border-radius: 8px;
+  padding: 11px 14px;
+  margin-bottom: 0.4rem;
+  background: white;
+  transition: border-color 0.2s;
+
+  &:focus-within { border-color: #f9b303; }
+  &.error { border-color: #ff1100; }
+
+  span { color: #888; }
+
+  input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 0.9rem;
+    color: #4e4e4e;
+    background: transparent;
+  }
+
+  .eye-btn { cursor: pointer; user-select: none; }
+}
+
+.field-error { font-size: 0.78rem; color: #ff1100; margin-bottom: 0.6rem; padding-left: 4px; }
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95rem;
+  width: 100%;
+  margin-bottom: 0.5rem;
+  transition: all 0.2s;
+
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.btn-primary { background: #1a1a1a; color: white; margin-top: 0.5rem; &:hover:not(:disabled) { background: #000; } }
+.btn-outline { background: transparent; border: 1.5px solid #e8e8e8; color: #4e4e4e; text-decoration: none; &:hover { border-color: #f9b303; color: #f9b303; } }
+
+.auth-or { text-align: center; color: #888; margin: 0.8rem 0; font-size: 0.85rem; }
+
+.auth-footer {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  a { color: #1a1a1a; text-decoration: none; font-weight: 600; &:hover { color: #f9b303; } }
+}
+
+.auth-right {
+  background: linear-gradient(135deg, rgba(26,26,26,0.12), rgba(26,26,26,0.04));
+  padding: 3rem 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.promo-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+}
+.promo-emoji { font-size: 64px; margin-bottom: 1rem; }
+.promo-title { font-family: 'Libre Baskerville', Georgia, serif; font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem; }
+.promo-desc { font-size: 0.8rem; color: #888; line-height: 1.5; }
+
+@media (max-width: 640px) {
+  .auth-card { grid-template-columns: 1fr; }
+  .auth-right { display: none; }
+}

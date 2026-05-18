@@ -37,6 +37,8 @@ export interface AdminUserResponse {
   restaurantAddress?: string;
   fssaiNumber?: string;
   gstNumber?: string;
+  vehicleType?: string;
+  licenseNumber?: string;
 }
 
 export interface PaginatedResponse<T> {
@@ -58,7 +60,7 @@ export interface ActivityLog {
 }
 
 export interface AdminNotification {
-  type: 'ACTIVITY' | 'PENDING_OWNER';
+  type: 'ACTIVITY' | 'PENDING_OWNER' | 'PENDING_DRIVER';
   message: string;
   actorEmail?: string;
   timestamp: string;

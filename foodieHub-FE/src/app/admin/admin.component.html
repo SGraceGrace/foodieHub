@@ -19,6 +19,10 @@
       <span>🤝</span> Restaurant Owners
       <span class="pending-badge" *ngIf="pendingOwnerCount > 0">{{ pendingOwnerCount }}</span>
     </button>
+    <button class="nav-btn" [class.active]="activeTab === 'drivers'" (click)="goTab('drivers')">
+      <span>🛵</span> Drivers
+      <span class="pending-badge" *ngIf="pendingDriverCount > 0">{{ pendingDriverCount }}</span>
+    </button>
     <button class="nav-btn" [class.active]="activeTab === 'orders'" (click)="goTab('orders')">
       <span>📦</span> Orders
     </button>
@@ -273,6 +277,77 @@
               (click)="loadOwners(p)">{{ p + 1 }}</button>
             <button class="page-btn" [disabled]="ownerPagination.currentPage === ownerPagination.totalPages - 1"
               (click)="loadOwners(ownerPagination.currentPage + 1)">&#8250;</button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- DRIVERS TAB -->
+    <ng-container *ngIf="activeTab === 'drivers'">
+      <div class="page-title">Driver Approvals</div>
+      <div class="table-box">
+        <div class="table-toolbar">
+          <select class="filter-select" [(ngModel)]="driverStatusFilter" (change)="loadDrivers(0)">
+            <option value="PENDING">Pending</option>
+            <option value="ACTIVE">Approved</option>
+            <option value="INACTIVE">Rejected</option>
+            <option value="">All</option>
+          </select>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Driver</th>
+              <th>Contact</th>
+              <th>Vehicle Type</th>
+              <th>License No.</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let driver of drivers">
+              <td>#{{ driver.id }}</td>
+              <td>{{ driver.firstName }} {{ driver.lastName }}</td>
+              <td>
+                <div>{{ driver.email }}</div>
+                <div class="sub-text">{{ driver.phone || '—' }}</div>
+              </td>
+              <td>{{ driver.vehicleType || '—' }}</td>
+              <td>{{ driver.licenseNumber || '—' }}</td>
+              <td>
+                <span class="badge"
+                  [class.warning]="driver.status === 'PENDING'"
+                  [class.success]="driver.status === 'ACTIVE'"
+                  [class.error]="driver.status === 'INACTIVE'">
+                  {{ driver.status === 'PENDING' ? 'Pending' : driver.status === 'ACTIVE' ? 'Approved' : 'Rejected' }}
+                </span>
+              </td>
+              <td>
+                <button class="action-btn approve" *ngIf="driver.status === 'PENDING'" (click)="approveDriver(driver)">Approve</button>
+                <button class="action-btn suspend" *ngIf="driver.status === 'PENDING'" (click)="rejectDriver(driver)">Reject</button>
+                <button class="action-btn approve" *ngIf="driver.status === 'INACTIVE'" (click)="approveDriver(driver)">Approve</button>
+              </td>
+            </tr>
+            <tr *ngIf="drivers.length === 0">
+              <td colspan="7" class="empty-cell">No drivers found</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="table-footer" *ngIf="driverPagination.totalElements > 0">
+          <div class="pagination-info">
+            Showing {{ driverPagingStart() }}–{{ driverPagingEnd() }} of {{ driverPagination.totalElements }} drivers
+          </div>
+          <div class="pagination" *ngIf="driverPagination.totalPages > 1">
+            <button class="page-btn" [disabled]="driverPagination.currentPage === 0"
+              (click)="loadDrivers(driverPagination.currentPage - 1)">&#8249;</button>
+            <button class="page-btn" *ngFor="let p of driverPageNumbers"
+              [class.active]="p === driverPagination.currentPage"
+              (click)="loadDrivers(p)">{{ p + 1 }}</button>
+            <button class="page-btn" [disabled]="driverPagination.currentPage === driverPagination.totalPages - 1"
+              (click)="loadDrivers(driverPagination.currentPage + 1)">&#8250;</button>
           </div>
         </div>
       </div>

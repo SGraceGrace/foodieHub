@@ -1,0 +1,404 @@
+<app-driver-header (navigateTab)="goTab($any($event))"></app-driver-header>
+
+<div class="dashboard">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-title">
+      <span>🚗</span> Driver Panel
+    </div>
+    <button class="nav-btn" [class.active]="activeTab === 'dashboard'"   (click)="goTab('dashboard')">  <span>🏠</span> Dashboard</button>
+    <button class="nav-btn" [class.active]="activeTab === 'orders'"      (click)="goTab('orders')">     <span>📦</span> Available Orders</button>
+    <button class="nav-btn" [class.active]="activeTab === 'active'"      (click)="goTab('active')">     <span>🔴</span> Active Delivery</button>
+    <button class="nav-btn" [class.active]="activeTab === 'history'"     (click)="goTab('history')">    <span>📜</span> Delivery History</button>
+    <button class="nav-btn" [class.active]="activeTab === 'earnings'"    (click)="goTab('earnings')">   <span>💰</span> Earnings</button>
+    <button class="nav-btn" [class.active]="activeTab === 'profile'"     (click)="goTab('profile')">    <span>👤</span> Profile</button>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- ── DASHBOARD TAB ── -->
+    <div *ngIf="activeTab === 'dashboard'">
+      <div class="page-title">🏠 Dashboard</div>
+
+      <!-- Status card -->
+      <div class="status-card">
+        <div class="status-header">
+          <div>
+            <div class="status-label">Current Status</div>
+            <div class="status-value" [class.online]="isOnline" [class.offline]="!isOnline">
+              {{ isOnline ? '🟢 Online' : '⏸️ Offline' }}
+            </div>
+          </div>
+          <div class="status-toggles">
+            <button class="toggle-online"  (click)="goOnline()"  [disabled]="isOnline">🟢 Go Online</button>
+            <button class="toggle-offline" (click)="goOffline()" [disabled]="!isOnline">⏹️ Go Offline</button>
+          </div>
+        </div>
+        <p class="status-hint" *ngIf="!isOnline">You are <strong>offline</strong>. Go online to receive delivery orders nearby.</p>
+        <p class="status-hint online-hint" *ngIf="isOnline">You are <strong>online</strong>. New orders will appear on your Available Orders tab.</p>
+      </div>
+
+      <!-- Earnings summary -->
+      <div class="earnings-grid">
+        <div class="earning-box">
+          <div class="earning-label">Today's Earnings</div>
+          <div class="earning-value">₹{{ earnings.todayAmount }}</div>
+          <div class="earning-sub">{{ earnings.todayDeliveries }} deliveries completed</div>
+        </div>
+        <div class="earning-box">
+          <div class="earning-label">This Week</div>
+          <div class="earning-value">₹{{ earnings.weekAmount }}</div>
+          <div class="earning-sub">{{ earnings.weekDeliveries }} deliveries completed</div>
+        </div>
+        <div class="earning-box">
+          <div class="earning-label">Rating</div>
+          <div class="earning-value">{{ stats.rating > 0 ? (stats.rating | number:'1.1-1') + ' ⭐' : '—' }}</div>
+          <div class="earning-sub">{{ stats.ratingCount > 0 ? 'Based on ' + stats.ratingCount + ' deliveries' : 'No ratings yet' }}</div>
+        </div>
+      </div>
+
+      <!-- Quick stats -->
+      <div class="box">
+        <h3>📊 Quick Stats</h3>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-label">Total Deliveries</div>
+            <div class="stat-value">{{ stats.totalDeliveries }}</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Completion Rate</div>
+            <div class="stat-value" [class.green]="stats.completionRate >= 90">
+              {{ stats.completionRate > 0 ? stats.completionRate + '%' : '—' }}
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Cancellation Rate</div>
+            <div class="stat-value" [class.blue]="true">
+              {{ stats.cancellationRate > 0 ? stats.cancellationRate + '%' : '—' }}
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Avg Delivery Time</div>
+            <div class="stat-value">{{ stats.avgDeliveryMinutes > 0 ? stats.avgDeliveryMinutes + ' min' : '—' }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── AVAILABLE ORDERS TAB ── -->
+    <div *ngIf="activeTab === 'orders'">
+      <div class="page-title">📦 Available Orders</div>
+
+      <div class="box">
+        <div *ngIf="!isOnline" class="empty-state">
+          <div class="empty-icon">⏸️</div>
+          <p>You are offline. Go online to see nearby orders.</p>
+          <button class="btn btn-primary small" (click)="goOnline()">Go Online</button>
+        </div>
+
+        <div *ngIf="isOnline && availableOrders.length === 0" class="empty-state">
+          <div class="empty-icon">📭</div>
+          <p>No orders available nearby right now. Stay online — new orders will appear here.</p>
+        </div>
+
+        <div class="order-card" *ngFor="let order of availableOrders" (click)="openOrderModal(order)">
+          <div class="order-header">
+            <span class="order-id">#{{ order.id }}</span>
+            <span class="order-time">{{ order.placedAt | date:'shortTime' }}</span>
+          </div>
+          <div class="order-body">
+            <div class="order-restaurant">🍛 {{ order.restaurantName }}</div>
+            <div class="order-pickup">Pick up from: {{ order.restaurantAddress }}</div>
+          </div>
+          <div class="order-footer">
+            <div class="order-meta">
+              <span>📍 {{ order.distanceKm }} km</span>
+              <span>⏱ ~{{ order.estimatedMinutes }} min</span>
+            </div>
+            <div class="order-earn">₹{{ order.earnAmount }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ACTIVE DELIVERY TAB ── -->
+    <div *ngIf="activeTab === 'active'">
+      <div class="page-title">🔴 Active Delivery</div>
+
+      <div class="box">
+        <div *ngIf="!activeOrder" class="empty-state">
+          <div class="empty-icon">🚗</div>
+          <p>No active delivery right now.<br>Accept an order from Available Orders to see it here.</p>
+        </div>
+
+        <div *ngIf="activeOrder" class="active-delivery">
+          <!-- Progress -->
+          <div class="delivery-steps">
+            <div class="delivery-step" [class.done]="activeStep === 'delivery' || activeStep === null">
+              <div class="step-dot">1</div>
+              <div class="step-text">Go to Restaurant</div>
+            </div>
+            <div class="step-arrow">→</div>
+            <div class="delivery-step" [class.active]="activeStep === 'delivery'">
+              <div class="step-dot">2</div>
+              <div class="step-text">Deliver to Customer</div>
+            </div>
+          </div>
+
+          <div class="active-info">
+            <div class="info-row">
+              <span class="info-label">Order</span>
+              <strong>#{{ activeOrder.id }}</strong>
+            </div>
+            <div class="info-row">
+              <span class="info-label">{{ activeStep === 'pickup' ? 'Pickup from' : 'Deliver to' }}</span>
+              <strong>{{ activeStep === 'pickup' ? activeOrder.restaurantAddress : activeOrder.deliveryAddress }}</strong>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Distance</span>
+              <strong>{{ activeOrder.distanceKm }} km</strong>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Earning</span>
+              <strong>₹{{ activeOrder.earnAmount }}</strong>
+            </div>
+          </div>
+
+          <div class="active-items">
+            <div class="items-label">Order Items</div>
+            <ul>
+              <li *ngFor="let item of activeOrder.items">{{ item }}</li>
+            </ul>
+          </div>
+
+          <div class="active-actions">
+            <button class="btn btn-primary" *ngIf="activeStep === 'pickup'" (click)="markPickedUp()">
+              ✅ Order Picked Up
+            </button>
+            <button class="btn btn-success" *ngIf="activeStep === 'delivery'" (click)="markDelivered()">
+              ✅ Order Delivered
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── HISTORY TAB ── -->
+    <div *ngIf="activeTab === 'history'">
+      <div class="page-title">📜 Delivery History</div>
+
+      <div class="box">
+        <div *ngIf="deliveryHistory.length === 0" class="empty-state">
+          <div class="empty-icon">📋</div>
+          <p>No delivery history yet. Complete your first delivery to see it here.</p>
+        </div>
+
+        <div class="order-card history-card" *ngFor="let item of deliveryHistory"
+             [class.delivered]="item.status === 'DELIVERED'"
+             [class.cancelled]="item.status === 'CANCELLED'">
+          <div class="order-header">
+            <span class="order-id">#{{ item.id }}</span>
+            <span class="order-time">{{ item.deliveredAt | date:'MMM d, h:mm a' }}</span>
+          </div>
+          <div class="order-body">
+            <div class="order-restaurant">🍛 {{ item.restaurantName }}</div>
+            <div class="order-pickup">Delivered to: {{ item.deliveryAddress }}</div>
+          </div>
+          <div class="order-footer">
+            <div class="order-meta">
+              <span>📍 {{ item.distanceKm }} km</span>
+              <span>⏱ {{ item.timeTakenMinutes }} min</span>
+            </div>
+            <div>
+              <div class="order-earn">₹{{ item.earnAmount }}</div>
+              <div class="delivery-status" [class.delivered]="item.status === 'DELIVERED'">
+                {{ item.status === 'DELIVERED' ? '✅ Delivered' : '❌ Cancelled' }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pagination" *ngIf="historyPagination.totalPages > 1">
+          <button (click)="prevHistoryPage()" [disabled]="historyPagination.currentPage === 0">← Prev</button>
+          <span>Page {{ historyPagination.currentPage + 1 }} of {{ historyPagination.totalPages }}</span>
+          <button (click)="nextHistoryPage()" [disabled]="historyPagination.currentPage >= historyPagination.totalPages - 1">Next →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── EARNINGS TAB ── -->
+    <div *ngIf="activeTab === 'earnings'">
+      <div class="page-title">💰 Earnings & Payouts</div>
+
+      <div class="box">
+        <h3>📊 Earnings Breakdown</h3>
+
+        <div class="earnings-grid" style="margin-top: 1.2rem;">
+          <div class="earning-box">
+            <div class="earning-label">Today</div>
+            <div class="earning-value">₹{{ earnings.todayAmount }}</div>
+            <div class="earning-sub">{{ earnings.todayDeliveries }} deliveries</div>
+          </div>
+          <div class="earning-box">
+            <div class="earning-label">This Week</div>
+            <div class="earning-value">₹{{ earnings.weekAmount }}</div>
+            <div class="earning-sub">{{ earnings.weekDeliveries }} deliveries + ₹{{ earnings.weekBonus }} bonus</div>
+          </div>
+        </div>
+
+        <div class="payout-card" *ngIf="earnings.nextPayoutAmount > 0">
+          <div class="payout-title">💵 Next Payout</div>
+          <div class="payout-amount">₹{{ earnings.nextPayoutAmount }}</div>
+          <div class="payout-date" *ngIf="earnings.nextPayoutDate">on {{ earnings.nextPayoutDate }}</div>
+        </div>
+
+        <div class="empty-state" *ngIf="earnings.weekAmount === 0">
+          <div class="empty-icon">💸</div>
+          <p>No earnings yet this week. Start delivering to see your earnings here.</p>
+        </div>
+
+        <div *ngIf="earnings.weekAmount > 0">
+          <h3 style="margin: 1.5rem 0 1rem;">📜 Breakdown</h3>
+          <div class="transaction-row">
+            <div>
+              <div class="tx-label">Base Fee ({{ earnings.weekDeliveries }} deliveries)</div>
+              <div class="tx-sub">Delivery pay per order</div>
+            </div>
+            <div class="tx-amount">₹{{ earnings.baseFeeTotal }}</div>
+          </div>
+          <div class="transaction-row">
+            <div>
+              <div class="tx-label">Customer Tips</div>
+              <div class="tx-sub">Good ratings = More tips</div>
+            </div>
+            <div class="tx-amount">₹{{ earnings.tipsTotal }}</div>
+          </div>
+          <div class="transaction-row">
+            <div>
+              <div class="tx-label">Completion Bonus</div>
+              <div class="tx-sub">{{ earnings.weekDeliveries }} deliveries completed</div>
+            </div>
+            <div class="tx-amount green">+₹{{ earnings.bonusTotal }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PROFILE TAB ── -->
+    <div *ngIf="activeTab === 'profile'">
+      <div class="page-title">👤 My Profile</div>
+
+      <div class="box">
+        <div class="profile-header">
+          <div class="profile-avatar">{{ profileInitials }}</div>
+          <div class="profile-info">
+            <h3>{{ profile.fullName || '—' }}</h3>
+            <p>📱 {{ profile.phone || '—' }}</p>
+            <p>📧 {{ profile.email || '—' }}</p>
+            <div class="rating-row" *ngIf="stats.rating > 0">
+              <span>⭐ {{ stats.rating | number:'1.1-1' }}</span>
+              <span class="rating-count">({{ stats.ratingCount }} ratings)</span>
+            </div>
+            <div class="rating-row" *ngIf="stats.rating === 0">
+              <span class="no-rating">No ratings yet</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-divider">
+          <h3>Vehicle Information</h3>
+          <div class="info-row">
+            <span class="info-label">Vehicle Type</span>
+            <strong>{{ profile.vehicleType || '—' }}</strong>
+          </div>
+          <div class="info-row">
+            <span class="info-label">License Number</span>
+            <strong>{{ profile.licenseNumber || '—' }}</strong>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Verification Status</span>
+            <strong [class.approved]="profile.verificationStatus === 'APPROVED'"
+                    [class.pending]="profile.verificationStatus === 'PENDING'">
+              {{ profile.verificationStatus === 'APPROVED' ? '✅ Approved' : '🕐 Pending Verification' }}
+            </strong>
+          </div>
+        </div>
+
+        <div class="section-divider">
+          <h3>Performance Metrics</h3>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div class="stat-label">Total Deliveries</div>
+              <div class="stat-value">{{ stats.totalDeliveries }}</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Rating</div>
+              <div class="stat-value green">{{ stats.rating > 0 ? (stats.rating | number:'1.1-1') + ' ⭐' : '—' }}</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Completion Rate</div>
+              <div class="stat-value">{{ stats.completionRate > 0 ? stats.completionRate + '%' : '—' }}</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Avg Delivery Time</div>
+              <div class="stat-value">{{ stats.avgDeliveryMinutes > 0 ? stats.avgDeliveryMinutes + ' min' : '—' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ORDER ACCEPT MODAL -->
+<div class="modal-overlay" *ngIf="showOrderModal" (click)="closeOrderModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeOrderModal()">✕</button>
+    <h3 class="modal-title">📦 Order Details</h3>
+
+    <div class="modal-section" *ngIf="selectedOrder">
+      <div class="info-row">
+        <span class="info-label">Order ID</span>
+        <strong>#{{ selectedOrder.id }}</strong>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Pickup from</span>
+        <strong>{{ selectedOrder.restaurantName }}</strong>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Deliver to</span>
+        <strong>{{ selectedOrder.deliveryAddress }}</strong>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Distance</span>
+        <strong>{{ selectedOrder.distanceKm }} km</strong>
+      </div>
+      <div class="info-row">
+        <span class="info-label">Est. Time</span>
+        <strong>~{{ selectedOrder.estimatedMinutes }} min</strong>
+      </div>
+    </div>
+
+    <div class="modal-earnings" *ngIf="selectedOrder">
+      <div class="earnings-row">
+        <span>Base fee</span>
+        <strong>₹{{ selectedOrder.earnAmount }}</strong>
+      </div>
+      <div class="earnings-row light">
+        <span>Plus tips from customer</span>
+        <strong>Extra</strong>
+      </div>
+      <div class="earnings-total">
+        <span>Total Expected</span>
+        <strong>₹{{ selectedOrder.earnAmount }}+</strong>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-primary" (click)="acceptOrder()">✅ Accept Order</button>
+      <button class="btn btn-outline" (click)="rejectOrder()">Reject</button>
+    </div>
+  </div>
+</div>

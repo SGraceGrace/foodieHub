@@ -6,7 +6,7 @@ import { AdminService, CreateAdminRequest, SlideRequest } from './admin.service'
 import { ActivityLog, AdminUserResponse, PaginatedResponse, Restaurant, Slide } from '../model/restaurant.model';
 import { AdminHeaderComponent } from './admin-header/admin-header.component';
 
-type Tab = 'dashboard' | 'users' | 'restaurants' | 'restaurant-owners' | 'orders' | 'payments' | 'support' | 'reports' | 'slides' | 'activity-log';
+type Tab = 'dashboard' | 'users' | 'restaurants' | 'restaurant-owners' | 'drivers' | 'orders' | 'payments' | 'support' | 'reports' | 'slides' | 'activity-log';
 
 @Component({
   selector: 'app-admin',
@@ -42,6 +42,12 @@ export class AdminComponent implements OnInit {
   ownerPagination = { currentPage: 0, totalPages: 0, totalElements: 0, pageSize: 10 };
   pendingOwnerCount = 0;
 
+  // Drivers
+  drivers: AdminUserResponse[] = [];
+  driverStatusFilter = 'PENDING';
+  driverPagination = { currentPage: 0, totalPages: 0, totalElements: 0, pageSize: 10 };
+  pendingDriverCount = 0;
+
   // Activity Log
   activityLogs: ActivityLog[] = [];
 
@@ -56,6 +62,7 @@ export class AdminComponent implements OnInit {
 
   ngOnInit() {
     this.loadPendingOwnerCount();
+    this.loadPendingDriverCount();
   }
 
   loadPendingOwnerCount() {
@@ -65,11 +72,19 @@ export class AdminComponent implements OnInit {
     });
   }
 
+  loadPendingDriverCount() {
+    this.adminService.getPendingDriverCount().subscribe({
+      next: count => this.pendingDriverCount = count,
+      error: () => {}
+    });
+  }
+
   goTab(tab: Tab) {
     this.activeTab = tab;
     if (tab === 'users') this.loadUsers();
     if (tab === 'restaurants') this.loadRestaurants();
     if (tab === 'restaurant-owners') this.loadOwners();
+    if (tab === 'drivers') this.loadDrivers();
     if (tab === 'slides') this.loadSlides();
     if (tab === 'activity-log') this.loadActivityLogs();
   }
@@ -198,6 +213,57 @@ export class AdminComponent implements OnInit {
     });
   }
 
+  // ── Drivers ───────────────────────────────────────────────────────
+
+  loadDrivers(page = 0) {
+    this.adminService.getDrivers(this.driverStatusFilter || undefined, page, this.driverPagination.pageSize).subscribe({
+      next: (res) => {
+        const p: PaginatedResponse<AdminUserResponse> = res.data;
+        this.drivers = p.content ?? [];
+        this.driverPagination = { currentPage: p.currentPage, totalPages: p.totalPages, totalElements: p.totalElements, pageSize: p.pageSize };
+      },
+      error: () => this.toastr.error('Failed to load drivers.'),
+    });
+  }
+
+  get driverPageNumbers(): number[] {
+    const { currentPage, totalPages } = this.driverPagination;
+    const pages: number[] = [];
+    for (let i = Math.max(0, currentPage - 2); i <= Math.min(totalPages - 1, currentPage + 2); i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  driverPagingStart(): number { return this.driverPagination.currentPage * this.driverPagination.pageSize + 1; }
+  driverPagingEnd(): number { return Math.min((this.driverPagination.currentPage + 1) * this.driverPagination.pageSize, this.driverPagination.totalElements); }
+
+  approveDriver(driver: AdminUserResponse) {
+    if (!confirm(`Approve driver ${driver.firstName} ${driver.lastName}?`)) return;
+    this.adminService.approveDriver(driver.id).subscribe({
+      next: (res) => {
+        const idx = this.drivers.findIndex((d) => d.id === driver.id);
+        if (idx !== -1) this.drivers[idx] = res.data;
+        this.toastr.success('Driver approved.');
+        this.loadPendingDriverCount();
+      },
+      error: () => this.toastr.error('Failed to approve driver.'),
+    });
+  }
+
+  rejectDriver(driver: AdminUserResponse) {
+    if (!confirm(`Reject driver ${driver.firstName} ${driver.lastName}?`)) return;
+    this.adminService.rejectDriver(driver.id).subscribe({
+      next: (res) => {
+        const idx = this.drivers.findIndex((d) => d.id === driver.id);
+        if (idx !== -1) this.drivers[idx] = res.data;
+        this.toastr.success('Driver rejected.');
+        this.loadPendingDriverCount();
+      },
+      error: () => this.toastr.error('Failed to reject driver.'),
+    });
+  }
+
   // ── Create Admin ─────────────────────────────────────────────────
 
   openCreateAdmin() {
@@ -271,6 +337,8 @@ export class AdminComponent implements OnInit {
       UNSUSPEND_USER: 'Unsuspended User',
       APPROVE_OWNER: 'Approved Owner',
       REJECT_OWNER: 'Rejected Owner',
+      APPROVE_DRIVER: 'Approved Driver',
+      REJECT_DRIVER: 'Rejected Driver',
     };
     return labels[action] ?? action;
   }
@@ -281,6 +349,8 @@ export class AdminComponent implements OnInit {
     if (action === 'UNSUSPEND_USER') return 'log-badge restore';
     if (action === 'APPROVE_OWNER') return 'log-badge create';
     if (action === 'REJECT_OWNER') return 'log-badge suspend';
+    if (action === 'APPROVE_DRIVER') return 'log-badge create';
+    if (action === 'REJECT_DRIVER') return 'log-badge suspend';
     return 'log-badge';
   }
 

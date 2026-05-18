@@ -299,6 +299,45 @@ $font-sans:  'DM Sans', sans-serif;
   background: $bg-warm; border-radius: 20px; color: $text-light;
 }
 
+// ── Driver CTA Banner ─────────────────────────────────────────────
+.driver-banner {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2e2e2e 100%);
+  padding: 3.5rem 2.5rem;
+  color: white;
+}
+.driver-banner-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr auto;
+  align-items: center; gap: 3rem;
+}
+.driver-banner-text {
+  h2 {
+    font-family: $font-serif; font-size: 2rem; font-weight: 700;
+    margin: 0 0 .75rem; color: white;
+    span { color: $gold; }
+  }
+  p { color: rgba(255,255,255,.7); font-size: .95rem; line-height: 1.7; margin: 0 0 1.8rem; max-width: 520px; }
+}
+.driver-banner-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn-outline-white {
+  padding: 11px 24px; border: 1.5px solid rgba(255,255,255,.4); border-radius: 8px;
+  background: transparent; color: white; font-weight: 600; cursor: pointer;
+  font-size: .9rem; font-family: $font-sans; transition: all .2s;
+  &:hover { border-color: $gold; color: $gold; }
+}
+.driver-stats {
+  display: flex; flex-direction: column; gap: 1.2rem;
+}
+.dstat {
+  display: flex; flex-direction: column; gap: 2px;
+  background: rgba(255,255,255,.07); border-radius: 10px;
+  padding: .9rem 1.4rem; min-width: 160px;
+}
+.dstat-val {
+  font-family: $font-serif; font-size: 1.5rem; font-weight: 700; color: $gold;
+}
+.dstat-lbl { font-size: .78rem; color: rgba(255,255,255,.6); }
+
 // ── Promo Banner ──────────────────────────────────────────────────
 .promo-banner-strip {
   background: linear-gradient(135deg, #2a1a00, #4a2e00);
@@ -314,4 +353,7 @@ $font-sans:  'DM Sans', sans-serif;
   .hero-circle { width: 220px; height: 220px; font-size: 110px; }
   .stats-inner { grid-template-columns: repeat(2,1fr); }
   .section { padding: 2rem 1.5rem; }
+  .driver-banner-inner { grid-template-columns: 1fr; }
+  .driver-stats { flex-direction: row; flex-wrap: wrap; }
+  .dstat { min-width: 120px; }
 }
