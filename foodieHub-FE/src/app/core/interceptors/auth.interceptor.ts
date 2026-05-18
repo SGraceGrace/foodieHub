@@ -31,10 +31,12 @@ export function authInterceptor(
   const loginService = inject(LoginService);
   const router = inject(Router);
 
-  const publicUrls = ['/login', '/signup', '/contact', '/api/v1/slides', '/api/v1/restaurants', '/partner/register'];
+  const publicUrls = ['/login', '/signup', '/contact', '/api/v1/slides', '/api/v1/restaurants', '/partner/register', '/api/v1/refresh-token'];
   if (publicUrls.some((u) => req.url.includes(u))) {
     return next(req);
   }
+
+  const loginRedirect = router.url.startsWith('/admin') ? '/admin/login' : '/login';
 
   if (accessToken && refreshToken) {
     req = req.clone({
@@ -44,23 +46,13 @@ export function authInterceptor(
       },
     });
   } else {
-    router.navigateByUrl('/login');
+    router.navigateByUrl(loginRedirect);
     return throwError(() => new Error('No token'));
   }
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (
-        error.status === 401 &&
-        typeof refreshToken === 'string'
-      ) {
-        return handle401(
-          req,
-          next,
-          tokenService,
-          loginService,
-          router,
-          refreshToken
-        );
+      if (error.status === 401 && typeof refreshToken === 'string') {
+        return handle401(req, next, tokenService, loginService, router, refreshToken, loginRedirect);
       }
       return throwError(() => error);
     })
@@ -73,7 +65,8 @@ function handle401(
   tokenService: TokenService,
   loginService: LoginService,
   router: Router,
-  refreshToken: string
+  refreshToken: string,
+  loginRedirect: string
 ): Observable<HttpEvent<unknown>> {
   if (!isRefreshing) {
     isRefreshing = true;
@@ -86,16 +79,12 @@ function handle401(
         const newRefreshToken = response.headers.get('X-Refresh-Token') ?? '';
         tokenService.setTokens(newAccessToken, newRefreshToken);
         refreshSubject.next(newAccessToken);
-        return next(
-          request.clone({
-            setHeaders: { Authorization: newAccessToken },
-          })
-        );
+        return next(request.clone({ setHeaders: { Authorization: newAccessToken } }));
       }),
       catchError((err) => {
         isRefreshing = false;
         tokenService.clearTokens();
-        router.navigateByUrl('/login');
+        router.navigateByUrl(loginRedirect);
         return throwError(() => err);
       })
     );
@@ -104,11 +93,7 @@ function handle401(
       filter((token) => token !== null),
       take(1),
       switchMap((token) =>
-        next(
-          request.clone({
-            setHeaders: { Authorization: token! },
-          })
-        )
+        next(request.clone({ setHeaders: { Authorization: token! } }))
       )
     );
   }

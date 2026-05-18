@@ -57,7 +57,7 @@ export class AdminLoginComponent implements OnInit {
     const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
     if (isAuthenticated && userInfo) {
       const user: UserDetails = JSON.parse(userInfo);
-      if (user.role?.roleName === 'ADMIN') {
+      if (user.role?.roleName === 'ADMIN' || user.role?.roleName === 'SUPER_ADMIN') {
         this.router.navigateByUrl('/admin');
       }
     }
@@ -109,7 +109,8 @@ export class AdminLoginComponent implements OnInit {
     this.userService.getUserInfo().subscribe({
       next: (apiResponse) => {
         const userDetails = toUserDetails(apiResponse.data);
-        if (userDetails.role?.roleName !== 'ADMIN') {
+        const role = userDetails.role?.roleName;
+        if (role !== 'ADMIN' && role !== 'SUPER_ADMIN') {
           this.tokenService.clearTokens();
           this.toastr.error('You are not authorized to access the admin portal.', 'Access Denied');
           this.loginForm.reset();
