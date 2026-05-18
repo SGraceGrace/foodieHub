@@ -61,8 +61,8 @@ export class AdminComponent implements OnInit {
   constructor(private adminService: AdminService, private toastr: ToastrService) {}
 
   ngOnInit() {
-    this.loadPendingOwnerCount();
-    this.loadPendingDriverCount();
+    // Pending counts are loaded lazily when their tabs are first opened,
+    // so unrelated API calls don't fire on every admin page load.
   }
 
   loadPendingOwnerCount() {
@@ -86,8 +86,8 @@ export class AdminComponent implements OnInit {
     // load functions directly, so fresh data is still fetched when needed.
     if (tab === 'users'             && this.users.length === 0)        this.loadUsers();
     if (tab === 'restaurants'       && this.restaurants.length === 0)  this.loadRestaurants();
-    if (tab === 'restaurant-owners' && this.owners.length === 0)       this.loadOwners();
-    if (tab === 'drivers'           && this.drivers.length === 0)      this.loadDrivers();
+    if (tab === 'restaurant-owners' && this.owners.length === 0)       { this.loadOwners(); this.loadPendingOwnerCount(); }
+    if (tab === 'drivers'           && this.drivers.length === 0)      { this.loadDrivers(); this.loadPendingDriverCount(); }
     if (tab === 'slides'            && this.slides.length === 0)       this.loadSlides();
     if (tab === 'activity-log'      && this.activityLogs.length === 0) this.loadActivityLogs();
   }
