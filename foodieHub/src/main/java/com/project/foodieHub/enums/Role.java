@@ -1,5 +1,5 @@
 package com.project.foodieHub.enums;
 
 public enum Role {
-    ADMIN, NON_ADMIN, END_USERS, RESTAURANT_OWNER
+    SUPER_ADMIN, ADMIN, NON_ADMIN, END_USERS, RESTAURANT_OWNER
 }

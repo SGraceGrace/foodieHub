@@ -57,6 +57,13 @@ export interface ActivityLog {
   createdAt: string;
 }
 
+export interface AdminNotification {
+  type: 'ACTIVITY' | 'PENDING_OWNER';
+  message: string;
+  actorEmail?: string;
+  timestamp: string;
+}
+
 export interface Slide {
   id: string;
   title: string;

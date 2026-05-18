@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { ApiResponse } from '../model/apiResponse.model';
-import { ActivityLog, AdminUserResponse, PaginatedResponse, Restaurant, Slide } from '../model/restaurant.model';
+import { ActivityLog, AdminNotification, AdminUserResponse, PaginatedResponse, Restaurant, Slide } from '../model/restaurant.model';
 
 export interface SlideRequest {
   title: string;
@@ -88,6 +88,13 @@ export class AdminService {
   // Activity Logs
   getActivityLogs(): Observable<ApiResponse<ActivityLog[]>> {
     return this.http.get<ApiResponse<ActivityLog[]>>(this.logsBase);
+  }
+
+  // Notifications
+  private notificationsBase = `${environment.apiBaseUrl}/api/v1/admin/notifications`;
+
+  getNotifications(): Observable<ApiResponse<AdminNotification[]>> {
+    return this.http.get<ApiResponse<AdminNotification[]>>(this.notificationsBase);
   }
 
   // Restaurant Owners

@@ -14,7 +14,7 @@ export const adminGuard: CanActivateFn = (route, state) => {
   const userInfo = localStorage.getItem('userInfo');
   const user: UserDetails | null = userInfo ? JSON.parse(userInfo) : null;
 
-  if (user?.role?.roleName === 'ADMIN') {
+  if (user?.role?.roleName === 'ADMIN' || user?.role?.roleName === 'SUPER_ADMIN') {
     return true;
   }
 

@@ -2,6 +2,8 @@ package com.project.foodieHub.repo;
 
 import com.project.foodieHub.entity.User;
 import com.project.foodieHub.enums.UserStatus;
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,4 +33,9 @@ public interface UserRepo extends JpaRepository<User, Long> {
   @Query("SELECT u FROM User u WHERE u.role.roleName = 'RESTAURANT_OWNER' " +
          "AND (:status IS NULL OR u.status = :status)")
   Page<User> findRestaurantOwners(@Param("status") UserStatus status, Pageable pageable);
+
+  @Query("SELECT u FROM User u WHERE u.role.roleName = 'RESTAURANT_OWNER' " +
+         "AND u.status = 'PENDING' AND u.createdDate >= :start AND u.createdDate < :end " +
+         "ORDER BY u.createdDate DESC")
+  List<User> findTodayPendingOwners(@Param("start") Date start, @Param("end") Date end);
 }

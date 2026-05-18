@@ -44,8 +44,8 @@ public class UserDataSeeder implements CommandLineRunner {
             return;
         }
 
-        Roles adminRole = roleRepo.findByRoleName(Role.ADMIN.name())
-                .orElseThrow(() -> new IllegalStateException("ADMIN role not found after seeding"));
+        Roles adminRole = roleRepo.findByRoleName(Role.SUPER_ADMIN.name())
+                .orElseThrow(() -> new IllegalStateException("SUPER_ADMIN role not found after seeding"));
 
         User admin = new User();
         admin.setFirstName("Admin");

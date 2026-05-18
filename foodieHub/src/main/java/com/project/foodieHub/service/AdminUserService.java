@@ -3,6 +3,7 @@ package com.project.foodieHub.service;
 import com.project.foodieHub.dto.ActivityLogDTO;
 import com.project.foodieHub.dto.AdminUserResponseDTO;
 import com.project.foodieHub.dto.CreateAdminRequestDTO;
+import com.project.foodieHub.dto.NotificationDTO;
 import com.project.foodieHub.dto.PaginatedResponse;
 
 import java.util.List;
@@ -16,4 +17,5 @@ public interface AdminUserService {
     PaginatedResponse<AdminUserResponseDTO> getRestaurantOwners(String status, int page, int size);
     AdminUserResponseDTO approveOwner(Long id);
     AdminUserResponseDTO rejectOwner(Long id);
+    List<NotificationDTO> getNotifications();
 }
