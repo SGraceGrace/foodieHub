@@ -121,7 +121,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         emoji: CUISINE_EMOJI[cuisine] ?? CUISINE_EMOJI['default'],
         name: firstItem.name,
         price: firstItem.price,
-        rating: r.rating,
+        rating: r.rating ?? 0,
         reviews: Math.floor(Math.random() * 300 + 100),
         badge: dishes.length === 0 ? 'Bestseller' : undefined,
         bg: CUISINE_BG[cuisine] ?? CUISINE_BG['default'],
@@ -132,11 +132,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   getEmoji(r: Restaurant): string {
-    return CUISINE_EMOJI[r.cuisine?.[0]] ?? CUISINE_EMOJI['default'];
+    return CUISINE_EMOJI[r.cuisine?.[0] ?? 'default'] ?? CUISINE_EMOJI['default'];
   }
 
   getBg(r: Restaurant): string {
-    return CUISINE_BG[r.cuisine?.[0]] ?? CUISINE_BG['default'];
+    return CUISINE_BG[r.cuisine?.[0] ?? 'default'] ?? CUISINE_BG['default'];
   }
 
   starsArray(rating: number): boolean[] {
