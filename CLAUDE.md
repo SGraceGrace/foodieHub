@@ -395,6 +395,38 @@ Every API endpoint that returns a list **and** every UI table must be paginated.
 
 ---
 
+## 🔄 Service Restart Guide
+
+After making code changes, always restart the affected service(s). Changes only take effect after restart.
+
+| What you changed | Restart needed |
+|---|---|
+| `api-gateway/src/**` or `api-gateway/resources/application.yaml` | **api-gateway** |
+| `foodieHub/src/**` (user-service) | **user-service** |
+| `food-service/src/**` | **food-service** |
+| `notification-service/src/**` | **notification-service** |
+| `foodieHub-FE/src/**` (Angular) | Angular dev server auto-reloads — no restart needed |
+| `.env` / environment variables | Restart whichever service uses that variable |
+
+**Rule of thumb:** If you touched a `.java` file or `application.yaml` in a service, restart that service. If you touched gateway routes (`api-gateway/resources/application.yaml`), restart the gateway too.
+
+### Running services and ports
+| Service | Port | Start command |
+|---|---|---|
+| api-gateway | 8080 | Run `ApiGatewayApplication` |
+| user-service (foodieHub) | 8081 | Run `FoodieHubApplication` |
+| food-service | 8082 | Run `FoodServiceApplication` |
+| notification-service | 8084 | Run `NotificationServiceApplication` |
+| Angular frontend | 4200 | `ng serve` (auto-reloads) |
+
+### Infrastructure (must be running before starting services)
+- **Redis** — required by user-service (JWT session, refresh token) and food-service (cache)
+- **RabbitMQ** — required by user-service and notification-service
+- **MySQL** — required by user-service
+- **MongoDB** — required by food-service
+
+---
+
 ## ✅ Definition of Done (POC)
 
 Your POC is interview-ready when:

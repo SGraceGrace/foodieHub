@@ -79,10 +79,27 @@ public class AdminUserController {
                 adminUserService.rejectOwner(id), HttpStatus.OK.value(), null));
     }
 
-    @GetMapping("api/v1/admin/notifications")
+    @GetMapping("api/v1/admin/drivers")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
-    public ResponseEntity<BaseAPIResponse> getNotifications() {
+    public ResponseEntity<BaseAPIResponse> getDrivers(
+            @RequestParam(required = false) String status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
-                adminUserService.getNotifications(), HttpStatus.OK.value(), null));
+                adminUserService.getDrivers(status, page, size), HttpStatus.OK.value(), null));
+    }
+
+    @PutMapping("api/v1/admin/drivers/{id}/approve")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<BaseAPIResponse> approveDriver(@PathVariable Long id) {
+        return ResponseEntity.ok(new BaseAPIResponse("Driver approved",
+                adminUserService.approveDriver(id), HttpStatus.OK.value(), null));
+    }
+
+    @PutMapping("api/v1/admin/drivers/{id}/reject")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<BaseAPIResponse> rejectDriver(@PathVariable Long id) {
+        return ResponseEntity.ok(new BaseAPIResponse("Driver rejected",
+                adminUserService.rejectDriver(id), HttpStatus.OK.value(), null));
     }
 }

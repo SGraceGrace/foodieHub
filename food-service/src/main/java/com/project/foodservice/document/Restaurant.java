@@ -16,6 +16,9 @@ public class Restaurant {
 
     private String ownerId;
 
+    private String fssaiNumber;
+    private String gstNumber;
+
     private String name;
     private List<String> cuisine;
     private double rating;

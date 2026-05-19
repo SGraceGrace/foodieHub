@@ -17,4 +17,6 @@ public class AdminUserResponseDTO {
     private String restaurantAddress;
     private String fssaiNumber;
     private String gstNumber;
+    private String vehicleType;
+    private String licenseNumber;
 }

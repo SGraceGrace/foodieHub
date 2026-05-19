@@ -5,6 +5,10 @@ spring:
   application:
     name: notification-service
 
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/foodiehub_notifications
+
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
     port: ${RABBITMQ_PORT:5672}
@@ -23,5 +27,13 @@ spring:
           starttls:
             enable: true
 
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
 admin:
   email: ${ADMIN_EMAIL:admin@foodiehub.com}
+
+logging:
+  level:
+    org.springframework.security: DEBUG

@@ -34,6 +34,7 @@ export class AdminComponent implements OnInit {
   // Restaurants
   restaurants: Restaurant[] = [];
   restaurantCuisineFilter = '';
+  restaurantStatusFilter = '';
   restaurantPagination = { currentPage: 0, totalPages: 0, totalElements: 0, pageSize: 10 };
 
   // Restaurant Owners
@@ -143,7 +144,7 @@ export class AdminComponent implements OnInit {
   // ── Restaurants ───────────────────────────────────────────────────
 
   loadRestaurants(page = 0) {
-    this.adminService.getRestaurants(this.restaurantCuisineFilter, page, this.restaurantPagination.pageSize).subscribe({
+    this.adminService.getAdminRestaurants(this.restaurantStatusFilter, this.restaurantCuisineFilter, page, this.restaurantPagination.pageSize).subscribe({
       next: (res) => {
         const p: PaginatedResponse<Restaurant> = res.data;
         this.restaurants = p.content ?? [];
@@ -322,6 +323,29 @@ export class AdminComponent implements OnInit {
     }
 
     return valid;
+  }
+
+  resetUsersFilter() {
+    this.userSearch = '';
+    this.userRoleFilter = '';
+    this.userStatusFilter = '';
+    this.loadUsers(0);
+  }
+
+  resetRestaurantsFilter() {
+    this.restaurantCuisineFilter = '';
+    this.restaurantStatusFilter = '';
+    this.loadRestaurants(0);
+  }
+
+  resetOwnersFilter() {
+    this.ownerStatusFilter = '';
+    this.loadOwners(0);
+  }
+
+  resetDriversFilter() {
+    this.driverStatusFilter = '';
+    this.loadDrivers(0);
   }
 
   // ── Activity Log ──────────────────────────────────────────────────

@@ -53,7 +53,8 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
         this.notifications = res.data ?? [];
         this.unreadCount = this.notifications.length;
         this.refreshPendingCounts();
-      }
+      },
+      error: () => {}
     });
   }
 
@@ -74,21 +75,14 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
   }
 
   private refreshPendingCounts() {
-    const hasPendingOwner  = this.notifications.some(n => n.type === 'PENDING_OWNER');
-    const hasPendingDriver = this.notifications.some(n => n.type === 'PENDING_DRIVER');
-
-    if (hasPendingOwner) {
-      this.adminService.getPendingOwnerCount().subscribe({
-        next: count => this.pendingOwnerCountChange.emit(count),
-        error: () => {},
-      });
-    }
-    if (hasPendingDriver) {
-      this.adminService.getPendingDriverCount().subscribe({
-        next: count => this.pendingDriverCountChange.emit(count),
-        error: () => {},
-      });
-    }
+    this.adminService.getPendingOwnerCount().subscribe({
+      next: count => this.pendingOwnerCountChange.emit(count),
+      error: () => {},
+    });
+    this.adminService.getPendingDriverCount().subscribe({
+      next: count => this.pendingDriverCountChange.emit(count),
+      error: () => {},
+    });
   }
 
   enablePushNotifications() {

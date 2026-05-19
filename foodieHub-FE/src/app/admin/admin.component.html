@@ -113,6 +113,7 @@
             <option value="ACTIVE">Active</option>
             <option value="INACTIVE">Suspended</option>
           </select>
+          <button class="btn-reset" (click)="resetUsersFilter()">Reset Filters</button>
           <button class="btn-inline-primary" (click)="openCreateAdmin()">+ Create Admin</button>
         </div>
         <table>
@@ -170,25 +171,38 @@
         <div class="table-toolbar">
           <input class="search-input" type="text" placeholder="Filter by cuisine..."
             [(ngModel)]="restaurantCuisineFilter" (keyup.enter)="loadRestaurants(0)" />
+          <select class="filter-select" [(ngModel)]="restaurantStatusFilter" (change)="loadRestaurants(0)">
+            <option value="">All Status</option>
+            <option value="PENDING">Pending</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
+          <button class="btn-reset" (click)="resetRestaurantsFilter()">Reset Filters</button>
         </div>
         <table>
           <thead>
-            <tr><th>Restaurant</th><th>Cuisine</th><th>Rating</th><th>Delivery Time</th><th>Status</th></tr>
+            <tr><th>Restaurant</th><th>Address</th><th>Cuisine</th><th>Rating</th><th>Delivery Time</th><th>FSSAI</th><th>GST</th><th>Status</th></tr>
           </thead>
           <tbody>
             <tr *ngFor="let r of restaurants">
               <td>{{ r.name }}</td>
+              <td class="address-cell">{{ r.address || '—' }}</td>
               <td>{{ r.cuisine?.join(', ') || '—' }}</td>
               <td>{{ r.rating ?? '—' }}</td>
               <td>{{ r.deliveryTime ? r.deliveryTime + ' min' : '—' }}</td>
+              <td>{{ r.fssaiNumber || '—' }}</td>
+              <td>{{ r.gstNumber || '—' }}</td>
               <td>
-                <span class="badge" [class.success]="r.isOpen" [class.warning]="!r.isOpen">
-                  {{ r.isOpen ? 'Open' : 'Closed' }}
+                <span class="badge"
+                  [class.warning]="r.status === 'PENDING'"
+                  [class.success]="r.status === 'ACTIVE'"
+                  [class.error]="r.status === 'INACTIVE'">
+                  {{ r.status === 'PENDING' ? 'Pending' : r.status === 'ACTIVE' ? 'Active' : 'Inactive' }}
                 </span>
               </td>
             </tr>
             <tr *ngIf="restaurants.length === 0">
-              <td colspan="5" class="empty-cell">No restaurants found</td>
+              <td colspan="8" class="empty-cell">No restaurants found</td>
             </tr>
           </tbody>
         </table>
@@ -221,6 +235,7 @@
             <option value="INACTIVE">Rejected</option>
             <option value="">All</option>
           </select>
+          <button class="btn-reset" (click)="resetOwnersFilter()">Reset Filters</button>
         </div>
         <table>
           <thead>
@@ -228,8 +243,6 @@
               <th>ID</th>
               <th>Owner</th>
               <th>Contact</th>
-              <th>Restaurant</th>
-              <th>Address</th>
               <th>FSSAI / GST</th>
               <th>Status</th>
               <th>Actions</th>
@@ -243,8 +256,6 @@
                 <div>{{ owner.email }}</div>
                 <div class="sub-text">{{ owner.phone || '—' }}</div>
               </td>
-              <td>{{ owner.restaurantName || '—' }}</td>
-              <td class="address-cell">{{ owner.restaurantAddress || '—' }}</td>
               <td>
                 <div>{{ owner.fssaiNumber || '—' }}</div>
                 <div class="sub-text" *ngIf="owner.gstNumber">GST: {{ owner.gstNumber }}</div>
@@ -264,7 +275,7 @@
               </td>
             </tr>
             <tr *ngIf="owners.length === 0">
-              <td colspan="8" class="empty-cell">No restaurant owners found</td>
+              <td colspan="6" class="empty-cell">No restaurant owners found</td>
             </tr>
           </tbody>
         </table>
@@ -297,6 +308,7 @@
             <option value="INACTIVE">Rejected</option>
             <option value="">All</option>
           </select>
+          <button class="btn-reset" (click)="resetDriversFilter()">Reset Filters</button>
         </div>
         <table>
           <thead>

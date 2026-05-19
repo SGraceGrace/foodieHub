@@ -41,6 +41,11 @@ spring:
             predicates:
               - Path=/api/v1/admin/slides, /api/v1/admin/slides/**
 
+          - id: food-service-admin-restaurants
+            uri: http://localhost:8082
+            predicates:
+              - Path=/api/v1/admin/restaurants, /api/v1/admin/restaurants/**
+
           - id: user-service-admin-users
             uri: http://localhost:8081
             predicates:
@@ -56,15 +61,25 @@ spring:
             predicates:
               - Path=/api/v1/admin/restaurant-owners, /api/v1/admin/restaurant-owners/**
 
-          - id: user-service-notifications
+          - id: user-service-drivers
             uri: http://localhost:8081
             predicates:
-              - Path=/api/v1/admin/notifications
+              - Path=/api/v1/admin/drivers, /api/v1/admin/drivers/**
+
+          - id: notification-service-notifications
+            uri: http://localhost:8084
+            predicates:
+              - Path=/api/v1/admin/notifications, /api/v1/admin/notifications/**
 
           - id: user-service-partner
             uri: http://localhost:8081
             predicates:
               - Path=/api/v1/partner/**
+
+          - id: user-service-driver-register
+            uri: http://localhost:8081
+            predicates:
+              - Path=/api/v1/driver/**
 
           - id: food-service-restaurants
             uri: http://localhost:8082
@@ -107,3 +122,7 @@ management:
   endpoint:
     health:
       show-details: always
+
+logging:
+  level:
+    org.springframework.security: DEBUG

@@ -51,12 +51,33 @@ public class RestaurantServiceImpl implements RestaurantService {
         Restaurant restaurant = new Restaurant();
         restaurant.setName(request.getName());
         restaurant.setOwnerId(request.getOwnerId());
+        restaurant.setAddress(request.getAddress());
+        restaurant.setFssaiNumber(request.getFssaiNumber());
+        restaurant.setGstNumber(request.getGstNumber());
         return restaurantRepo.save(restaurant);
     }
 
     @Override
     public PaginatedResponse<Restaurant> getByOwner(String ownerId, Pageable pageable) {
         return PaginatedResponse.of(restaurantRepo.findByOwnerId(ownerId, pageable));
+    }
+
+    @Override
+    public PaginatedResponse<Restaurant> getAllForAdmin(String status, String cuisine, Pageable pageable) {
+        boolean hasStatus = status != null && !status.isBlank();
+        boolean hasCuisine = cuisine != null && !cuisine.isBlank();
+
+        if (hasStatus && hasCuisine) {
+            return PaginatedResponse.of(
+                restaurantRepo.findByStatusAndCuisineContainingIgnoreCase(RestaurantStatus.valueOf(status), cuisine, pageable));
+        }
+        if (hasStatus) {
+            return PaginatedResponse.of(restaurantRepo.findByStatus(RestaurantStatus.valueOf(status), pageable));
+        }
+        if (hasCuisine) {
+            return PaginatedResponse.of(restaurantRepo.findByCuisineContainingIgnoreCase(cuisine, pageable));
+        }
+        return PaginatedResponse.of(restaurantRepo.findAll(pageable));
     }
 
     @Override

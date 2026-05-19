@@ -10,8 +10,8 @@ import { Router } from '@angular/router';
 import {
   BehaviorSubject,
   catchError,
-  filter,
   Observable,
+  skip,
   switchMap,
   take,
   throwError,
@@ -51,6 +51,7 @@ export function authInterceptor(
   }
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
+      console.log(error);
       if (error.status === 401 && typeof refreshToken === 'string') {
         return handle401(req, next, tokenService, loginService, router, refreshToken, loginRedirect);
       }
@@ -83,6 +84,7 @@ function handle401(
       }),
       catchError((err) => {
         isRefreshing = false;
+        refreshSubject.next(null);
         tokenService.clearTokens();
         router.navigateByUrl(loginRedirect);
         return throwError(() => err);
@@ -90,11 +92,12 @@ function handle401(
     );
   } else {
     return refreshSubject.pipe(
-      filter((token) => token !== null),
+      skip(1),
       take(1),
-      switchMap((token) =>
-        next(request.clone({ setHeaders: { Authorization: token! } }))
-      )
+      switchMap((token) => {
+        if (!token) return throwError(() => new Error('Session expired'));
+        return next(request.clone({ setHeaders: { Authorization: token } }));
+      })
     );
   }
 }

@@ -1,9 +1,13 @@
 package com.project.notificationservice.listener;
 
 import com.project.notificationservice.config.RabbitMQConfig;
+import com.project.notificationservice.entity.Notification;
+import com.project.notificationservice.event.ActivityLoggedEvent;
+import com.project.notificationservice.event.DriverRegisteredEvent;
 import com.project.notificationservice.event.OrderPlacedEvent;
 import com.project.notificationservice.event.OwnerStatusEvent;
 import com.project.notificationservice.event.PartnerRegisteredEvent;
+import com.project.notificationservice.repo.NotificationRepo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -18,24 +22,60 @@ import org.springframework.stereotype.Component;
 public class NotificationListener {
 
     private final JavaMailSender mailSender;
+    private final NotificationRepo notificationRepo;
 
     @Value("${admin.email}")
     private String adminEmail;
 
-    // ── Partner registration → notify admin ───────────────────────
+    // ── Partner registration → save notification + email admin ───
 
     @RabbitListener(queues = RabbitMQConfig.PARTNER_QUEUE)
     public void onPartnerRegistered(PartnerRegisteredEvent event) {
+        Notification n = new Notification();
+        n.setType("PENDING_OWNER");
+        n.setMessage("New restaurant registration: " + event.getRestaurantName()
+                + " by " + event.getOwnerName());
+        n.setVisibleTo("ALL_ADMINS");
+        notificationRepo.save(n);
+        log.info("Saved PENDING_OWNER notification for partner: {}", event.getEmail());
+
         try {
             SimpleMailMessage msg = new SimpleMailMessage();
             msg.setTo(adminEmail);
             msg.setSubject("New Restaurant Partner Registration — Action Required");
             msg.setText(buildPartnerEmail(event));
             mailSender.send(msg);
-            log.info("Approval email sent to admin for partner: {}", event.getEmail());
         } catch (Exception e) {
             log.error("Failed to send approval email for {}: {}", event.getEmail(), e.getMessage());
         }
+    }
+
+    // ── Driver registration → save notification ───────────────────
+
+    @RabbitListener(queues = RabbitMQConfig.DRIVER_QUEUE)
+    public void onDriverRegistered(DriverRegisteredEvent event) {
+        Notification n = new Notification();
+        n.setType("PENDING_DRIVER");
+        n.setMessage("New driver registration by " + event.getDriverName()
+                + " (" + event.getVehicleType() + ")");
+        n.setVisibleTo("ALL_ADMINS");
+        notificationRepo.save(n);
+        log.info("Saved PENDING_DRIVER notification for driver: {}", event.getEmail());
+    }
+
+    // ── Activity logged → save notification ───────────────────────
+
+    @RabbitListener(queues = RabbitMQConfig.ACTIVITY_QUEUE)
+    public void onActivityLogged(ActivityLoggedEvent event) {
+        // ACTIVITY notifications are for SUPER_ADMIN oversight only.
+        // The admin who performed the action already knows what they did.
+        Notification n = new Notification();
+        n.setType("ACTIVITY");
+        n.setMessage(event.getMessage());
+        n.setActorEmail(event.getActorEmail()); // stored for display, not for filtering
+        n.setVisibleTo("SUPER_ADMIN_ONLY");
+        notificationRepo.save(n);
+        log.info("Saved ACTIVITY notification: {}", event.getMessage());
     }
 
     // ── Owner approved/rejected → notify owner ───────────────────

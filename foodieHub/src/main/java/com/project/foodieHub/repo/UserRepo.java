@@ -38,4 +38,13 @@ public interface UserRepo extends JpaRepository<User, Long> {
          "AND u.status = 'PENDING' AND u.createdDate >= :start AND u.createdDate < :end " +
          "ORDER BY u.createdDate DESC")
   List<User> findTodayPendingOwners(@Param("start") Date start, @Param("end") Date end);
+
+  @Query("SELECT u FROM User u WHERE u.role.roleName = 'DRIVER' " +
+         "AND (:status IS NULL OR u.status = :status)")
+  Page<User> findDrivers(@Param("status") UserStatus status, Pageable pageable);
+
+  @Query("SELECT u FROM User u WHERE u.role.roleName = 'DRIVER' " +
+         "AND u.status = 'PENDING' AND u.createdDate >= :start AND u.createdDate < :end " +
+         "ORDER BY u.createdDate DESC")
+  List<User> findTodayPendingDrivers(@Param("start") Date start, @Param("end") Date end);
 }

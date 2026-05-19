@@ -92,11 +92,17 @@ public class PartnerServiceImpl implements PartnerService {
         log.info("Published partner.registered event for: {}", saved.getEmail());
     }
 
-    private void createRestaurantInFoodService(String restaurantName, Long ownerId) {
+    private void createRestaurantInFoodService(PartnerRegisterRequestDTO dto, Long ownerId) {
         try {
             restTemplate.postForObject(
                     foodServiceUrl + "/api/v1/restaurants",
-                    Map.of("name", restaurantName, "ownerId", String.valueOf(ownerId)),
+                    Map.of(
+                            "name", dto.getRestaurantName(),
+                            "ownerId", String.valueOf(ownerId),
+                            "address", dto.getRestaurantAddress() != null ? dto.getRestaurantAddress() : "",
+                            "fssaiNumber", dto.getFssaiNumber() != null ? dto.getFssaiNumber() : "",
+                            "gstNumber", dto.getGstNumber() != null ? dto.getGstNumber() : ""
+                    ),
                     Object.class
             );
         } catch (Exception e) {

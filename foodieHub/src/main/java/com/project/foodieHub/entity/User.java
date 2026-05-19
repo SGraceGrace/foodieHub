@@ -98,6 +98,15 @@ public class User extends BaseEntity implements UserDetails {
     @Column(name = "provider_id")
     private String providerId;
 
+    @Column(name = "vehicle_type", length = 50)
+    private String vehicleType;
+
+    @Column(name = "license_number", length = 50)
+    private String licenseNumber;
+
+    @Column(name = "bank_account", length = 50)
+    private String bankAccount;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + getRole().getRoleName()));

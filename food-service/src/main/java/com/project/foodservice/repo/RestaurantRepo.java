@@ -20,4 +20,6 @@ public interface RestaurantRepo extends MongoRepository<Restaurant, String> {
     Page<Restaurant> findByOwnerId(String ownerId, Pageable pageable);
 
     List<Restaurant> findByOwnerId(String ownerId);
+
+    Page<Restaurant> findByCuisineContainingIgnoreCase(String cuisine, Pageable pageable);
 }

@@ -77,12 +77,21 @@ export class AdminService {
 
   // Restaurants
   private restaurantsBase = `${environment.apiBaseUrl}/api/v1/restaurants`;
+  private adminRestaurantsBase = `${environment.apiBaseUrl}/api/v1/admin/restaurants`;
 
   getRestaurants(cuisine?: string, page = 0, size = 10): Observable<ApiResponse<PaginatedResponse<Restaurant>>> {
     let params = new HttpParams();
     if (cuisine) params = params.set('cuisine', cuisine);
     params = params.set('page', page.toString()).set('size', size.toString());
     return this.http.get<ApiResponse<PaginatedResponse<Restaurant>>>(this.restaurantsBase, { params });
+  }
+
+  getAdminRestaurants(status?: string, cuisine?: string, page = 0, size = 10): Observable<ApiResponse<PaginatedResponse<Restaurant>>> {
+    let params = new HttpParams();
+    if (status) params = params.set('status', status);
+    if (cuisine) params = params.set('cuisine', cuisine);
+    params = params.set('page', page.toString()).set('size', size.toString());
+    return this.http.get<ApiResponse<PaginatedResponse<Restaurant>>>(this.adminRestaurantsBase, { params });
   }
 
   // Activity Logs
@@ -97,7 +106,7 @@ export class AdminService {
     return this.http.get<ApiResponse<AdminNotification[]>>(this.notificationsBase);
   }
 
-  dismissNotification(id: number): Observable<any> {
+  dismissNotification(id: string): Observable<any> {
     return this.http.delete(`${this.notificationsBase}/${id}`);
   }
 

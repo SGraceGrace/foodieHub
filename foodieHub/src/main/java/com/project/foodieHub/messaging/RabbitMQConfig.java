@@ -10,9 +10,11 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
 
-    public static final String EXCHANGE         = "foodiehub.exchange";
-    public static final String PARTNER_RKEY    = "partner.registered";
-    public static final String OWNER_STATUS_RKEY = "owner.status";
+    public static final String EXCHANGE           = "foodiehub.exchange";
+    public static final String PARTNER_RKEY       = "partner.registered";
+    public static final String OWNER_STATUS_RKEY  = "owner.status";
+    public static final String DRIVER_RKEY        = "driver.registered";
+    public static final String ACTIVITY_RKEY      = "activity.logged";
 
     @Bean
     public TopicExchange foodiehubExchange() {

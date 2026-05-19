@@ -15,4 +15,5 @@ public interface RestaurantService {
     Restaurant create(RestaurantCreateRequestDTO request);
     PaginatedResponse<Restaurant> getByOwner(String ownerId, Pageable pageable);
     void updateStatusByOwnerId(String ownerId, RestaurantStatus status);
+    PaginatedResponse<Restaurant> getAllForAdmin(String status, String cuisine, Pageable pageable);
 }

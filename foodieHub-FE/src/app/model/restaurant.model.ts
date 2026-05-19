@@ -13,6 +13,7 @@ export interface MenuCategory {
 
 export interface Restaurant {
   id: string;
+  ownerId?: string;
   name: string;
   cuisine?: string[];
   rating?: number;
@@ -23,6 +24,9 @@ export interface Restaurant {
   minOrder?: number;
   priceRange?: string;
   menu?: MenuCategory[];
+  status?: string;
+  fssaiNumber?: string;
+  gstNumber?: string;
 }
 
 export interface AdminUserResponse {
@@ -60,7 +64,7 @@ export interface ActivityLog {
 }
 
 export interface AdminNotification {
-  id: number;
+  id: string;
   type: 'ACTIVITY' | 'PENDING_OWNER' | 'PENDING_DRIVER';
   message: string;
   actorEmail?: string;

@@ -35,10 +35,10 @@
         <div class="notif-header">
           <span class="notif-title">Today's Notifications</span>
           <div class="notif-header-right">
-            <span class="notif-count">{{ visibleNotifications.length }}</span>
+            <span class="notif-count">{{ notifications.length }}</span>
             <button
               class="clear-all-btn"
-              *ngIf="visibleNotifications.length > 0"
+              *ngIf="notifications.length > 0"
               (click)="clearAll($event)"
               title="Clear all notifications">
               Clear all
@@ -46,9 +46,9 @@
           </div>
         </div>
 
-        <div class="notif-list" *ngIf="visibleNotifications.length > 0; else empty">
+        <div class="notif-list" *ngIf="notifications.length > 0; else empty">
           <div class="notif-item"
-               *ngFor="let n of visibleNotifications"
+               *ngFor="let n of notifications"
                [class.pending]="notifClass(n) === 'pending'"
                [class.activity]="notifClass(n) === 'activity'"
                (click)="openNotification(n)">
