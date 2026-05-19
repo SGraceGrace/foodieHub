@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.project.foodieHub.enums.AuthProvider;
 import com.project.foodieHub.enums.UserStatus;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -15,11 +17,11 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import lombok.Data;
@@ -106,6 +108,11 @@ public class User extends BaseEntity implements UserDetails {
 
     @Column(name = "bank_account", length = 50)
     private String bankAccount;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_restaurant_assignments", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "restaurant_id", length = 100)
+    private Set<String> assignedRestaurantIds = new HashSet<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

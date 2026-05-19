@@ -36,7 +36,11 @@ export function authInterceptor(
     return next(req);
   }
 
-  const loginRedirect = router.url.startsWith('/admin') ? '/admin/login' : '/login';
+  const loginRedirect = router.url.startsWith('/admin')
+    ? '/admin/login'
+    : router.url.startsWith('/partner')
+      ? '/partner/login'
+      : '/login';
 
   if (accessToken && refreshToken) {
     req = req.clone({

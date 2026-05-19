@@ -1,4 +1,4 @@
-<!-- ── Header ───────────────────────────────────────────────────── -->
+<!-- ── Header ─────────────────────────────────────────────────── -->
 <header class="header">
   <div class="logo-area">
     <div class="logo-icon">F</div>
@@ -8,213 +8,117 @@
     </div>
   </div>
   <div class="header-right">
-    <span class="owner-name">{{ restaurantName }}</span>
+    <span class="owner-name">{{ ownerName }}</span>
     <div class="user-icon" (click)="logout()" title="Logout">{{ ownerInitials }}</div>
   </div>
 </header>
 
-<!-- ── Layout ───────────────────────────────────────────────────── -->
-<div class="layout">
+<!-- ── Body ───────────────────────────────────────────────────── -->
+<div class="body">
 
-  <!-- Sidebar -->
-  <aside class="sidebar">
-    <div class="sidebar-label">
-      <span class="sidebar-icon">R</span> {{ restaurantName }}
+  <!-- Page header -->
+  <div class="page-header">
+    <div>
+      <div class="page-title">My Restaurants</div>
+      <div class="page-sub" *ngIf="!loading">
+        {{ pagination.totalElements }} restaurant{{ pagination.totalElements !== 1 ? 's' : '' }} registered
+      </div>
     </div>
+    <button class="btn-primary" (click)="openCreateForm()" *ngIf="!showCreateForm">
+      + Add Restaurant
+    </button>
+  </div>
 
-    <button class="nav-btn" [class.active]="activeTab==='dashboard'" (click)="goTab('dashboard')">
-      <span>📊</span> Dashboard
-    </button>
-    <button class="nav-btn" [class.active]="activeTab==='orders'" (click)="goTab('orders')">
-      <span>📦</span> Live Orders
-    </button>
-    <button class="nav-btn" [class.active]="activeTab==='restaurants'" (click)="goTab('restaurants')">
-      <span>🏪</span> Restaurants
-    </button>
-    <button class="nav-btn" [class.active]="activeTab==='menu'" (click)="goTab('menu')">
-      <span>🍽️</span> Menu
-    </button>
-    <button class="nav-btn" [class.active]="activeTab==='analytics'" (click)="goTab('analytics')">
-      <span>📈</span> Analytics
-    </button>
-    <button class="nav-btn" [class.active]="activeTab==='settings'" (click)="goTab('settings')">
-      <span>⚙️</span> Settings
-    </button>
+  <!-- Create form -->
+  <div class="create-form" *ngIf="showCreateForm">
+    <h3 class="form-title">New Restaurant</h3>
 
-    <button class="nav-btn logout-btn" (click)="logout()">
-      <span>🚪</span> Logout
-    </button>
-  </aside>
-
-  <!-- Main -->
-  <main class="main">
-
-    <!-- ── Dashboard Tab ──────────────────────────────────────── -->
-    <div *ngIf="activeTab === 'dashboard'">
-      <div class="page-title">Welcome, {{ restaurantName }}! 👋</div>
-
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-label">Today's Orders</div>
-          <div class="stat-value">—</div>
-          <div class="stat-note">Order Service coming soon</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Today's Revenue</div>
-          <div class="stat-value">—</div>
-          <div class="stat-note">Order Service coming soon</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Avg Order Value</div>
-          <div class="stat-value">—</div>
-          <div class="stat-note">Order Service coming soon</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-label">Rating</div>
-          <div class="stat-value">—</div>
-          <div class="stat-note">Reviews coming soon</div>
-        </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label class="form-label">Restaurant Name <span class="required">*</span></label>
+        <input class="form-input" type="text" [(ngModel)]="newRestaurant.name"
+               placeholder="e.g. Spice Garden" />
       </div>
 
-      <div class="section-box">
-        <h3 class="section-title">Live Orders</h3>
-        <div class="empty-state">
-          <div class="empty-icon">📦</div>
-          <p>Live order management will be available once the Order Service is connected.</p>
-        </div>
+      <div class="form-group">
+        <label class="form-label">FSSAI Number <span class="required">*</span></label>
+        <input class="form-input" type="text" [(ngModel)]="newRestaurant.fssaiNumber"
+               placeholder="e.g. 12345678901234" />
+      </div>
+
+      <div class="form-group form-group--full">
+        <label class="form-label">Address <span class="required">*</span></label>
+        <input class="form-input" type="text" [(ngModel)]="newRestaurant.address"
+               placeholder="e.g. 42, Gandhi Nagar, Chennai" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">GST Number <span class="optional">(optional)</span></label>
+        <input class="form-input" type="text" [(ngModel)]="newRestaurant.gstNumber"
+               placeholder="e.g. 22AAAAA0000A1Z5" />
       </div>
     </div>
 
-    <!-- ── Orders Tab ─────────────────────────────────────────── -->
-    <div *ngIf="activeTab === 'orders'">
-      <div class="page-title">Live Orders 📦</div>
-      <div class="section-box">
-        <div class="empty-state">
-          <div class="empty-icon">🚧</div>
-          <p>Order management is coming soon.</p>
-          <p class="empty-sub">You'll be able to accept, prepare, and mark orders ready from here.</p>
-        </div>
-      </div>
+    <div class="form-error" *ngIf="createError">{{ createError }}</div>
+    <div class="form-actions">
+      <button class="btn-primary" (click)="submitCreate()" [disabled]="creating">
+        {{ creating ? 'Creating…' : 'Create Restaurant' }}
+      </button>
+      <button class="btn-secondary" (click)="cancelCreate()" [disabled]="creating">Cancel</button>
     </div>
+  </div>
 
-    <!-- ── Restaurants Tab ───────────────────────────────────── -->
-    <div *ngIf="activeTab === 'restaurants'">
-      <div class="tab-header">
-        <div class="page-title" style="margin:0">My Restaurants 🏪</div>
-        <button class="btn-primary" (click)="openCreateForm()" *ngIf="!showCreateForm">
-          + Add Restaurant
-        </button>
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading">Loading…</div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!loading && restaurants.length === 0">
+    <div class="empty-icon">🏪</div>
+    <p>No restaurants yet.</p>
+    <p class="empty-sub">Click "Add Restaurant" to register your first location.</p>
+  </div>
+
+  <!-- Cards grid -->
+  <div class="cards-grid" *ngIf="!loading && restaurants.length > 0">
+    <div class="restaurant-card" *ngFor="let r of restaurants">
+
+      <div class="card-top">
+        <div class="card-name">{{ r.name }}</div>
+        <span class="badge" [class.badge-open]="r.open" [class.badge-closed]="!r.open">
+          {{ r.open ? 'Open' : 'Closed' }}
+        </span>
       </div>
 
-      <!-- Create form -->
-      <div class="create-form section-box" *ngIf="showCreateForm">
-        <h3 class="section-title">New Restaurant</h3>
-        <div class="form-group">
-          <label class="form-label">Restaurant Name</label>
-          <input
-            class="form-input"
-            type="text"
-            [(ngModel)]="newRestaurantName"
-            placeholder="e.g. Spice Garden"
-            (keyup.enter)="submitCreate()"
-          />
+      <div class="card-cuisine">{{ r.cuisine?.join(', ') || 'Cuisine not set' }}</div>
+
+      <div class="card-meta" *ngIf="r.address">
+        <span class="meta-icon">📍</span> {{ getCityFromAddress(r.address) }}
+      </div>
+
+      <div class="card-stats">
+        <div class="card-stat">
+          <span class="stat-val">{{ r.rating ? (r.rating | number:'1.1-1') : '—' }}</span>
+          <span class="stat-key">Rating</span>
         </div>
-        <div class="form-error" *ngIf="createError">{{ createError }}</div>
-        <div class="form-actions">
-          <button class="btn-primary" (click)="submitCreate()" [disabled]="creating">
-            {{ creating ? 'Creating…' : 'Create Restaurant' }}
-          </button>
-          <button class="btn-secondary" (click)="cancelCreate()" [disabled]="creating">Cancel</button>
+        <div class="card-stat">
+          <span class="stat-val">{{ getMenuItemCount(r) }}</span>
+          <span class="stat-key">Menu Items</span>
+        </div>
+        <div class="card-stat">
+          <span class="stat-val">{{ r.deliveryTime ? r.deliveryTime + ' min' : '—' }}</span>
+          <span class="stat-key">Delivery</span>
         </div>
       </div>
 
-      <!-- Loading -->
-      <div class="section-box" *ngIf="restaurantsLoading">
-        <div class="empty-state"><p>Loading…</p></div>
-      </div>
-
-      <!-- List -->
-      <div class="section-box" *ngIf="!restaurantsLoading">
-        <div *ngIf="restaurants.length === 0" class="empty-state">
-          <div class="empty-icon">🏪</div>
-          <p>No restaurants yet.</p>
-          <p class="empty-sub">Click "Add Restaurant" to register your first location.</p>
-        </div>
-
-        <table class="data-table" *ngIf="restaurants.length > 0">
-          <thead>
-            <tr>
-              <th>Restaurant Name</th>
-              <th>Cuisine</th>
-              <th>Rating</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let r of restaurants">
-              <td class="col-name">{{ r.name }}</td>
-              <td>{{ r.cuisine?.join(', ') || '—' }}</td>
-              <td>{{ r.rating ? (r.rating | number:'1.1-1') : '—' }}</td>
-              <td>
-                <span class="badge" [class.badge-success]="r.isOpen" [class.badge-muted]="!r.isOpen">
-                  {{ r.isOpen ? 'Open' : 'Closed' }}
-                </span>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-
-        <!-- Pagination -->
-        <div class="pagination-bar" *ngIf="restaurantPagination.totalPages > 1">
-          <button class="page-btn" (click)="prevPage()" [disabled]="restaurantPagination.currentPage === 0">← Prev</button>
-          <span class="page-info">
-            Showing {{ restaurantStartRow }}–{{ restaurantEndRow }} of {{ restaurantPagination.totalElements }}
-          </span>
-          <button class="page-btn" (click)="nextPage()" [disabled]="restaurantPagination.currentPage >= restaurantPagination.totalPages - 1">Next →</button>
-        </div>
-      </div>
+      <button class="btn-manage" (click)="manage(r)">Manage →</button>
     </div>
+  </div>
 
-    <!-- ── Menu Tab ───────────────────────────────────────────── -->
-    <div *ngIf="activeTab === 'menu'">
-      <div class="tab-header">
-        <div class="page-title" style="margin:0">Menu Management 🍛</div>
-      </div>
-      <div class="section-box">
-        <div class="empty-state">
-          <div class="empty-icon">🍽️</div>
-          <p>Menu management is coming soon.</p>
-          <p class="empty-sub">Add categories and items, set prices, toggle availability.</p>
-        </div>
-      </div>
-    </div>
+  <!-- Pagination -->
+  <div class="pagination-bar" *ngIf="pagination.totalPages > 1">
+    <button class="page-btn" (click)="prevPage()" [disabled]="pagination.currentPage === 0">← Prev</button>
+    <span class="page-info">Showing {{ startRow }}–{{ endRow }} of {{ pagination.totalElements }}</span>
+    <button class="page-btn" (click)="nextPage()" [disabled]="pagination.currentPage >= pagination.totalPages - 1">Next →</button>
+  </div>
 
-    <!-- ── Analytics Tab ─────────────────────────────────────── -->
-    <div *ngIf="activeTab === 'analytics'">
-      <div class="page-title">Analytics 📈</div>
-      <div class="section-box">
-        <div class="empty-state">
-          <div class="empty-icon">📊</div>
-          <p>Analytics dashboard coming soon.</p>
-          <p class="empty-sub">View order trends, revenue reports, and peak hours.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── Settings Tab ───────────────────────────────────────── -->
-    <div *ngIf="activeTab === 'settings'">
-      <div class="page-title">Settings ⚙️</div>
-      <div class="section-box settings-box">
-        <h3 class="section-title">Restaurant Information</h3>
-        <div class="info-row"><span class="info-label">Restaurant</span><span class="info-val">{{ restaurantName }}</span></div>
-        <div class="info-row"><span class="info-label">Owner Name</span><span class="info-val">{{ user?.firstName }} {{ user?.lastName }}</span></div>
-        <div class="info-row"><span class="info-label">Email</span><span class="info-val">{{ user?.email }}</span></div>
-        <div class="info-row"><span class="info-label">Phone</span><span class="info-val">{{ user?.phone || '—' }}</span></div>
-        <div class="info-row"><span class="info-label">Status</span>
-          <span class="badge badge-success">Active</span>
-        </div>
-      </div>
-    </div>
-
-  </main>
 </div>

@@ -18,7 +18,7 @@ export interface Restaurant {
   cuisine?: string[];
   rating?: number;
   deliveryTime?: number;
-  isOpen?: boolean;
+  open?: boolean;
   imageUrl?: string;
   address?: string;
   minOrder?: number;
@@ -69,6 +69,16 @@ export interface AdminNotification {
   message: string;
   actorEmail?: string;
   timestamp: string;
+}
+
+export interface RestaurantStaff {
+  id: number;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone?: string;
+  status: string;
+  assignedRestaurantIds: string[];
 }
 
 export interface Slide {

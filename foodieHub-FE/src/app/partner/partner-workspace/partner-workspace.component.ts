@@ -1,0 +1,393 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { TokenService } from '../../core/shared/token.service';
+import { PartnerService } from '../partner.service';
+import { UserDetails } from '../../model/user.model';
+import { Restaurant, RestaurantStaff } from '../../model/restaurant.model';
+
+type WorkspaceTab = 'overview' | 'orders' | 'menu' | 'analytics' | 'users' | 'settings';
+
+@Component({
+  selector: 'app-partner-workspace',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './partner-workspace.component.html',
+  styleUrl: './partner-workspace.component.scss',
+})
+export class PartnerWorkspaceComponent implements OnInit {
+  activeTab: WorkspaceTab = 'overview';
+  user: UserDetails | null = null;
+  restaurant: Restaurant | null = null;
+  loading = false;
+
+  staff: RestaurantStaff[] = [];
+  staffLoading = false;
+  showAddStaff = false;
+  addingStaff = false;
+  staffError = '';
+  newStaff = { firstName: '', lastName: '', email: '', password: '' };
+
+  ownerRestaurants: Restaurant[] = [];
+  selectedRestaurantIds: string[] = [];
+  restaurantSearch = '';
+  showRestaurantDropdown = false;
+  showPassword = false;
+
+  showInlineCreateRestaurant = false;
+  inlineCreating = false;
+  inlineCreateError = '';
+  newInlineRestaurant = { name: '', address: '', fssaiNumber: '', gstNumber: '' };
+
+  toast: { message: string; type: 'error' | 'success' } | null = null;
+  private toastTimer: any;
+
+  showToast(message: string, type: 'error' | 'success' = 'error') {
+    clearTimeout(this.toastTimer);
+    this.toast = { message, type };
+    this.toastTimer = setTimeout(() => { this.toast = null; }, 4000);
+  }
+
+  dismissToast() { this.toast = null; }
+
+  get filteredRestaurants(): Restaurant[] {
+    const q = this.restaurantSearch.toLowerCase().trim();
+    if (!q) return this.ownerRestaurants;
+    return this.ownerRestaurants.filter(r => r.name.toLowerCase().includes(q));
+  }
+
+  get selectedRestaurants(): Restaurant[] {
+    return this.ownerRestaurants.filter(r => this.selectedRestaurantIds.includes(r.id));
+  }
+
+  isSelected(id: string): boolean {
+    return this.selectedRestaurantIds.includes(id);
+  }
+
+  get pwRules() {
+    const p = this.newStaff.password;
+    return {
+      length:    p.length >= 8,
+      uppercase: /[A-Z]/.test(p),
+      number:    /[0-9]/.test(p),
+      special:   /[^A-Za-z0-9]/.test(p),
+    };
+  }
+
+  get pwValid(): boolean {
+    const r = this.pwRules;
+    return r.length && r.uppercase && r.number && r.special;
+  }
+
+  get ownerInitials(): string {
+    const f = this.user?.firstName?.[0] ?? '';
+    const l = this.user?.lastName?.[0] ?? '';
+    return (f + l).toUpperCase() || 'RO';
+  }
+
+  get ownerName(): string {
+    return [this.user?.firstName, this.user?.lastName].filter(Boolean).join(' ') || 'Owner';
+  }
+
+  constructor(
+    private route: ActivatedRoute,
+    private router: Router,
+    private tokenService: TokenService,
+    private partnerService: PartnerService
+  ) {}
+
+  ngOnInit() {
+    this.tokenService.userInfo$.subscribe(u => this.user = u);
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) this.loadRestaurant(id);
+  }
+
+  loadRestaurant(id: string) {
+    this.loading = true;
+    this.partnerService.getRestaurantById(id).subscribe({
+      next: res => {
+        this.restaurant = res.data ?? null;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+        this.router.navigateByUrl('/partner');
+      }
+    });
+  }
+
+  viewingStaff: RestaurantStaff | null = null;
+  showStaffRestaurantsPopup = false;
+
+  confirmArchiveStaff: RestaurantStaff | null = null;
+  confirmActivateStaff: RestaurantStaff | null = null;
+  archiving = false;
+  activating = false;
+
+  staffRestaurantFilter = '';
+  staffStatusFilter = '';
+
+  get isOwner(): boolean {
+    return this.user?.role?.roleName === 'RESTAURANT_OWNER';
+  }
+
+  get filteredStaff(): RestaurantStaff[] {
+    return this.staff.filter(s => {
+      const matchesRestaurant = !this.staffRestaurantFilter ||
+        s.assignedRestaurantIds?.includes(this.staffRestaurantFilter);
+      const matchesStatus = !this.staffStatusFilter ||
+        s.status === this.staffStatusFilter;
+      return matchesRestaurant && matchesStatus;
+    });
+  }
+
+  get isFiltering(): boolean {
+    return !!(this.staffRestaurantFilter || this.staffStatusFilter);
+  }
+
+  clearStaffFilters() {
+    this.staffRestaurantFilter = '';
+    this.staffStatusFilter = '';
+  }
+
+  goTab(tab: WorkspaceTab) {
+    this.activeTab = tab;
+    if (tab === 'users' && this.restaurant) {
+      this.loadStaff();
+      this.loadOwnerRestaurants();
+    }
+  }
+
+  openStaffRestaurants(s: RestaurantStaff) {
+    this.viewingStaff = s;
+    this.showStaffRestaurantsPopup = true;
+  }
+
+  closeStaffRestaurants() {
+    this.showStaffRestaurantsPopup = false;
+    this.viewingStaff = null;
+  }
+
+  openConfirmArchive(s: RestaurantStaff) {
+    this.confirmArchiveStaff = s;
+  }
+
+  cancelArchive() {
+    this.confirmArchiveStaff = null;
+  }
+
+  confirmArchive() {
+    if (!this.confirmArchiveStaff) return;
+    const target = this.confirmArchiveStaff;
+    this.archiving = true;
+    this.partnerService.archiveStaff(target.id).subscribe({
+      next: () => {
+        this.updateStaffStatus(target.id, 'INACTIVE');
+        this.confirmArchiveStaff = null;
+        this.archiving = false;
+        this.showToast(`${target.firstName} ${target.lastName} has been archived.`, 'success');
+      },
+      error: err => {
+        const msg = err?.error?.errorMsg?.[0] || err?.error?.message || 'Failed to archive user.';
+        this.showToast(msg);
+        this.archiving = false;
+        this.confirmArchiveStaff = null;
+      }
+    });
+  }
+
+  openConfirmActivate(s: RestaurantStaff) {
+    this.confirmActivateStaff = s;
+  }
+
+  cancelActivate() {
+    this.confirmActivateStaff = null;
+  }
+
+  confirmActivate() {
+    if (!this.confirmActivateStaff) return;
+    const target = this.confirmActivateStaff;
+    this.activating = true;
+    this.partnerService.activateStaff(target.id).subscribe({
+      next: () => {
+        this.updateStaffStatus(target.id, 'ACTIVE');
+        this.confirmActivateStaff = null;
+        this.activating = false;
+        this.showToast(`${target.firstName} ${target.lastName} has been activated.`, 'success');
+      },
+      error: err => {
+        const msg = err?.error?.errorMsg?.[0] || err?.error?.message || 'Failed to activate user.';
+        this.showToast(msg);
+        this.activating = false;
+        this.confirmActivateStaff = null;
+      }
+    });
+  }
+
+  private updateStaffStatus(id: number, status: string) {
+    const idx = this.staff.findIndex(s => s.id === id);
+    if (idx !== -1) this.staff[idx] = { ...this.staff[idx], status };
+  }
+
+  getRestaurantDetails(id: string): Restaurant | undefined {
+    return this.ownerRestaurants.find(r => r.id === id);
+  }
+
+  loadStaff() {
+    if (!this.restaurant) return;
+    this.staffLoading = true;
+    this.partnerService.getRestaurantStaff(this.restaurant.id).subscribe({
+      next: res => { this.staff = res.data ?? []; this.staffLoading = false; },
+      error: () => { this.staffLoading = false; }
+    });
+  }
+
+  openAddStaff() {
+    this.newStaff = { firstName: '', lastName: '', email: '', password: '' };
+    this.staffError = '';
+    this.showPassword = false;
+    this.selectedRestaurantIds = this.restaurant ? [this.restaurant.id] : [];
+    this.restaurantSearch = '';
+    this.showRestaurantDropdown = false;
+    this.showInlineCreateRestaurant = false;
+    this.ownerRestaurants = this.restaurant ? [this.restaurant] : [];
+    this.showAddStaff = true;
+    this.loadOwnerRestaurants();
+  }
+
+  loadOwnerRestaurants() {
+    if (!this.user?.id) return;
+    this.partnerService.getMyRestaurants(this.user.id, 0, 100).subscribe({
+      next: res => { this.ownerRestaurants = res.data?.content ?? []; },
+      error: () => {}
+    });
+  }
+
+  toggleRestaurantSelection(r: Restaurant) {
+    const idx = this.selectedRestaurantIds.indexOf(r.id);
+    if (idx === -1) {
+      this.selectedRestaurantIds = [...this.selectedRestaurantIds, r.id];
+    } else {
+      this.selectedRestaurantIds = this.selectedRestaurantIds.filter(id => id !== r.id);
+    }
+  }
+
+  removeRestaurant(id: string) {
+    this.selectedRestaurantIds = this.selectedRestaurantIds.filter(x => x !== id);
+  }
+
+  onRestaurantSearchInput() {
+    this.showRestaurantDropdown = true;
+  }
+
+  closeRestaurantDropdown() {
+    setTimeout(() => {
+      if (!this.showInlineCreateRestaurant) this.showRestaurantDropdown = false;
+    }, 150);
+  }
+
+  openInlineCreate(e: Event) {
+    e.preventDefault();
+    this.newInlineRestaurant = { name: '', address: '', fssaiNumber: '', gstNumber: '' };
+    this.inlineCreateError = '';
+    this.showInlineCreateRestaurant = true;
+    this.showRestaurantDropdown = false;
+  }
+
+  cancelInlineCreate() {
+    this.showInlineCreateRestaurant = false;
+    this.showRestaurantDropdown = true;
+  }
+
+  submitInlineCreate() {
+    const { name, address, fssaiNumber } = this.newInlineRestaurant;
+    if (!name.trim())        { this.inlineCreateError = 'Name is required.'; return; }
+    if (!address.trim())     { this.inlineCreateError = 'Address is required.'; return; }
+    if (!fssaiNumber.trim()) { this.inlineCreateError = 'FSSAI is required.'; return; }
+    if (!this.user?.id) return;
+
+    this.inlineCreating = true;
+    this.inlineCreateError = '';
+    this.partnerService.createRestaurant({
+      name: name.trim(), address: address.trim(),
+      fssaiNumber: fssaiNumber.trim(),
+      gstNumber: this.newInlineRestaurant.gstNumber.trim() || undefined,
+      ownerId: this.user.id,
+    }).subscribe({
+      next: res => {
+        if (res.data) {
+          this.ownerRestaurants = [res.data, ...this.ownerRestaurants];
+          this.selectedRestaurantIds = [...this.selectedRestaurantIds, res.data.id];
+        }
+        this.inlineCreating = false;
+        this.showInlineCreateRestaurant = false;
+        this.showRestaurantDropdown = true;
+      },
+      error: err => {
+        const msg = err?.error?.errorMsg?.[0] || err?.error?.message || 'Failed to create restaurant.';
+        this.inlineCreateError = msg;
+        this.showToast(msg);
+        this.inlineCreating = false;
+      }
+    });
+  }
+
+  cancelAddStaff() {
+    this.showAddStaff = false;
+  }
+
+  togglePassword() {
+    this.showPassword = !this.showPassword;
+  }
+
+  submitAddStaff() {
+    const { firstName, lastName, email, password } = this.newStaff;
+    if (!firstName.trim())               { this.staffError = 'First name is required.'; return; }
+    if (!lastName.trim())                { this.staffError = 'Last name is required.'; return; }
+    if (!email.trim())                   { this.staffError = 'Email is required.'; return; }
+    if (!this.pwValid)                   { this.staffError = 'Password does not meet requirements.'; return; }
+    if (!this.selectedRestaurantIds.length) { this.staffError = 'Select at least one restaurant.'; return; }
+
+    this.addingStaff = true;
+    this.staffError = '';
+    this.partnerService.createRestaurantStaff({
+      firstName: firstName.trim(), lastName: lastName.trim(),
+      email: email.trim(), password: password.trim(),
+      restaurantIds: this.selectedRestaurantIds,
+    }).subscribe({
+      next: res => {
+        if (res.data && res.data.assignedRestaurantIds?.includes(this.restaurant?.id ?? '')) {
+          this.staff = [res.data, ...this.staff];
+        }
+        this.showAddStaff = false;
+        this.addingStaff = false;
+      },
+      error: err => {
+        const msg = err?.error?.errorMsg?.[0] || err?.error?.message || 'Failed to create user.';
+        this.showToast(msg);
+        this.addingStaff = false;
+      }
+    });
+  }
+
+  goBack() {
+    this.router.navigateByUrl('/partner');
+  }
+
+  logout() {
+    if (confirm('Logout?')) {
+      this.tokenService.clearTokens();
+      this.router.navigateByUrl('/partner/login');
+    }
+  }
+
+  getMenuItemCount(): number {
+    if (!this.restaurant?.menu) return 0;
+    return this.restaurant.menu.reduce((sum, cat) => sum + (cat.items?.length ?? 0), 0);
+  }
+
+  getStaffInitials(s: RestaurantStaff): string {
+    return ((s.firstName?.[0] ?? '') + (s.lastName?.[0] ?? '')).toUpperCase() || '?';
+  }
+}

@@ -1,0 +1,846 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+$gold:       #f9b303;
+$gold-dark:  #e0a000;
+$text:       #4e4e4e;
+$text-dark:  #2a2a2a;
+$text-light: #888;
+$border:     #e8e8e8;
+$bg:         #f5f5f5;
+$success:    #248f28;
+$font-serif: 'Libre Baskerville', Georgia, serif;
+$font-sans:  'DM Sans', sans-serif;
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: $font-sans; }
+
+// ── Header ────────────────────────────────────────────────────────
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid $border;
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo-area { display: flex; align-items: center; gap: 10px; }
+
+.logo-icon {
+  width: 38px; height: 38px;
+  background: $gold; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-family: $font-serif; font-size: 17px;
+}
+
+.logo-text { font-family: $font-serif; font-size: 1.1rem; font-weight: 700; color: $text-dark; }
+.logo-sub  { font-size: 0.68rem; color: $text-light; }
+
+.header-right { display: flex; align-items: center; gap: 12px; }
+.owner-name   { font-size: 0.85rem; color: $text; font-weight: 500; }
+
+.user-icon {
+  width: 34px; height: 34px;
+  background: $gold; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 0.8rem;
+  cursor: pointer;
+  &:hover { background: $gold-dark; }
+}
+
+// ── Loading full page ─────────────────────────────────────────────
+.loading-fullpage {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 65px);
+  color: $text-light;
+  font-size: 0.9rem;
+  background: $bg;
+}
+
+// ── Layout ────────────────────────────────────────────────────────
+.layout {
+  display: grid;
+  grid-template-columns: 230px 1fr;
+  min-height: calc(100vh - 65px);
+}
+
+// ── Sidebar ───────────────────────────────────────────────────────
+.sidebar {
+  background: #1a1a1a;
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.back-btn {
+  width: 100%;
+  text-align: left;
+  padding: 8px 10px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+  border-radius: 6px;
+  font-family: $font-sans;
+  font-size: 0.8rem;
+  transition: color .15s;
+  margin-bottom: 1.25rem;
+
+  &:hover { color: rgba(255,255,255,0.75); }
+}
+
+.sidebar-restaurant {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.75rem 0;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.sidebar-r-icon {
+  width: 30px; height: 30px;
+  background: $gold; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 13px;
+  flex-shrink: 0;
+}
+
+.sidebar-r-name {
+  font-family: $font-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: white;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nav-btn {
+  width: 100%;
+  text-align: left;
+  padding: 9px 10px;
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.65);
+  cursor: pointer;
+  border-radius: 6px;
+  margin-bottom: 4px;
+  font-family: $font-sans;
+  font-size: 0.84rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all .15s;
+
+  span { font-size: 1rem; }
+  &:hover  { background: rgba(249,179,3,.15); color: $gold; }
+  &.active { background: rgba(249,179,3,.15); color: $gold; }
+}
+
+.logout-btn {
+  margin-top: auto;
+  color: rgba(255,255,255,0.3);
+  &:hover { background: rgba(255,0,0,.1); color: #ff6b6b; }
+}
+
+// ── Main ──────────────────────────────────────────────────────────
+.main {
+  padding: 2rem;
+  background: $bg;
+  overflow-y: auto;
+}
+
+.page-title {
+  font-family: $font-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin-bottom: 1.5rem;
+}
+
+// ── Stats grid ────────────────────────────────────────────────────
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  background: white;
+  padding: 1.2rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+
+.stat-label { font-size: 0.72rem; color: $text-light; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+.stat-value { font-family: $font-serif; font-size: 1.6rem; font-weight: 700; color: $text-dark; }
+.stat-note  { font-size: 0.7rem; color: $text-light; margin-top: 4px; }
+
+// ── Section box ───────────────────────────────────────────────────
+.section-box {
+  background: white;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+}
+
+.section-title {
+  font-family: $font-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin-bottom: 1rem;
+}
+
+// ── Info rows ─────────────────────────────────────────────────────
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: .75rem 0;
+  border-bottom: 1px solid $border;
+  font-size: 0.88rem;
+
+  &:last-child { border-bottom: none; }
+}
+
+.info-label { width: 130px; min-width: 130px; color: $text-light; font-size: 0.8rem; text-transform: uppercase; letter-spacing: .4px; }
+.info-val   { color: $text-dark; font-weight: 500; }
+
+// ── Settings ──────────────────────────────────────────────────────
+.settings-box { max-width: 560px; }
+
+// ── Badges ────────────────────────────────────────────────────────
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.badge-open   { background: #e8f5e9; color: $success; }
+.badge-closed { background: #f0f0f0; color: $text-light; }
+
+// ── Tab header ────────────────────────────────────────────────────
+.tab-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+// ── Buttons ───────────────────────────────────────────────────────
+.btn-primary {
+  background: $gold;
+  color: white;
+  border: none;
+  padding: 9px 20px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+  white-space: nowrap;
+  &:hover:not(:disabled) { background: $gold-dark; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+// ── Create form ───────────────────────────────────────────────────
+.create-form {
+  background: white;
+  border-radius: 10px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  margin-bottom: 1.5rem;
+}
+
+.form-title {
+  font-family: $font-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin-bottom: 1.25rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.form-group { display: flex; flex-direction: column; gap: 4px; }
+.form-group--full { grid-column: 1 / -1; }
+
+.form-label { font-size: 0.78rem; color: $text; font-weight: 500; }
+.required    { color: #e53935; }
+.optional    { color: $text-light; font-weight: 400; }
+
+.form-input {
+  border: 1px solid $border;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 0.85rem;
+  font-family: $font-sans;
+  color: $text-dark;
+  transition: border-color .15s;
+  width: 100%;
+  background: white;
+  appearance: auto;
+
+  &:focus { outline: none; border-color: $gold; }
+  &::placeholder { color: #bbb; }
+}
+
+.form-error {
+  color: #e53935;
+  font-size: 0.82rem;
+  margin-top: .75rem;
+}
+
+// ── Multi-select restaurant search ────────────────────────────────
+.selected-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(249,179,3,.12);
+  color: $gold-dark;
+  border: 1px solid rgba(249,179,3,.3);
+  border-radius: 20px;
+  padding: 3px 8px 3px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.tag-remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $gold-dark;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+  opacity: .6;
+  &:hover { opacity: 1; }
+}
+
+.search-select { position: relative; }
+
+.search-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0; right: 0;
+  background: white;
+  border: 1px solid $border;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.1);
+  z-index: 200;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.search-option {
+  padding: 9px 14px;
+  font-size: 0.85rem;
+  color: $text-dark;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background .1s;
+
+  &:hover { background: $bg; }
+  &--selected { background: rgba(249,179,3,.06); }
+  &:not(:last-child) { border-bottom: 1px solid rgba(0,0,0,.04); }
+}
+
+.search-cb {
+  width: 16px; height: 16px;
+  border: 1.5px solid $border;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.62rem;
+  flex-shrink: 0;
+
+  &--checked {
+    background: $gold;
+    border-color: $gold;
+    color: white;
+  }
+}
+
+.search-no-results {
+  padding: 12px 14px;
+  font-size: 0.82rem;
+  color: $text-light;
+  text-align: center;
+}
+
+.search-add-restaurant {
+  padding: 10px 14px;
+  font-size: 0.83rem;
+  color: $gold-dark;
+  font-weight: 600;
+  cursor: pointer;
+  border-top: 1px solid $border;
+  background: rgba(249,179,3,.04);
+  position: sticky;
+  bottom: 0;
+
+  &:hover { background: rgba(249,179,3,.12); }
+}
+
+// ── Create restaurant modal ───────────────────────────────────────
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 900;
+}
+
+.modal-card {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 901;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 40px rgba(0,0,0,.2);
+  width: 520px;
+  max-width: calc(100vw - 2rem);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem 1rem;
+  border-bottom: 1px solid $border;
+}
+
+.modal-title {
+  font-family: $font-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: $text-dark;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: $text-light;
+  cursor: pointer;
+  line-height: 1;
+  padding: 2px;
+  border-radius: 4px;
+  &:hover { color: $text-dark; background: $bg; }
+}
+
+.modal-body { padding: 1.25rem 1.5rem; }
+
+.modal-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.modal-form-full { grid-column: 1 / -1; }
+
+.modal-footer {
+  display: flex;
+  gap: 10px;
+  padding: .75rem 1.5rem 1.25rem;
+  border-top: 1px solid $border;
+}
+
+// ── Password field ────────────────────────────────────────────────
+.pw-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pw-input {
+  width: 100%;
+  padding-right: 42px;
+}
+
+.pw-eye {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+  color: $text-light;
+  &:hover { color: $text; }
+}
+
+.pw-rules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 8px;
+}
+
+.rule-ok   { font-size: 0.75rem; color: $success; }
+.rule-fail { font-size: 0.75rem; color: #bbb; }
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 1.25rem;
+}
+
+.btn-secondary {
+  background: white;
+  color: $text;
+  border: 1px solid $border;
+  padding: 9px 20px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .15s;
+  &:hover:not(:disabled) { background: $bg; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.loading-state {
+  color: $text-light;
+  font-size: 0.88rem;
+  padding: .5rem 0;
+}
+
+// ── Staff filter bar ─────────────────────────────────────────────
+.staff-filter-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  color: $text-light;
+  font-weight: 600;
+}
+
+.filter-select {
+  border: 1px solid $border;
+  border-radius: 6px;
+  padding: 7px 10px;
+  font-size: 0.84rem;
+  font-family: $font-sans;
+  color: $text-dark;
+  background: white;
+  cursor: pointer;
+  min-width: 160px;
+  transition: border-color .15s;
+
+  &:focus { outline: none; border-color: $gold; }
+}
+
+.filter-clear-btn {
+  background: none;
+  border: 1px solid $border;
+  border-radius: 6px;
+  padding: 7px 14px;
+  font-size: 0.8rem;
+  font-family: $font-sans;
+  color: $text-light;
+  cursor: pointer;
+  align-self: flex-end;
+  transition: all .15s;
+
+  &:hover { border-color: #ef9a9a; color: #c62828; background: #fdecea; }
+}
+
+.filter-count {
+  font-size: 0.78rem;
+  color: $text-light;
+  align-self: flex-end;
+  padding-bottom: 8px;
+  margin-left: auto;
+}
+
+.filter-empty {
+  text-align: center;
+  padding: 2rem 1rem;
+  font-size: 0.86rem;
+  color: $text-light;
+}
+
+// ── Staff table ───────────────────────────────────────────────────
+.staff-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+
+  th {
+    text-align: left;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    color: $text-light;
+    font-weight: 600;
+    padding: 0 1rem .75rem 0;
+    border-bottom: 1px solid $border;
+  }
+
+  td {
+    padding: .85rem 1rem .85rem 0;
+    border-bottom: 1px solid $border;
+    color: $text-dark;
+    font-weight: 500;
+  }
+
+  tr:last-child td { border-bottom: none; }
+}
+
+.td-muted { color: $text-light; font-weight: 400; }
+
+.count-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.eye-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: .88rem;
+  padding: 3px 5px;
+  border-radius: 4px;
+  opacity: .55;
+  line-height: 1;
+  transition: opacity .15s, background .15s;
+  &:hover { opacity: 1; background: $bg; }
+}
+
+// ── Staff restaurants popup ───────────────────────────────────────
+.staff-restaurants-popup { width: 420px; }
+
+.modal-subtitle {
+  font-size: 0.75rem;
+  color: $text-light;
+  margin-top: 2px;
+}
+
+.restaurant-popup-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: .85rem 0;
+  border-bottom: 1px solid $border;
+  &:last-child { border-bottom: none; }
+}
+
+.restaurant-popup-icon {
+  width: 36px; height: 36px;
+  background: $gold;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 15px;
+  font-family: $font-serif;
+  flex-shrink: 0;
+
+  &--unknown { background: $border; color: $text-light; }
+}
+
+.restaurant-popup-name {
+  font-size: .88rem;
+  font-weight: 600;
+  color: $text-dark;
+}
+
+.restaurant-popup-addr {
+  font-size: .76rem;
+  color: $text-light;
+  margin-top: 3px;
+  line-height: 1.4;
+}
+
+.popup-empty {
+  font-size: .85rem;
+  color: $text-light;
+  text-align: center;
+  padding: 1.5rem 0;
+}
+
+// ── Archive action button ─────────────────────────────────────────
+.action-archive-btn {
+  background: none;
+  border: 1px solid #ffcdd2;
+  color: #c62828;
+  padding: 4px 12px;
+  border-radius: 5px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: $font-sans;
+  transition: all .15s;
+  white-space: nowrap;
+
+  &:hover { background: #fdecea; border-color: #ef9a9a; }
+}
+
+// ── Activate action button ────────────────────────────────────────
+.action-activate-btn {
+  background: none;
+  border: 1px solid #c3e6cb;
+  color: $success;
+  padding: 4px 12px;
+  border-radius: 5px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: $font-sans;
+  transition: all .15s;
+  white-space: nowrap;
+
+  &:hover { background: #e8f5e9; border-color: #a5d6a7; }
+}
+
+// ── Archive confirmation popup ────────────────────────────────────
+.confirm-popup {
+  width: 380px;
+  text-align: center;
+  padding: 2rem 1.75rem;
+}
+
+.confirm-icon {
+  font-size: 2.5rem;
+  margin-bottom: .75rem;
+}
+
+.confirm-title {
+  font-family: $font-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin-bottom: .6rem;
+}
+
+.confirm-body {
+  font-size: 0.86rem;
+  color: $text;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.confirm-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn-danger {
+  background: #e53935;
+  color: white;
+  border: none;
+  padding: 9px 22px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: $font-sans;
+  transition: background .15s;
+
+  &:hover:not(:disabled) { background: #c62828; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+.staff-name-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.staff-avatar {
+  width: 30px; height: 30px;
+  background: $gold; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 700; font-size: 12px;
+  flex-shrink: 0;
+}
+
+// ── Toast ─────────────────────────────────────────────────────────
+.toast {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.5rem;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.15);
+  font-size: 0.87rem;
+  font-weight: 500;
+  max-width: 380px;
+  animation: toast-in .2s ease;
+
+  &--error   { background: #fdecea; color: #c62828; border: 1px solid #f5c6c2; }
+  &--success { background: #e8f5e9; color: $success;  border: 1px solid #c3e6cb; }
+}
+
+.toast-icon { font-size: 0.8rem; font-weight: 700; flex-shrink: 0; }
+.toast-msg  { flex: 1; line-height: 1.4; }
+
+.toast-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  opacity: .6;
+  color: inherit;
+  flex-shrink: 0;
+  &:hover { opacity: 1; }
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+// ── Empty state ───────────────────────────────────────────────────
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: $text-light;
+
+  .empty-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+  p { font-size: 0.9rem; line-height: 1.6; }
+  .empty-sub { font-size: 0.8rem; margin-top: .4rem; }
+}

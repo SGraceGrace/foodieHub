@@ -70,6 +70,12 @@ export const routes: Routes = [
     canActivate: [partnerGuard],
   },
   {
+    path: 'partner/restaurants/:id',
+    loadComponent: () =>
+      import('./partner/partner-workspace/partner-workspace.component').then((m) => m.PartnerWorkspaceComponent),
+    canActivate: [partnerGuard],
+  },
+  {
     path: 'driver/login',
     loadComponent: () =>
       import('./driver/driver-login/driver-login.component').then((m) => m.DriverLoginComponent),

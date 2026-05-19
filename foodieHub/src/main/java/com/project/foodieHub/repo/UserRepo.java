@@ -47,4 +47,8 @@ public interface UserRepo extends JpaRepository<User, Long> {
          "AND u.status = 'PENDING' AND u.createdDate >= :start AND u.createdDate < :end " +
          "ORDER BY u.createdDate DESC")
   List<User> findTodayPendingDrivers(@Param("start") Date start, @Param("end") Date end);
+
+  @Query("SELECT DISTINCT u FROM User u JOIN u.assignedRestaurantIds rid " +
+         "WHERE u.role.roleName = 'RESTAURANT_STAFF' AND rid = :restaurantId ORDER BY u.id DESC")
+  List<User> findStaffByRestaurantId(@Param("restaurantId") String restaurantId);
 }
