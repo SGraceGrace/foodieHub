@@ -55,8 +55,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            response.getWriter().write("Missing or invalid Authorization header");
+            sendUnauthorized(response, request.getHeader("Origin"), "Missing or invalid Authorization header");
             return;
         }
 
@@ -75,9 +74,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(mutableRequest, response);
         } catch (Exception e) {
-            response.setStatus(HttpStatus.UNAUTHORIZED.value());
-            response.getWriter().write("Invalid or expired token");
+            sendUnauthorized(response, request.getHeader("Origin"), "Invalid or expired token");
         }
+    }
+
+    private void sendUnauthorized(HttpServletResponse response, String origin, String message) throws IOException {
+        if (origin != null) {
+            response.setHeader("Access-Control-Allow-Origin", origin);
+            response.setHeader("Access-Control-Allow-Credentials", "true");
+            response.setHeader("Vary", "Origin");
+        }
+        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+        response.getWriter().write(message);
     }
 
     private boolean isPublicPath(String path) {

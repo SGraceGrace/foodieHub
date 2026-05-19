@@ -74,7 +74,7 @@ public class PartnerServiceImpl implements PartnerService {
             SecurityContextHolder.clearContext();
         }
 
-        createRestaurantInFoodService(dto.getRestaurantName(), saved.getId());
+        createRestaurantInFoodService(dto, saved.getId());
         publishPartnerRegisteredEvent(dto, saved);
     }
 
