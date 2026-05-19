@@ -62,6 +62,15 @@ Spring Boot API Gateway  (just routing, no Kong needed for POC)
 | Containers | Docker + Docker Compose | Run everything locally with one command |
 | Deploy | Railway (free) | Live demo URL for Wellfound profile |
 
+### Database Names (single instance, multiple logical DBs)
+
+| Database | Type | Used by |
+|---|---|---|
+| `foodiehub` | MySQL | user-service (users, roles, refresh tokens) |
+| `foodiehub_food` | MongoDB | food-service (restaurants, menus) + notification-service (admin_notifications, activity_logs) |
+
+> All services share one MySQL instance and one MongoDB instance. Each service connects only to its own collections — no cross-service queries.
+
 ### What we're intentionally skipping for POC
 - ❌ Eureka / Service Discovery — Docker DNS is enough
 - ❌ Spring Cloud Config — .env files are fine
@@ -213,7 +222,7 @@ services:
     image: mysql:8
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: foodiehub_users
+      MYSQL_DATABASE: foodiehub
 
   mongodb:
     image: mongo:7

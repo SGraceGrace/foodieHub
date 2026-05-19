@@ -7,7 +7,7 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://localhost:27017/foodiehub_notifications
+      uri: mongodb://localhost:27017/foodiehub_food
 
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
