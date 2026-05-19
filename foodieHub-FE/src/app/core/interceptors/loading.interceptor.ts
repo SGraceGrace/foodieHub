@@ -22,7 +22,7 @@ function isSilent(url: string): boolean {
 }
 
 export const loadingInterceptor: HttpInterceptorFn = (req, next) => {
-  if (isSilent(req.url)) {
+  if (isSilent(req.urlWithParams)) {
     return next(req);
   }
 

@@ -51,7 +51,7 @@
   <div class="main">
 
     <!-- DASHBOARD TAB -->
-    <ng-container *ngIf="activeTab === 'dashboard'">
+    <div [hidden]="activeTab !== 'dashboard'">
       <div class="page-title">Platform Overview</div>
 
       <div class="stats-grid">
@@ -94,10 +94,10 @@
           </table>
         </div>
       </div>
-    </ng-container>
+    </div>
 
     <!-- USERS TAB -->
-    <ng-container *ngIf="activeTab === 'users'">
+    <div [hidden]="activeTab !== 'users'">
       <div class="page-title">User Management</div>
       <div class="table-box">
         <div class="table-toolbar">
@@ -162,10 +162,10 @@
           </div>
         </div>
       </div>
-    </ng-container>
+    </div>
 
     <!-- RESTAURANTS TAB -->
-    <ng-container *ngIf="activeTab === 'restaurants'">
+    <div [hidden]="activeTab !== 'restaurants'">
       <div class="page-title">Restaurant Management</div>
       <div class="table-box">
         <div class="table-toolbar">
@@ -222,10 +222,10 @@
           </div>
         </div>
       </div>
-    </ng-container>
+    </div>
 
     <!-- RESTAURANT OWNERS TAB -->
-    <ng-container *ngIf="activeTab === 'restaurant-owners'">
+    <div [hidden]="activeTab !== 'restaurant-owners'">
       <div class="page-title">Restaurant Owner Approvals</div>
       <div class="table-box">
         <div class="table-toolbar">
@@ -295,10 +295,10 @@
           </div>
         </div>
       </div>
-    </ng-container>
+    </div>
 
     <!-- DRIVERS TAB -->
-    <ng-container *ngIf="activeTab === 'drivers'">
+    <div [hidden]="activeTab !== 'drivers'">
       <div class="page-title">Driver Approvals</div>
       <div class="table-box">
         <div class="table-toolbar">
@@ -367,10 +367,10 @@
           </div>
         </div>
       </div>
-    </ng-container>
+    </div>
 
     <!-- ORDERS TAB -->
-    <ng-container *ngIf="activeTab === 'orders'">
+    <div [hidden]="activeTab !== 'orders'">
       <div class="page-title">Order Management</div>
       <div class="filter-btns">
         <button class="filter-btn active">All</button>
@@ -390,10 +390,10 @@
           </tbody>
         </table>
       </div>
-    </ng-container>
+    </div>
 
     <!-- PAYMENTS TAB -->
-    <ng-container *ngIf="activeTab === 'payments'">
+    <div [hidden]="activeTab !== 'payments'">
       <div class="page-title">Payment Management</div>
       <div class="table-box">
         <div class="table-toolbar">
@@ -412,10 +412,10 @@
           </tbody>
         </table>
       </div>
-    </ng-container>
+    </div>
 
     <!-- SUPPORT TAB -->
-    <ng-container *ngIf="activeTab === 'support'">
+    <div [hidden]="activeTab !== 'support'">
       <div class="page-title">Support Tickets</div>
       <div class="filter-btns">
         <button class="filter-btn active">Open</button>
@@ -430,10 +430,10 @@
           </tbody>
         </table>
       </div>
-    </ng-container>
+    </div>
 
     <!-- REPORTS TAB -->
-    <ng-container *ngIf="activeTab === 'reports'">
+    <div [hidden]="activeTab !== 'reports'">
       <div class="page-title">Reports & Analytics</div>
       <div class="two-col">
         <div class="table-box">
@@ -466,10 +466,10 @@
           <button class="btn-export">💳 Export Payments (CSV)</button>
         </div>
       </div>
-    </ng-container>
+    </div>
 
     <!-- SLIDES TAB -->
-    <ng-container *ngIf="activeTab === 'slides'">
+    <div [hidden]="activeTab !== 'slides'">
       <div class="page-title">Slideshow Management</div>
 
       <h3 class="section-label">Current Slides</h3>
@@ -540,10 +540,10 @@
           <button class="btn-outline" (click)="clearForm()">Clear</button>
         </div>
       </div>
-    </ng-container>
+    </div>
 
     <!-- ACTIVITY LOG TAB -->
-    <ng-container *ngIf="activeTab === 'activity-log'">
+    <div [hidden]="activeTab !== 'activity-log'">
       <div class="page-title">Activity Log</div>
       <div class="table-box">
         <table>
@@ -564,7 +564,7 @@
           </tbody>
         </table>
       </div>
-    </ng-container>
+    </div>
 
   </div>
 </div>
