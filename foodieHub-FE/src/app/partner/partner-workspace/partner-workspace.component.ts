@@ -5,9 +5,17 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TokenService } from '../../core/shared/token.service';
 import { PartnerService } from '../partner.service';
 import { UserDetails } from '../../model/user.model';
-import { Restaurant, RestaurantStaff } from '../../model/restaurant.model';
+import { Restaurant, DaySchedule } from '../../model/restaurant.model';
 
-type WorkspaceTab = 'overview' | 'orders' | 'menu' | 'analytics' | 'users' | 'settings';
+type WorkspaceTab = 'overview' | 'orders' | 'menu' | 'analytics' | 'hours' | 'settings';
+
+export interface DayHours {
+  day: string;
+  short: string;
+  open: boolean;
+  openTime: string;
+  closeTime: string;
+}
 
 @Component({
   selector: 'app-partner-workspace',
@@ -22,64 +30,59 @@ export class PartnerWorkspaceComponent implements OnInit {
   restaurant: Restaurant | null = null;
   loading = false;
 
-  staff: RestaurantStaff[] = [];
-  staffLoading = false;
-  showAddStaff = false;
-  addingStaff = false;
-  staffError = '';
-  newStaff = { firstName: '', lastName: '', email: '', password: '' };
+  // ── Operating hours ──────────────────────────────────────────────
+  hours: DayHours[] = [
+    { day: 'Monday',    short: 'MON', open: true,  openTime: '09:00', closeTime: '22:00' },
+    { day: 'Tuesday',   short: 'TUE', open: true,  openTime: '09:00', closeTime: '22:00' },
+    { day: 'Wednesday', short: 'WED', open: true,  openTime: '09:00', closeTime: '22:00' },
+    { day: 'Thursday',  short: 'THU', open: true,  openTime: '09:00', closeTime: '22:00' },
+    { day: 'Friday',    short: 'FRI', open: true,  openTime: '09:00', closeTime: '23:00' },
+    { day: 'Saturday',  short: 'SAT', open: true,  openTime: '10:00', closeTime: '23:00' },
+    { day: 'Sunday',    short: 'SUN', open: false, openTime: '10:00', closeTime: '22:00' },
+  ];
+  savingHours = false;
+  hoursSavedMsg = '';
 
-  ownerRestaurants: Restaurant[] = [];
-  selectedRestaurantIds: string[] = [];
-  restaurantSearch = '';
-  showRestaurantDropdown = false;
-  showPassword = false;
-
-  showInlineCreateRestaurant = false;
-  inlineCreating = false;
-  inlineCreateError = '';
-  newInlineRestaurant = { name: '', address: '', fssaiNumber: '', gstNumber: '' };
-
-  toast: { message: string; type: 'error' | 'success' } | null = null;
-  private toastTimer: any;
-
-  showToast(message: string, type: 'error' | 'success' = 'error') {
-    clearTimeout(this.toastTimer);
-    this.toast = { message, type };
-    this.toastTimer = setTimeout(() => { this.toast = null; }, 4000);
+  get openDaysCount(): number {
+    return this.hours.filter(h => h.open).length;
   }
 
-  dismissToast() { this.toast = null; }
-
-  get filteredRestaurants(): Restaurant[] {
-    const q = this.restaurantSearch.toLowerCase().trim();
-    if (!q) return this.ownerRestaurants;
-    return this.ownerRestaurants.filter(r => r.name.toLowerCase().includes(q));
+  applyToAllDays(source: DayHours) {
+    this.hours = this.hours.map(h => ({
+      ...h,
+      openTime:  source.openTime,
+      closeTime: source.closeTime,
+    }));
   }
 
-  get selectedRestaurants(): Restaurant[] {
-    return this.ownerRestaurants.filter(r => this.selectedRestaurantIds.includes(r.id));
+  saveHours() {
+    if (!this.restaurant) return;
+    this.savingHours = true;
+    this.hoursSavedMsg = '';
+
+    const payload: DaySchedule[] = this.hours.map(h => ({
+      day:       h.day.toUpperCase(),
+      open:      h.open,
+      openTime:  h.openTime,
+      closeTime: h.closeTime,
+    }));
+
+    this.partnerService.updateRestaurantHours(this.restaurant.id, payload).subscribe({
+      next: res => {
+        if (res.data) this.restaurant = res.data;
+        this.savingHours = false;
+        this.hoursSavedMsg = 'Hours saved successfully.';
+        setTimeout(() => { this.hoursSavedMsg = ''; }, 3000);
+      },
+      error: () => {
+        this.savingHours = false;
+        this.hoursSavedMsg = 'Failed to save. Please try again.';
+        setTimeout(() => { this.hoursSavedMsg = ''; }, 3000);
+      }
+    });
   }
 
-  isSelected(id: string): boolean {
-    return this.selectedRestaurantIds.includes(id);
-  }
-
-  get pwRules() {
-    const p = this.newStaff.password;
-    return {
-      length:    p.length >= 8,
-      uppercase: /[A-Z]/.test(p),
-      number:    /[0-9]/.test(p),
-      special:   /[^A-Za-z0-9]/.test(p),
-    };
-  }
-
-  get pwValid(): boolean {
-    const r = this.pwRules;
-    return r.length && r.uppercase && r.number && r.special;
-  }
-
+  // ── Helpers ──────────────────────────────────────────────────────
   get ownerInitials(): string {
     const f = this.user?.firstName?.[0] ?? '';
     const l = this.user?.lastName?.[0] ?? '';
@@ -108,6 +111,9 @@ export class PartnerWorkspaceComponent implements OnInit {
     this.partnerService.getRestaurantById(id).subscribe({
       next: res => {
         this.restaurant = res.data ?? null;
+        if (this.restaurant?.operatingHours?.length) {
+          this.hours = this.mapHoursFromApi(this.restaurant.operatingHours);
+        }
         this.loading = false;
       },
       error: () => {
@@ -117,258 +123,15 @@ export class PartnerWorkspaceComponent implements OnInit {
     });
   }
 
-  viewingStaff: RestaurantStaff | null = null;
-  showStaffRestaurantsPopup = false;
-
-  confirmArchiveStaff: RestaurantStaff | null = null;
-  confirmActivateStaff: RestaurantStaff | null = null;
-  archiving = false;
-  activating = false;
-
-  staffRestaurantFilter = '';
-  staffStatusFilter = '';
-
-  get isOwner(): boolean {
-    return this.user?.role?.roleName === 'RESTAURANT_OWNER';
-  }
-
-  get filteredStaff(): RestaurantStaff[] {
-    return this.staff.filter(s => {
-      const matchesRestaurant = !this.staffRestaurantFilter ||
-        s.assignedRestaurantIds?.includes(this.staffRestaurantFilter);
-      const matchesStatus = !this.staffStatusFilter ||
-        s.status === this.staffStatusFilter;
-      return matchesRestaurant && matchesStatus;
+  private mapHoursFromApi(apiHours: DaySchedule[]): DayHours[] {
+    return this.hours.map(d => {
+      const match = apiHours.find(h => h.day.toUpperCase() === d.day.toUpperCase());
+      return match ? { ...d, open: match.open, openTime: match.openTime, closeTime: match.closeTime } : d;
     });
-  }
-
-  get isFiltering(): boolean {
-    return !!(this.staffRestaurantFilter || this.staffStatusFilter);
-  }
-
-  clearStaffFilters() {
-    this.staffRestaurantFilter = '';
-    this.staffStatusFilter = '';
   }
 
   goTab(tab: WorkspaceTab) {
     this.activeTab = tab;
-    if (tab === 'users' && this.restaurant) {
-      this.loadStaff();
-      this.loadOwnerRestaurants();
-    }
-  }
-
-  openStaffRestaurants(s: RestaurantStaff) {
-    this.viewingStaff = s;
-    this.showStaffRestaurantsPopup = true;
-  }
-
-  closeStaffRestaurants() {
-    this.showStaffRestaurantsPopup = false;
-    this.viewingStaff = null;
-  }
-
-  openConfirmArchive(s: RestaurantStaff) {
-    this.confirmArchiveStaff = s;
-  }
-
-  cancelArchive() {
-    this.confirmArchiveStaff = null;
-  }
-
-  confirmArchive() {
-    if (!this.confirmArchiveStaff) return;
-    const target = this.confirmArchiveStaff;
-    this.archiving = true;
-    this.partnerService.archiveStaff(target.id).subscribe({
-      next: () => {
-        this.updateStaffStatus(target.id, 'INACTIVE');
-        this.confirmArchiveStaff = null;
-        this.archiving = false;
-        this.showToast(`${target.firstName} ${target.lastName} has been archived.`, 'success');
-      },
-      error: err => {
-        const msg = err?.error?.errorMsg?.[0] || err?.error?.message || 'Failed to archive user.';
-        this.showToast(msg);
-        this.archiving = false;
-        this.confirmArchiveStaff = null;
-      }
-    });
-  }
-
-  openConfirmActivate(s: RestaurantStaff) {
-    this.confirmActivateStaff = s;
-  }
-
-  cancelActivate() {
-    this.confirmActivateStaff = null;
-  }
-
-  confirmActivate() {
-    if (!this.confirmActivateStaff) return;
-    const target = this.confirmActivateStaff;
-    this.activating = true;
-    this.partnerService.activateStaff(target.id).subscribe({
-      next: () => {
-        this.updateStaffStatus(target.id, 'ACTIVE');
-        this.confirmActivateStaff = null;
-        this.activating = false;
-        this.showToast(`${target.firstName} ${target.lastName} has been activated.`, 'success');
-      },
-      error: err => {
-        const msg = err?.error?.errorMsg?.[0] || err?.error?.message || 'Failed to activate user.';
-        this.showToast(msg);
-        this.activating = false;
-        this.confirmActivateStaff = null;
-      }
-    });
-  }
-
-  private updateStaffStatus(id: number, status: string) {
-    const idx = this.staff.findIndex(s => s.id === id);
-    if (idx !== -1) this.staff[idx] = { ...this.staff[idx], status };
-  }
-
-  getRestaurantDetails(id: string): Restaurant | undefined {
-    return this.ownerRestaurants.find(r => r.id === id);
-  }
-
-  loadStaff() {
-    if (!this.restaurant) return;
-    this.staffLoading = true;
-    this.partnerService.getRestaurantStaff(this.restaurant.id).subscribe({
-      next: res => { this.staff = res.data ?? []; this.staffLoading = false; },
-      error: () => { this.staffLoading = false; }
-    });
-  }
-
-  openAddStaff() {
-    this.newStaff = { firstName: '', lastName: '', email: '', password: '' };
-    this.staffError = '';
-    this.showPassword = false;
-    this.selectedRestaurantIds = this.restaurant ? [this.restaurant.id] : [];
-    this.restaurantSearch = '';
-    this.showRestaurantDropdown = false;
-    this.showInlineCreateRestaurant = false;
-    this.ownerRestaurants = this.restaurant ? [this.restaurant] : [];
-    this.showAddStaff = true;
-    this.loadOwnerRestaurants();
-  }
-
-  loadOwnerRestaurants() {
-    if (!this.user?.id) return;
-    this.partnerService.getMyRestaurants(this.user.id, 0, 100).subscribe({
-      next: res => { this.ownerRestaurants = res.data?.content ?? []; },
-      error: () => {}
-    });
-  }
-
-  toggleRestaurantSelection(r: Restaurant) {
-    const idx = this.selectedRestaurantIds.indexOf(r.id);
-    if (idx === -1) {
-      this.selectedRestaurantIds = [...this.selectedRestaurantIds, r.id];
-    } else {
-      this.selectedRestaurantIds = this.selectedRestaurantIds.filter(id => id !== r.id);
-    }
-  }
-
-  removeRestaurant(id: string) {
-    this.selectedRestaurantIds = this.selectedRestaurantIds.filter(x => x !== id);
-  }
-
-  onRestaurantSearchInput() {
-    this.showRestaurantDropdown = true;
-  }
-
-  closeRestaurantDropdown() {
-    setTimeout(() => {
-      if (!this.showInlineCreateRestaurant) this.showRestaurantDropdown = false;
-    }, 150);
-  }
-
-  openInlineCreate(e: Event) {
-    e.preventDefault();
-    this.newInlineRestaurant = { name: '', address: '', fssaiNumber: '', gstNumber: '' };
-    this.inlineCreateError = '';
-    this.showInlineCreateRestaurant = true;
-    this.showRestaurantDropdown = false;
-  }
-
-  cancelInlineCreate() {
-    this.showInlineCreateRestaurant = false;
-    this.showRestaurantDropdown = true;
-  }
-
-  submitInlineCreate() {
-    const { name, address, fssaiNumber } = this.newInlineRestaurant;
-    if (!name.trim())        { this.inlineCreateError = 'Name is required.'; return; }
-    if (!address.trim())     { this.inlineCreateError = 'Address is required.'; return; }
-    if (!fssaiNumber.trim()) { this.inlineCreateError = 'FSSAI is required.'; return; }
-    if (!this.user?.id) return;
-
-    this.inlineCreating = true;
-    this.inlineCreateError = '';
-    this.partnerService.createRestaurant({
-      name: name.trim(), address: address.trim(),
-      fssaiNumber: fssaiNumber.trim(),
-      gstNumber: this.newInlineRestaurant.gstNumber.trim() || undefined,
-      ownerId: this.user.id,
-    }).subscribe({
-      next: res => {
-        if (res.data) {
-          this.ownerRestaurants = [res.data, ...this.ownerRestaurants];
-          this.selectedRestaurantIds = [...this.selectedRestaurantIds, res.data.id];
-        }
-        this.inlineCreating = false;
-        this.showInlineCreateRestaurant = false;
-        this.showRestaurantDropdown = true;
-      },
-      error: err => {
-        const msg = err?.error?.errorMsg?.[0] || err?.error?.message || 'Failed to create restaurant.';
-        this.inlineCreateError = msg;
-        this.showToast(msg);
-        this.inlineCreating = false;
-      }
-    });
-  }
-
-  cancelAddStaff() {
-    this.showAddStaff = false;
-  }
-
-  togglePassword() {
-    this.showPassword = !this.showPassword;
-  }
-
-  submitAddStaff() {
-    const { firstName, lastName, email, password } = this.newStaff;
-    if (!firstName.trim())               { this.staffError = 'First name is required.'; return; }
-    if (!lastName.trim())                { this.staffError = 'Last name is required.'; return; }
-    if (!email.trim())                   { this.staffError = 'Email is required.'; return; }
-    if (!this.pwValid)                   { this.staffError = 'Password does not meet requirements.'; return; }
-    if (!this.selectedRestaurantIds.length) { this.staffError = 'Select at least one restaurant.'; return; }
-
-    this.addingStaff = true;
-    this.staffError = '';
-    this.partnerService.createRestaurantStaff({
-      firstName: firstName.trim(), lastName: lastName.trim(),
-      email: email.trim(), password: password.trim(),
-      restaurantIds: this.selectedRestaurantIds,
-    }).subscribe({
-      next: res => {
-        if (res.data && res.data.assignedRestaurantIds?.includes(this.restaurant?.id ?? '')) {
-          this.staff = [res.data, ...this.staff];
-        }
-        this.showAddStaff = false;
-        this.addingStaff = false;
-      },
-      error: err => {
-        const msg = err?.error?.errorMsg?.[0] || err?.error?.message || 'Failed to create user.';
-        this.showToast(msg);
-        this.addingStaff = false;
-      }
-    });
   }
 
   goBack() {
@@ -387,7 +150,11 @@ export class PartnerWorkspaceComponent implements OnInit {
     return this.restaurant.menu.reduce((sum, cat) => sum + (cat.items?.length ?? 0), 0);
   }
 
-  getStaffInitials(s: RestaurantStaff): string {
-    return ((s.firstName?.[0] ?? '') + (s.lastName?.[0] ?? '')).toUpperCase() || '?';
+  formatTime(t: string): string {
+    if (!t) return '—';
+    const [h, m] = t.split(':').map(Number);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const hour = h % 12 || 12;
+    return `${hour}:${String(m).padStart(2, '0')} ${ampm}`;
   }
 }

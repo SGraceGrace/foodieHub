@@ -11,6 +11,13 @@ export interface MenuCategory {
   items: MenuItem[];
 }
 
+export interface DaySchedule {
+  day: string;       // "MONDAY", "TUESDAY", …
+  open: boolean;
+  openTime: string;  // "09:00"
+  closeTime: string; // "22:00"
+}
+
 export interface Restaurant {
   id: string;
   ownerId?: string;
@@ -27,6 +34,7 @@ export interface Restaurant {
   status?: string;
   fssaiNumber?: string;
   gstNumber?: string;
+  operatingHours?: DaySchedule[];
 }
 
 export interface AdminUserResponse {

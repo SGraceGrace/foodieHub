@@ -31,4 +31,6 @@ public class Restaurant {
     private List<MenuCategory> menu;
 
     private RestaurantStatus status = RestaurantStatus.PENDING;
+
+    private List<DaySchedule> operatingHours;
 }

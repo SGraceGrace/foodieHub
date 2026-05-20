@@ -1,5 +1,6 @@
 package com.project.foodservice.service.impl;
 
+import com.project.foodservice.document.DaySchedule;
 import com.project.foodservice.document.Restaurant;
 import com.project.foodservice.dto.PaginatedResponse;
 import com.project.foodservice.dto.RestaurantCreateRequestDTO;
@@ -10,6 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -85,5 +89,33 @@ public class RestaurantServiceImpl implements RestaurantService {
         List<Restaurant> restaurants = restaurantRepo.findByOwnerId(ownerId);
         restaurants.forEach(r -> r.setStatus(status));
         restaurantRepo.saveAll(restaurants);
+    }
+
+    @Override
+    public Restaurant updateHours(String id, List<DaySchedule> hours) {
+        Restaurant r = restaurantRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Restaurant not found"));
+        r.setOperatingHours(hours);
+        r.setOpen(computeIsOpen(r));
+        return restaurantRepo.save(r);
+    }
+
+    public static boolean computeIsOpen(Restaurant r) {
+        List<DaySchedule> hours = r.getOperatingHours();
+        if (hours == null || hours.isEmpty()) return r.isOpen();
+
+        ZonedDateTime now = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+        String today = now.getDayOfWeek().name();
+        LocalTime current = now.toLocalTime();
+
+        return hours.stream()
+                .filter(h -> today.equalsIgnoreCase(h.getDay()) && h.isOpen())
+                .findFirst()
+                .map(h -> {
+                    LocalTime open  = LocalTime.parse(h.getOpenTime());
+                    LocalTime close = LocalTime.parse(h.getCloseTime());
+                    return !current.isBefore(open) && current.isBefore(close);
+                })
+                .orElse(false);
     }
 }

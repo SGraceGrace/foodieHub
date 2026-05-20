@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiResponse } from '../model/apiResponse.model';
-import { Restaurant, PaginatedResponse, RestaurantStaff } from '../model/restaurant.model';
+import { Restaurant, PaginatedResponse, RestaurantStaff, DaySchedule } from '../model/restaurant.model';
 
 export interface PartnerRegisterRequest {
   firstName: string;
@@ -71,5 +71,9 @@ export class PartnerService {
     password: string; restaurantIds: string[];
   }): Observable<ApiResponse<RestaurantStaff>> {
     return this.http.post<ApiResponse<RestaurantStaff>>(`${this.base}/staff`, payload);
+  }
+
+  updateRestaurantHours(id: string, hours: DaySchedule[]): Observable<ApiResponse<Restaurant>> {
+    return this.http.put<ApiResponse<Restaurant>>(`${this.restaurantBase}/${id}/hours`, hours);
   }
 }

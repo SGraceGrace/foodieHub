@@ -16,109 +16,419 @@
 <!-- ── Body ───────────────────────────────────────────────────── -->
 <div class="body">
 
-  <!-- Page header -->
-  <div class="page-header">
-    <div>
-      <div class="page-title">My Restaurants</div>
-      <div class="page-sub" *ngIf="!loading">
-        {{ pagination.totalElements }} restaurant{{ pagination.totalElements !== 1 ? 's' : '' }} registered
-      </div>
-    </div>
-    <button class="btn-primary" (click)="openCreateForm()" *ngIf="!showCreateForm">
-      + Add Restaurant
+  <!-- Section tabs -->
+  <div class="section-tabs">
+    <button class="section-tab" [class.active]="activeSection === 'restaurants'" (click)="goSection('restaurants')">
+      My Restaurants
+    </button>
+    <button class="section-tab" [class.active]="activeSection === 'staff'" (click)="goSection('staff')">
+      Staff Management
     </button>
   </div>
 
-  <!-- Create form -->
-  <div class="create-form" *ngIf="showCreateForm">
-    <h3 class="form-title">New Restaurant</h3>
+  <!-- ══════════════ RESTAURANTS SECTION ══════════════ -->
+  <ng-container *ngIf="activeSection === 'restaurants'">
 
-    <div class="form-grid">
+    <!-- Page header -->
+    <div class="page-header">
+      <div>
+        <div class="page-title">My Restaurants</div>
+        <div class="page-sub" *ngIf="!loading">
+          {{ pagination.totalElements }} restaurant{{ pagination.totalElements !== 1 ? 's' : '' }} registered
+        </div>
+      </div>
+      <button class="btn-primary" (click)="openCreateForm()" *ngIf="!showCreateForm">
+        + Add Restaurant
+      </button>
+    </div>
+
+    <!-- Create form -->
+    <div class="create-form" style="max-width:480px" *ngIf="showCreateForm">
+      <h3 class="form-title">New Restaurant</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Restaurant Name <span class="required">*</span></label>
+          <input class="form-input" type="text" [(ngModel)]="newRestaurant.name" placeholder="e.g. Spice Garden" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">FSSAI Number <span class="required">*</span></label>
+          <input class="form-input" type="text" [(ngModel)]="newRestaurant.fssaiNumber" placeholder="e.g. 12345678901234" />
+        </div>
+        <div class="form-group form-group--full">
+          <label class="form-label">Address <span class="required">*</span></label>
+          <input class="form-input" type="text" [(ngModel)]="newRestaurant.address" placeholder="e.g. 42, Gandhi Nagar, Chennai" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">GST Number <span class="optional">(optional)</span></label>
+          <input class="form-input" type="text" [(ngModel)]="newRestaurant.gstNumber" placeholder="e.g. 22AAAAA0000A1Z5" />
+        </div>
+      </div>
+      <div class="form-error" *ngIf="createError">{{ createError }}</div>
+      <div class="form-actions">
+        <button class="btn-primary" (click)="submitCreate()" [disabled]="creating">
+          {{ creating ? 'Creating…' : 'Create Restaurant' }}
+        </button>
+        <button class="btn-secondary" (click)="cancelCreate()" [disabled]="creating">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading">Loading…</div>
+
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="!loading && restaurants.length === 0">
+      <div class="empty-icon">🏪</div>
+      <p>No restaurants yet.</p>
+      <p class="empty-sub">Click "Add Restaurant" to register your first location.</p>
+    </div>
+
+    <!-- Cards grid -->
+    <div class="cards-grid" *ngIf="!loading && restaurants.length > 0">
+      <div class="restaurant-card" *ngFor="let r of restaurants">
+        <div class="card-top">
+          <div class="card-name">{{ r.name }}</div>
+          <span class="badge" [class.badge-open]="r.open" [class.badge-closed]="!r.open">
+            {{ r.open ? 'Open' : 'Closed' }}
+          </span>
+        </div>
+        <div class="card-cuisine">{{ r.cuisine?.join(', ') || 'Cuisine not set' }}</div>
+        <div class="card-meta" *ngIf="r.address">
+          <span class="meta-icon">📍</span> {{ getCityFromAddress(r.address) }}
+        </div>
+        <div class="card-stats">
+          <div class="card-stat">
+            <span class="stat-val">{{ r.rating ? (r.rating | number:'1.1-1') : '—' }}</span>
+            <span class="stat-key">Rating</span>
+          </div>
+          <div class="card-stat">
+            <span class="stat-val">{{ getMenuItemCount(r) }}</span>
+            <span class="stat-key">Menu Items</span>
+          </div>
+          <div class="card-stat">
+            <span class="stat-val">{{ r.deliveryTime ? r.deliveryTime + ' min' : '—' }}</span>
+            <span class="stat-key">Delivery</span>
+          </div>
+        </div>
+        <button class="btn-manage" (click)="manage(r)">Manage →</button>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-bar" *ngIf="pagination.totalPages > 1">
+      <button class="page-btn" (click)="prevPage()" [disabled]="pagination.currentPage === 0">← Prev</button>
+      <span class="page-info">Showing {{ startRow }}–{{ endRow }} of {{ pagination.totalElements }}</span>
+      <button class="page-btn" (click)="nextPage()" [disabled]="pagination.currentPage >= pagination.totalPages - 1">Next →</button>
+    </div>
+
+  </ng-container>
+
+  <!-- ══════════════ STAFF SECTION ══════════════ -->
+  <ng-container *ngIf="activeSection === 'staff'">
+
+    <!-- Section header -->
+    <div class="page-header">
+      <div>
+        <div class="page-title">Staff Management</div>
+        <div class="page-sub" *ngIf="!staffLoading">
+          {{ staff.length }} staff member{{ staff.length !== 1 ? 's' : '' }} across all restaurants
+        </div>
+      </div>
+      <button class="btn-primary" (click)="openAddStaff()" *ngIf="!showAddStaff">+ Add User</button>
+    </div>
+
+    <!-- Add staff form -->
+    <div class="create-form" *ngIf="showAddStaff">
+      <h3 class="form-title">New Staff User</h3>
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label class="form-label">First Name <span class="required">*</span></label>
+          <input class="form-input" type="text" [(ngModel)]="newStaff.firstName" placeholder="e.g. Ravi" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Last Name <span class="required">*</span></label>
+          <input class="form-input" type="text" [(ngModel)]="newStaff.lastName" placeholder="e.g. Kumar" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email <span class="required">*</span></label>
+          <input class="form-input" type="email" [(ngModel)]="newStaff.email" placeholder="e.g. ravi@example.com" />
+        </div>
+
+        <div class="form-group form-group--full">
+          <label class="form-label">Assign to Restaurants <span class="required">*</span></label>
+
+          <!-- Selected chips -->
+          <div class="selected-tags" *ngIf="selectedRestaurants.length > 0">
+            <span class="tag" *ngFor="let r of selectedRestaurants">
+              {{ r.name }}
+              <button type="button" class="tag-remove" (click)="removeRestaurant(r.id)">×</button>
+            </span>
+          </div>
+
+          <!-- Search input + dropdown -->
+          <div class="search-select">
+            <input class="form-input"
+                   type="text"
+                   [(ngModel)]="restaurantSearch"
+                   (input)="onRestaurantSearchInput()"
+                   (focus)="showRestaurantDropdown = true"
+                   (blur)="closeRestaurantDropdown()"
+                   placeholder="Search and select restaurants…"
+                   autocomplete="off" />
+
+            <div class="search-dropdown" *ngIf="showRestaurantDropdown && !showInlineCreateRestaurant">
+              <div *ngIf="filteredRestaurantsForDropdown.length === 0" class="search-no-results">
+                No restaurants found
+              </div>
+              <div class="search-option"
+                   *ngFor="let r of filteredRestaurantsForDropdown"
+                   [class.search-option--selected]="isSelected(r.id)"
+                   (mousedown)="$event.preventDefault(); toggleRestaurantSelection(r)">
+                <span class="search-cb" [class.search-cb--checked]="isSelected(r.id)">
+                  <span *ngIf="isSelected(r.id)">✓</span>
+                </span>
+                {{ r.name }}
+              </div>
+              <div class="search-add-restaurant" (mousedown)="openInlineCreate($event)">
+                + Add Restaurant
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group form-group--full">
+          <label class="form-label">Password <span class="required">*</span></label>
+          <div class="pw-wrap">
+            <input class="form-input pw-input"
+                   [type]="showPassword ? 'text' : 'password'"
+                   [(ngModel)]="newStaff.password"
+                   placeholder="Min 8 chars, uppercase, number, special" />
+            <button type="button" class="pw-eye" (click)="togglePassword()" tabindex="-1">
+              {{ showPassword ? '🙈' : '👁️' }}
+            </button>
+          </div>
+          <div class="pw-rules" *ngIf="newStaff.password.length > 0">
+            <span [class.rule-ok]="pwRules.length"    [class.rule-fail]="!pwRules.length">
+              {{ pwRules.length ? '✓' : '✗' }} 8+ characters
+            </span>
+            <span [class.rule-ok]="pwRules.uppercase" [class.rule-fail]="!pwRules.uppercase">
+              {{ pwRules.uppercase ? '✓' : '✗' }} Uppercase letter
+            </span>
+            <span [class.rule-ok]="pwRules.number"    [class.rule-fail]="!pwRules.number">
+              {{ pwRules.number ? '✓' : '✗' }} Number
+            </span>
+            <span [class.rule-ok]="pwRules.special"   [class.rule-fail]="!pwRules.special">
+              {{ pwRules.special ? '✓' : '✗' }} Special character
+            </span>
+          </div>
+        </div>
+
+      </div>
+      <div class="form-error" *ngIf="staffError">{{ staffError }}</div>
+      <div class="form-actions">
+        <button class="btn-primary" (click)="submitAddStaff()" [disabled]="addingStaff">
+          {{ addingStaff ? 'Creating…' : 'Create User' }}
+        </button>
+        <button class="btn-secondary" (click)="cancelAddStaff()" [disabled]="addingStaff">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="staffLoading">Loading staff…</div>
+
+    <!-- Empty state -->
+    <div class="empty-state" *ngIf="!staffLoading && staff.length === 0 && !showAddStaff">
+      <div class="empty-icon">👥</div>
+      <p>No staff users yet.</p>
+      <p class="empty-sub">Add staff members who can manage your restaurants.</p>
+    </div>
+
+    <!-- Staff table -->
+    <div class="section-box" *ngIf="!staffLoading && staff.length > 0">
+
+      <!-- Filter bar -->
+      <div class="staff-filter-bar">
+        <div class="filter-group">
+          <label class="filter-label">Restaurant</label>
+          <select class="filter-select" [(ngModel)]="staffRestaurantFilter">
+            <option value="">All Restaurants</option>
+            <option *ngFor="let r of ownerRestaurants" [value]="r.id">{{ r.name }}</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label class="filter-label">Status</label>
+          <select class="filter-select" [(ngModel)]="staffStatusFilter">
+            <option value="">All</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
+        </div>
+        <button class="filter-clear-btn" *ngIf="isFiltering" (click)="clearStaffFilters()">
+          ✕ Clear
+        </button>
+        <span class="filter-count">{{ filteredStaff.length }} of {{ staff.length }} staff</span>
+      </div>
+
+      <!-- No results after filter -->
+      <div class="filter-empty" *ngIf="filteredStaff.length === 0">
+        No staff match the selected filters.
+      </div>
+
+      <table class="staff-table" *ngIf="filteredStaff.length > 0">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Email</th>
+            <th>Restaurants</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of filteredStaff">
+            <td>
+              <div class="staff-name-cell">
+                <div class="staff-avatar">{{ getStaffInitials(s) }}</div>
+                <span>{{ s.firstName }} {{ s.lastName }}</span>
+              </div>
+            </td>
+            <td class="td-muted">{{ s.email }}</td>
+            <td>
+              <div class="count-cell">
+                <span class="td-muted">
+                  {{ s.assignedRestaurantIds.length || 0 }} restaurant{{ (s.assignedRestaurantIds.length || 0) !== 1 ? 's' : '' }}
+                </span>
+                <button class="eye-btn" title="View restaurants" (click)="openStaffRestaurants(s)" *ngIf="s.assignedRestaurantIds.length">👁️</button>
+              </div>
+            </td>
+            <td>
+              <span class="badge" [class.badge-open]="s.status === 'ACTIVE'" [class.badge-closed]="s.status !== 'ACTIVE'">
+                {{ s.status }}
+              </span>
+            </td>
+            <td>
+              <button class="action-archive-btn"  *ngIf="s.status === 'ACTIVE'"  (click)="openConfirmArchive(s)">Archive</button>
+              <button class="action-activate-btn" *ngIf="s.status !== 'ACTIVE'" (click)="openConfirmActivate(s)">Activate</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </ng-container>
+
+</div>
+
+<!-- ── Staff Restaurants Popup ────────────────────────────────── -->
+<div class="modal-backdrop" *ngIf="showStaffRestaurantsPopup" (click)="closeStaffRestaurants()"></div>
+<div class="modal-card staff-restaurants-popup" *ngIf="showStaffRestaurantsPopup" (click)="$event.stopPropagation()">
+  <div class="modal-header">
+    <div>
+      <h3 class="modal-title">{{ viewingStaff?.firstName }} {{ viewingStaff?.lastName }}</h3>
+      <p class="modal-subtitle">Assigned Restaurants</p>
+    </div>
+    <button type="button" class="modal-close" (click)="closeStaffRestaurants()">✕</button>
+  </div>
+  <div class="modal-body" style="padding-top:.75rem">
+    <div *ngIf="!viewingStaff?.assignedRestaurantIds?.length" class="popup-empty">
+      No restaurants assigned.
+    </div>
+    <div class="restaurant-popup-row" *ngFor="let id of viewingStaff?.assignedRestaurantIds">
+      <ng-container *ngIf="getRestaurantDetails(id) as r; else unknownRestaurant">
+        <div class="restaurant-popup-icon">{{ r.name[0] }}</div>
+        <div>
+          <div class="restaurant-popup-name">{{ r.name }}</div>
+          <div class="restaurant-popup-addr" *ngIf="r.address">📍 {{ r.address }}</div>
+          <div class="restaurant-popup-addr" *ngIf="!r.address">No address on file</div>
+        </div>
+      </ng-container>
+      <ng-template #unknownRestaurant>
+        <div class="restaurant-popup-icon restaurant-popup-icon--unknown">?</div>
+        <div>
+          <div class="restaurant-popup-name">Unknown Restaurant</div>
+          <div class="restaurant-popup-addr">ID: {{ id }}</div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>
+
+<!-- ── Archive Confirmation ────────────────────────────────────── -->
+<div class="modal-backdrop" *ngIf="confirmArchiveStaff" (click)="cancelArchive()"></div>
+<div class="modal-card confirm-popup" *ngIf="confirmArchiveStaff" (click)="$event.stopPropagation()">
+  <div class="confirm-icon">🗄️</div>
+  <h3 class="confirm-title">Archive Staff User?</h3>
+  <p class="confirm-body">
+    <strong>{{ confirmArchiveStaff.firstName }} {{ confirmArchiveStaff.lastName }}</strong>
+    will lose access to all assigned restaurants immediately.
+    Their account can be reinstated if needed.
+  </p>
+  <div class="confirm-actions">
+    <button class="btn-danger" (click)="confirmArchive()" [disabled]="archiving">
+      {{ archiving ? 'Archiving…' : 'Yes, Archive' }}
+    </button>
+    <button class="btn-secondary" (click)="cancelArchive()" [disabled]="archiving">Cancel</button>
+  </div>
+</div>
+
+<!-- ── Activate Confirmation ──────────────────────────────────── -->
+<div class="modal-backdrop" *ngIf="confirmActivateStaff" (click)="cancelActivate()"></div>
+<div class="modal-card confirm-popup" *ngIf="confirmActivateStaff" (click)="$event.stopPropagation()">
+  <div class="confirm-icon">✅</div>
+  <h3 class="confirm-title">Activate Staff User?</h3>
+  <p class="confirm-body">
+    <strong>{{ confirmActivateStaff.firstName }} {{ confirmActivateStaff.lastName }}</strong>
+    will regain access to their assigned restaurants immediately.
+  </p>
+  <div class="confirm-actions">
+    <button class="btn-primary" (click)="confirmActivate()" [disabled]="activating">
+      {{ activating ? 'Activating…' : 'Yes, Activate' }}
+    </button>
+    <button class="btn-secondary" (click)="cancelActivate()" [disabled]="activating">Cancel</button>
+  </div>
+</div>
+
+<!-- ── Create Restaurant Modal ────────────────────────────────── -->
+<div class="modal-backdrop" *ngIf="showInlineCreateRestaurant" (click)="cancelInlineCreate()"></div>
+<div class="modal-card" *ngIf="showInlineCreateRestaurant" (click)="$event.stopPropagation()">
+  <div class="modal-header">
+    <h3 class="modal-title">New Restaurant</h3>
+    <button type="button" class="modal-close" (click)="cancelInlineCreate()">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="modal-form-grid">
       <div class="form-group">
         <label class="form-label">Restaurant Name <span class="required">*</span></label>
-        <input class="form-input" type="text" [(ngModel)]="newRestaurant.name"
-               placeholder="e.g. Spice Garden" />
+        <input class="form-input" type="text" [(ngModel)]="newInlineRestaurant.name" placeholder="e.g. Spice Garden" />
       </div>
-
       <div class="form-group">
         <label class="form-label">FSSAI Number <span class="required">*</span></label>
-        <input class="form-input" type="text" [(ngModel)]="newRestaurant.fssaiNumber"
-               placeholder="e.g. 12345678901234" />
+        <input class="form-input" type="text" [(ngModel)]="newInlineRestaurant.fssaiNumber" placeholder="e.g. 12345678901234" />
       </div>
-
-      <div class="form-group form-group--full">
+      <div class="form-group modal-form-full">
         <label class="form-label">Address <span class="required">*</span></label>
-        <input class="form-input" type="text" [(ngModel)]="newRestaurant.address"
-               placeholder="e.g. 42, Gandhi Nagar, Chennai" />
+        <input class="form-input" type="text" [(ngModel)]="newInlineRestaurant.address" placeholder="e.g. 42, Gandhi Nagar, Chennai" />
       </div>
-
       <div class="form-group">
         <label class="form-label">GST Number <span class="optional">(optional)</span></label>
-        <input class="form-input" type="text" [(ngModel)]="newRestaurant.gstNumber"
-               placeholder="e.g. 22AAAAA0000A1Z5" />
+        <input class="form-input" type="text" [(ngModel)]="newInlineRestaurant.gstNumber" placeholder="e.g. 22AAAAA0000A1Z5" />
       </div>
     </div>
-
-    <div class="form-error" *ngIf="createError">{{ createError }}</div>
-    <div class="form-actions">
-      <button class="btn-primary" (click)="submitCreate()" [disabled]="creating">
-        {{ creating ? 'Creating…' : 'Create Restaurant' }}
-      </button>
-      <button class="btn-secondary" (click)="cancelCreate()" [disabled]="creating">Cancel</button>
-    </div>
+    <div class="form-error" *ngIf="inlineCreateError">{{ inlineCreateError }}</div>
   </div>
-
-  <!-- Loading -->
-  <div class="loading-state" *ngIf="loading">Loading…</div>
-
-  <!-- Empty state -->
-  <div class="empty-state" *ngIf="!loading && restaurants.length === 0">
-    <div class="empty-icon">🏪</div>
-    <p>No restaurants yet.</p>
-    <p class="empty-sub">Click "Add Restaurant" to register your first location.</p>
+  <div class="modal-footer">
+    <button type="button" class="btn-primary" (click)="submitInlineCreate()" [disabled]="inlineCreating">
+      {{ inlineCreating ? 'Creating…' : 'Create & Select' }}
+    </button>
+    <button type="button" class="btn-secondary" (click)="cancelInlineCreate()" [disabled]="inlineCreating">Cancel</button>
   </div>
+</div>
 
-  <!-- Cards grid -->
-  <div class="cards-grid" *ngIf="!loading && restaurants.length > 0">
-    <div class="restaurant-card" *ngFor="let r of restaurants">
-
-      <div class="card-top">
-        <div class="card-name">{{ r.name }}</div>
-        <span class="badge" [class.badge-open]="r.open" [class.badge-closed]="!r.open">
-          {{ r.open ? 'Open' : 'Closed' }}
-        </span>
-      </div>
-
-      <div class="card-cuisine">{{ r.cuisine?.join(', ') || 'Cuisine not set' }}</div>
-
-      <div class="card-meta" *ngIf="r.address">
-        <span class="meta-icon">📍</span> {{ getCityFromAddress(r.address) }}
-      </div>
-
-      <div class="card-stats">
-        <div class="card-stat">
-          <span class="stat-val">{{ r.rating ? (r.rating | number:'1.1-1') : '—' }}</span>
-          <span class="stat-key">Rating</span>
-        </div>
-        <div class="card-stat">
-          <span class="stat-val">{{ getMenuItemCount(r) }}</span>
-          <span class="stat-key">Menu Items</span>
-        </div>
-        <div class="card-stat">
-          <span class="stat-val">{{ r.deliveryTime ? r.deliveryTime + ' min' : '—' }}</span>
-          <span class="stat-key">Delivery</span>
-        </div>
-      </div>
-
-      <button class="btn-manage" (click)="manage(r)">Manage →</button>
-    </div>
-  </div>
-
-  <!-- Pagination -->
-  <div class="pagination-bar" *ngIf="pagination.totalPages > 1">
-    <button class="page-btn" (click)="prevPage()" [disabled]="pagination.currentPage === 0">← Prev</button>
-    <span class="page-info">Showing {{ startRow }}–{{ endRow }} of {{ pagination.totalElements }}</span>
-    <button class="page-btn" (click)="nextPage()" [disabled]="pagination.currentPage >= pagination.totalPages - 1">Next →</button>
-  </div>
-
+<!-- ── Toast ──────────────────────────────────────────────────── -->
+<div class="toast" *ngIf="toast" [class.toast--error]="toast.type === 'error'" [class.toast--success]="toast.type === 'success'">
+  <span class="toast-icon">{{ toast.type === 'error' ? '✕' : '✓' }}</span>
+  <span class="toast-msg">{{ toast.message }}</span>
+  <button class="toast-close" (click)="dismissToast()">✕</button>
 </div>

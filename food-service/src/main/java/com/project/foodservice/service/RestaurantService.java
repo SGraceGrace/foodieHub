@@ -16,4 +16,5 @@ public interface RestaurantService {
     PaginatedResponse<Restaurant> getByOwner(String ownerId, Pageable pageable);
     void updateStatusByOwnerId(String ownerId, RestaurantStatus status);
     PaginatedResponse<Restaurant> getAllForAdmin(String status, String cuisine, Pageable pageable);
+    Restaurant updateHours(String id, java.util.List<com.project.foodservice.document.DaySchedule> hours);
 }
