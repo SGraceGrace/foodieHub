@@ -21,8 +21,4 @@ export class HomeService {
       : `${this.base}/api/v1/restaurants`;
     return this.http.get<ApiResponse<PaginatedResponse<Restaurant>>>(url);
   }
-
-  getCuisines(): Observable<ApiResponse<string[]>> {
-    return this.http.get<ApiResponse<string[]>>(`${this.base}/api/v1/restaurants/cuisines`);
-  }
 }

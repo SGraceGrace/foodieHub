@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HomeService } from './home.service';
 import { Slide, Restaurant } from '../model/restaurant.model';
-import { getCuisineEmoji, getCuisineBg } from '../core/constants/cuisine.constants';
+import { CUISINE_EMOJI, getCuisineEmoji, getCuisineBg } from '../core/constants/cuisine.constants';
 
 interface FoodCard {
   emoji: string; name: string; price: number;
@@ -32,7 +32,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadSlides();
-    this.loadCuisines();
+    this.cuisineFilters = Object.keys(CUISINE_EMOJI).filter(k => k !== 'default');
     this.loadRestaurants();
   }
 
@@ -73,6 +73,16 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.goToSlide((this.activeSlide + 1) % this.slides.length);
   }
 
+  selectCuisine(cuisine?: string) {
+    this.selectedCuisine = cuisine ?? 'All';
+    this.homeService.getRestaurants(cuisine).subscribe({
+      next: (res) => {
+        this.restaurants = res.data?.content ?? [];
+        this.buildPopularDishes(this.restaurants);
+      },
+    });
+  }
+
   loadRestaurants(cuisine?: string) {
     this.selectedCuisine = cuisine ?? 'All';
     this.homeService.getRestaurants(cuisine).subscribe({
@@ -80,12 +90,6 @@ export class HomeComponent implements OnInit, OnDestroy {
         this.restaurants = res.data?.content ?? [];
         if (!cuisine) this.buildPopularDishes(this.restaurants);
       },
-    });
-  }
-
-  loadCuisines() {
-    this.homeService.getCuisines().subscribe({
-      next: (res) => (this.cuisineFilters = res.data ?? []),
     });
   }
 
@@ -111,6 +115,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   getEmoji(r: Restaurant): string { return getCuisineEmoji(r.cuisine?.[0]); }
   getBg(r: Restaurant): string    { return getCuisineBg(r.cuisine?.[0]); }
+  getCuisineEmoji(c: string): string { return getCuisineEmoji(c); }
+  getCuisineBg(c: string): string    { return getCuisineBg(c); }
 
   starsArray(rating: number): boolean[] {
     return Array.from({ length: 5 }, (_, i) => i < Math.round(rating));
