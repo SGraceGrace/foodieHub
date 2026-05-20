@@ -121,6 +121,36 @@ $font-sans:  'DM Sans', sans-serif;
   white-space: nowrap;
 }
 
+.sidebar-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 5px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+
+  &--open {
+    background: rgba(52, 211, 153, 0.2);
+    color: #34d399;
+  }
+  &--closed {
+    background: rgba(248, 113, 113, 0.2);
+    color: #f87171;
+  }
+}
+
+.sidebar-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+
+  .sidebar-status--open & { background: #34d399; }
+  .sidebar-status--closed & { background: #f87171; }
+}
+
 .nav-btn {
   width: 100%;
   text-align: left;
@@ -303,6 +333,9 @@ $font-sans:  'DM Sans', sans-serif;
   font-size: 0.82rem;
   margin-top: .75rem;
 }
+
+.img-upload-status { font-size: 0.8rem; color: #888; margin-top: 4px; }
+.img-preview { display: block; margin-top: 8px; width: 120px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
 
 // ── Multi-select restaurant search ────────────────────────────────
 .selected-tags {

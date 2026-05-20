@@ -41,6 +41,7 @@ export class PartnerService {
     address: string;
     fssaiNumber: string;
     gstNumber?: string;
+    imageUrl?: string;
   }): Observable<ApiResponse<Restaurant>> {
     return this.http.post<ApiResponse<Restaurant>>(this.restaurantBase, {
       ...payload,

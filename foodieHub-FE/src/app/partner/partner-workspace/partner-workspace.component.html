@@ -28,6 +28,10 @@
     <div class="sidebar-restaurant">
       <div class="sidebar-r-icon">{{ restaurant.name[0] }}</div>
       <div class="sidebar-r-name">{{ restaurant.name }}</div>
+      <div class="sidebar-status" [class.sidebar-status--open]="restaurant.open" [class.sidebar-status--closed]="!restaurant.open">
+        <span class="sidebar-status-dot"></span>
+        {{ restaurant.open ? 'Open' : 'Closed' }}
+      </div>
     </div>
 
     <button class="nav-btn" [class.active]="activeTab==='overview'" (click)="goTab('overview')">
@@ -434,6 +438,13 @@
                placeholder="e.g. Crispy dosa with spiced potato filling" />
       </div>
 
+      <div class="form-group item-col-full">
+        <label class="form-label">Item Photo <span class="optional">(optional)</span></label>
+        <input type="file" accept="image/*" (change)="onItemImageSelected($event)" [disabled]="uploadingItemImage" />
+        <div class="img-upload-status" *ngIf="uploadingItemImage">Uploading…</div>
+        <img *ngIf="itemDraft.imageUrl" [src]="itemDraft.imageUrl" class="img-preview" alt="Preview" />
+      </div>
+
       <div class="form-group">
         <label class="form-label">Base Price (₹) <span class="required">*</span></label>
         <input class="form-input" type="number" [(ngModel)]="itemDraft.price"
@@ -507,8 +518,8 @@
   </div>
 
   <div class="modal-footer">
-    <button class="btn-primary" (click)="saveItem()">
-      {{ itemFormItemIdx === -1 ? 'Add Item' : 'Save Changes' }}
+    <button class="btn-primary" (click)="saveItem()" [disabled]="uploadingItemImage">
+      {{ uploadingItemImage ? 'Uploading…' : (itemFormItemIdx === -1 ? 'Add Item' : 'Save Changes') }}
     </button>
     <button class="btn-secondary" (click)="closeItemForm()">Cancel</button>
   </div>

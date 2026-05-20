@@ -31,7 +31,7 @@ export function authInterceptor(
   const loginService = inject(LoginService);
   const router = inject(Router);
 
-  const publicUrls = ['/login', '/signup', '/contact', '/api/v1/slides', '/api/v1/restaurants', '/partner/register', '/api/v1/refresh-token'];
+  const publicUrls = ['/login', '/signup', '/contact', '/api/v1/slides', '/api/v1/restaurants', '/partner/register', '/api/v1/refresh-token', 'api.cloudinary.com'];
   if (publicUrls.some((u) => req.url.includes(u))) {
     return next(req);
   }

@@ -12,5 +12,6 @@ public class MenuItem {
     private boolean isVeg;
     private boolean available = true;
     private String description;
+    private String imageUrl;
     private List<MenuExtra> extras;
 }

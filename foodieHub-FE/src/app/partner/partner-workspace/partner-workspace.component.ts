@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TokenService } from '../../core/shared/token.service';
+import { CloudinaryService } from '../../core/shared/cloudinary.service';
 import { PartnerService } from '../partner.service';
 import { UserDetails } from '../../model/user.model';
 import { Restaurant, DaySchedule } from '../../model/restaurant.model';
@@ -26,6 +27,7 @@ interface LocalMenuItem {
   isVeg: boolean;
   available: boolean;
   description: string;
+  imageUrl: string;
   extras: MenuExtra[];
 }
 
@@ -42,7 +44,8 @@ interface LocalMenuCategory {
   templateUrl: './partner-workspace.component.html',
   styleUrl: './partner-workspace.component.scss',
 })
-export class PartnerWorkspaceComponent implements OnInit {
+export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
+  private statusPollTimer: ReturnType<typeof setInterval> | null = null;
   activeTab: WorkspaceTab = 'overview';
   user: UserDetails | null = null;
   restaurant: Restaurant | null = null;
@@ -76,13 +79,22 @@ export class PartnerWorkspaceComponent implements OnInit {
 
   showItemForm = false;
   itemFormCatIdx = -1;
-  itemFormItemIdx = -1; // -1 = new item
+  itemFormItemIdx = -1;
   itemDraft: LocalMenuItem = this.emptyItemDraft();
   itemFormError = '';
+  uploadingItemImage = false;
 
   readonly gstOptions = [0, 5, 12, 18];
 
   // ── Hours getters/methods ─────────────────────────────────────────
+  initHours() {
+    const apiHours = this.restaurant?.operatingHours ?? [];
+    this.hours = this.hours.map(d => {
+      const match = apiHours.find(h => h.day.toUpperCase() === d.day.toUpperCase());
+      return match ? { ...d, open: match.open, openTime: match.openTime, closeTime: match.closeTime } : d;
+    });
+  }
+
   get openDaysCount(): number {
     return this.hours.filter(h => h.open).length;
   }
@@ -106,6 +118,7 @@ export class PartnerWorkspaceComponent implements OnInit {
     this.partnerService.updateRestaurantHours(this.restaurant.id, payload).subscribe({
       next: res => {
         if (res.data) this.restaurant = res.data;
+        this.initHours();
         this.savingHours = false;
         this.hoursSavedMsg = 'Hours saved successfully.';
         setTimeout(() => { this.hoursSavedMsg = ''; }, 3000);
@@ -120,7 +133,20 @@ export class PartnerWorkspaceComponent implements OnInit {
 
   // ── Menu: category operations ─────────────────────────────────────
   initMenu() {
-    this.menuCategories = [];
+    this.menuCategories = (this.restaurant?.menu ?? []).map(cat => ({
+      category: cat.category,
+      collapsed: false,
+      items: (cat.items ?? []).map(item => ({
+        name: item.name,
+        price: item.price,
+        gstPercent: item.gstPercent ?? 0,
+        isVeg: item.isVeg,
+        available: item.available,
+        description: item.description ?? '',
+        imageUrl: item.imageUrl ?? '',
+        extras: (item.extras ?? []).map(e => ({ ...e })),
+      })),
+    }));
     this.menuDirty = false;
   }
 
@@ -184,7 +210,17 @@ export class PartnerWorkspaceComponent implements OnInit {
     this.showItemForm = true;
   }
 
-  closeItemForm() { this.showItemForm = false; }
+  closeItemForm() { this.showItemForm = false; this.uploadingItemImage = false; }
+
+  onItemImageSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.uploadingItemImage = true;
+    this.cloudinary.upload(file).subscribe({
+      next: url => { this.itemDraft = { ...this.itemDraft, imageUrl: url }; this.uploadingItemImage = false; },
+      error: () => { this.uploadingItemImage = false; this.itemFormError = 'Image upload failed.'; },
+    });
+  }
 
   saveItem() {
     if (!this.itemDraft.name.trim())                { this.itemFormError = 'Item name is required.'; return; }
@@ -195,8 +231,8 @@ export class PartnerWorkspaceComponent implements OnInit {
 
     const saved: LocalMenuItem = {
       ...this.itemDraft,
-      name:  this.itemDraft.name.trim(),
-      price: Number(this.itemDraft.price),
+      name:   this.itemDraft.name.trim(),
+      price:  Number(this.itemDraft.price),
       extras: this.itemDraft.extras.filter(e => e.label.trim()),
     };
 
@@ -265,16 +301,16 @@ export class PartnerWorkspaceComponent implements OnInit {
         isVeg:       item.isVeg,
         available:   item.available,
         description: item.description,
+        imageUrl:    item.imageUrl || undefined,
         extras:      item.extras,
       })),
     }));
     this.partnerService.updateRestaurantMenu(this.restaurant.id, payload).subscribe({
       next: res => {
         if (res.data) this.restaurant = res.data;
-        this.menuCategories = [];
+        this.initMenu();
         this.savingMenu = false;
         this.menuSavedMsg = 'Menu saved successfully.';
-        this.menuDirty = false;
         setTimeout(() => { this.menuSavedMsg = ''; }, 3000);
       },
       error: () => {
@@ -289,7 +325,7 @@ export class PartnerWorkspaceComponent implements OnInit {
     return {
       name: '', price: null, gstPercent: 5,
       isVeg: true, available: true,
-      description: '', extras: [],
+      description: '', imageUrl: '', extras: [],
     };
   }
 
@@ -308,7 +344,8 @@ export class PartnerWorkspaceComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private tokenService: TokenService,
-    private partnerService: PartnerService
+    private partnerService: PartnerService,
+    private cloudinary: CloudinaryService
   ) {}
 
   ngOnInit() {
@@ -322,11 +359,10 @@ export class PartnerWorkspaceComponent implements OnInit {
     this.partnerService.getRestaurantById(id).subscribe({
       next: res => {
         this.restaurant = res.data ?? null;
-        if (this.restaurant?.operatingHours?.length) {
-          this.hours = this.mapHoursFromApi(this.restaurant.operatingHours);
-        }
+        this.initHours();
         this.initMenu();
         this.loading = false;
+        this.startStatusPoll();
       },
       error: () => {
         this.loading = false;
@@ -335,16 +371,34 @@ export class PartnerWorkspaceComponent implements OnInit {
     });
   }
 
-  private mapHoursFromApi(apiHours: DaySchedule[]): DayHours[] {
-    return this.hours.map(d => {
-      const match = apiHours.find(h => h.day.toUpperCase() === d.day.toUpperCase());
-      return match ? { ...d, open: match.open, openTime: match.openTime, closeTime: match.closeTime } : d;
-    });
-  }
-
   goTab(tab: WorkspaceTab) {
     this.activeTab = tab;
     if (tab === 'menu') this.initMenu();
+    if (tab === 'hours') this.refreshHours();
+  }
+
+  refreshHours() {
+    if (!this.restaurant) return;
+    this.partnerService.getRestaurantById(this.restaurant.id).subscribe({
+      next: res => {
+        if (res.data) this.restaurant = res.data;
+        this.initHours();
+      },
+    });
+  }
+
+  private startStatusPoll() {
+    if (this.statusPollTimer) clearInterval(this.statusPollTimer);
+    this.statusPollTimer = setInterval(() => {
+      if (!this.restaurant) return;
+      this.partnerService.getRestaurantById(this.restaurant.id).subscribe({
+        next: res => { if (res.data) this.restaurant = { ...this.restaurant!, open: res.data.open }; },
+      });
+    }, 60_000);
+  }
+
+  ngOnDestroy() {
+    if (this.statusPollTimer) clearInterval(this.statusPollTimer);
   }
 
   goBack()  { this.router.navigateByUrl('/partner'); }

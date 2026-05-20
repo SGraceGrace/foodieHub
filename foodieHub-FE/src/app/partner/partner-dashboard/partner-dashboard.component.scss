@@ -159,6 +159,9 @@ $font-sans:  'DM Sans', sans-serif;
 .form-error   { font-size: 0.8rem; color: #e53935; margin-bottom: .75rem; }
 .form-actions { display: flex; gap: 10px; margin-top: 1.25rem; }
 
+.img-upload-status { font-size: 0.8rem; color: #888; margin-top: 4px; }
+.img-preview { display: block; margin-top: 8px; width: 120px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
+
 // ── Loading / Empty ───────────────────────────────────────────────
 .loading-state {
   text-align: center;

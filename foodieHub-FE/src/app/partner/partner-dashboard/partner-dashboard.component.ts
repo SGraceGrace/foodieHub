@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { take, catchError } from 'rxjs/operators';
 import { TokenService } from '../../core/shared/token.service';
+import { CloudinaryService } from '../../core/shared/cloudinary.service';
 import { PartnerService } from '../partner.service';
 import { UserDetails } from '../../model/user.model';
 import { Restaurant, RestaurantStaff } from '../../model/restaurant.model';
@@ -30,6 +31,8 @@ export class PartnerDashboardComponent implements OnInit {
   newRestaurant = { name: '', address: '', fssaiNumber: '', gstNumber: '' };
   creating = false;
   createError = '';
+  restaurantImageUrl = '';
+  uploadingRestaurantImage = false;
 
   // ── Staff ────────────────────────────────────────────────────────
   ownerRestaurants: Restaurant[] = [];
@@ -132,6 +135,7 @@ export class PartnerDashboardComponent implements OnInit {
   constructor(
     private tokenService: TokenService,
     private partnerService: PartnerService,
+    private cloudinary: CloudinaryService,
     private router: Router
   ) {}
 
@@ -180,9 +184,20 @@ export class PartnerDashboardComponent implements OnInit {
     this.createError = '';
   }
 
+  onRestaurantImageSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.uploadingRestaurantImage = true;
+    this.cloudinary.upload(file).subscribe({
+      next: url => { this.restaurantImageUrl = url; this.uploadingRestaurantImage = false; },
+      error: () => { this.uploadingRestaurantImage = false; this.createError = 'Image upload failed.'; },
+    });
+  }
+
   cancelCreate() {
     this.showCreateForm = false;
     this.newRestaurant = { name: '', address: '', fssaiNumber: '', gstNumber: '' };
+    this.restaurantImageUrl = '';
     this.createError = '';
   }
 
@@ -200,11 +215,13 @@ export class PartnerDashboardComponent implements OnInit {
       fssaiNumber: fssaiNumber.trim(),
       gstNumber: this.newRestaurant.gstNumber.trim() || undefined,
       ownerId: this.user.id,
+      imageUrl: this.restaurantImageUrl || undefined,
     }).subscribe({
       next: () => {
         this.creating = false;
         this.showCreateForm = false;
         this.newRestaurant = { name: '', address: '', fssaiNumber: '', gstNumber: '' };
+        this.restaurantImageUrl = '';
         this.loadRestaurants(0);
       },
       error: () => {

@@ -10,6 +10,7 @@ export interface MenuItem {
   isVeg: boolean;
   available: boolean;
   description?: string;
+  imageUrl?: string;
   extras?: MenuExtra[];
 }
 

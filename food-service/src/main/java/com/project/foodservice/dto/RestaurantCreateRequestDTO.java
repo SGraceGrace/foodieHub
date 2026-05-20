@@ -9,4 +9,5 @@ public class RestaurantCreateRequestDTO {
     private String address;
     private String fssaiNumber;
     private String gstNumber;
+    private String imageUrl;
 }

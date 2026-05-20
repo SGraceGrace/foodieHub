@@ -60,6 +60,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         restaurant.setAddress(request.getAddress());
         restaurant.setFssaiNumber(request.getFssaiNumber());
         restaurant.setGstNumber(request.getGstNumber());
+        restaurant.setImageUrl(request.getImageUrl());
         return restaurantRepo.save(restaurant);
     }
 
@@ -106,25 +107,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     public Restaurant updateMenu(String id, List<MenuCategory> incoming) {
         Restaurant r = restaurantRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Restaurant not found"));
-
-        List<MenuCategory> merged = r.getMenu() != null ? new java.util.ArrayList<>(r.getMenu()) : new java.util.ArrayList<>();
-
-        for (MenuCategory inCat : incoming) {
-            merged.stream()
-                  .filter(c -> c.getCategory().equalsIgnoreCase(inCat.getCategory()))
-                  .findFirst()
-                  .ifPresentOrElse(
-                      existing -> {
-                          List<MenuItem> items = existing.getItems() != null
-                                  ? new java.util.ArrayList<>(existing.getItems()) : new java.util.ArrayList<>();
-                          if (inCat.getItems() != null) items.addAll(inCat.getItems());
-                          existing.setItems(items);
-                      },
-                      () -> merged.add(inCat)
-                  );
-        }
-
-        r.setMenu(merged);
+        r.setMenu(incoming);
         return restaurantRepo.save(r);
     }
 
