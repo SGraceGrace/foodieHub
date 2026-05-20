@@ -137,14 +137,143 @@
 
     <!-- ── Menu ─────────────────────────────────────────────── -->
     <div *ngIf="activeTab === 'menu'">
-      <div class="page-title">Menu Management</div>
-      <div class="section-box">
-        <div class="empty-state">
-          <div class="empty-icon">🍽️</div>
-          <p>Menu management is coming soon.</p>
-          <p class="empty-sub">Add categories and items, set prices, toggle availability.</p>
+
+      <!-- Header -->
+      <div class="tab-header">
+        <div class="menu-title-row">
+          <div class="page-title" style="margin:0">Menu Management</div>
+          <span class="dirty-pill" *ngIf="menuDirty">Unsaved changes</span>
+        </div>
+        <div class="menu-header-actions">
+          <button class="btn-secondary" (click)="showAddCategory = true" *ngIf="!showAddCategory">
+            + Add Category
+          </button>
+          <button class="btn-primary" (click)="saveMenu()"
+                  [disabled]="savingMenu || !menuDirty">
+            {{ savingMenu ? 'Saving…' : 'Save Menu' }}
+          </button>
         </div>
       </div>
+
+      <!-- Saved message -->
+      <div class="menu-saved-msg" *ngIf="menuSavedMsg">✓ {{ menuSavedMsg }}</div>
+
+      <!-- Add category bar -->
+      <div class="add-cat-bar" *ngIf="showAddCategory">
+        <input class="form-input add-cat-input" type="text"
+               [(ngModel)]="newCategoryName"
+               placeholder="e.g. South Indian, Chinese, Beverages…"
+               (keyup.enter)="addCategory()" />
+        <button class="btn-primary" (click)="addCategory()">Add</button>
+        <button class="btn-secondary"
+                (click)="showAddCategory = false; newCategoryName = ''; categoryNameError = ''">
+          Cancel
+        </button>
+        <span class="cat-name-error" *ngIf="categoryNameError">{{ categoryNameError }}</span>
+      </div>
+
+      <!-- Menu stats strip -->
+      <div class="menu-stats" *ngIf="menuCategories.length > 0">
+        <span class="menu-stat">
+          <strong>{{ menuCategories.length }}</strong> categor{{ menuCategories.length !== 1 ? 'ies' : 'y' }}
+        </span>
+        <span class="menu-stat-sep">·</span>
+        <span class="menu-stat">
+          <strong>{{ totalMenuItems }}</strong> item{{ totalMenuItems !== 1 ? 's' : '' }}
+        </span>
+      </div>
+
+      <!-- Empty state -->
+      <div class="section-box" *ngIf="menuCategories.length === 0 && !showAddCategory">
+        <div class="empty-state">
+          <div class="empty-icon">🍽️</div>
+          <p>No menu categories yet.</p>
+          <p class="empty-sub">Click "Add Category" to create your first menu section.</p>
+        </div>
+      </div>
+
+      <!-- Category cards -->
+      <div class="menu-cat-card" *ngFor="let cat of menuCategories; let ci = index">
+
+        <!-- Category header -->
+        <div class="cat-header">
+          <ng-container *ngIf="editingCategoryIdx === ci; else viewCatName">
+            <input class="cat-name-input" type="text"
+                   [(ngModel)]="editingCategoryName"
+                   (keyup.enter)="saveEditCategory(ci)"
+                   (keyup.escape)="cancelEditCategory()" />
+            <button class="cat-action-btn cat-action-btn--save" (click)="saveEditCategory(ci)" title="Save">✓</button>
+            <button class="cat-action-btn" (click)="cancelEditCategory()" title="Cancel">✕</button>
+          </ng-container>
+          <ng-template #viewCatName>
+            <div class="cat-name-wrap">
+              <span class="cat-name">{{ cat.category }}</span>
+              <span class="cat-count">{{ cat.items.length }} item{{ cat.items.length !== 1 ? 's' : '' }}</span>
+            </div>
+            <div class="cat-actions">
+              <button class="cat-action-btn" (click)="startEditCategory(ci)" title="Rename">✎</button>
+              <button class="cat-action-btn cat-action-btn--danger" (click)="deleteCategory(ci)" title="Delete">✕</button>
+              <button class="cat-collapse-btn" (click)="toggleCategory(ci)">
+                {{ cat.collapsed ? '▼' : '▲' }}
+              </button>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Items body -->
+        <div class="cat-body" *ngIf="!cat.collapsed">
+
+          <!-- Items table -->
+          <div class="items-list" *ngIf="cat.items.length > 0">
+            <div class="item-row" *ngFor="let item of cat.items; let ii = index">
+
+              <span class="veg-dot"
+                    [class.veg-dot--veg]="item.isVeg"
+                    [class.veg-dot--nonveg]="!item.isVeg"
+                    [title]="item.isVeg ? 'Vegetarian' : 'Non-Vegetarian'">●</span>
+
+              <div class="item-info">
+                <span class="item-name">{{ item.name }}</span>
+                <span class="item-desc" *ngIf="item.description">{{ item.description }}</span>
+              </div>
+
+              <div class="item-pricing">
+                <span class="item-base-price">₹{{ item.price }}</span>
+                <span class="item-gst-tag" *ngIf="item.gstPercent">
+                  +{{ item.gstPercent }}% GST
+                </span>
+                <span class="item-total-price" *ngIf="item.gstPercent">
+                  = ₹{{ getTotalPrice(item.price, item.gstPercent) }}
+                </span>
+              </div>
+
+              <span class="extras-tag" *ngIf="item.extras.length > 0">
+                {{ item.extras.length }} extra{{ item.extras.length !== 1 ? 's' : '' }}
+              </span>
+
+              <span class="avail-pill"
+                    [class.avail-pill--on]="item.available"
+                    [class.avail-pill--off]="!item.available">
+                {{ item.available ? 'Available' : 'Unavailable' }}
+              </span>
+
+              <div class="item-actions">
+                <button class="item-edit-btn" (click)="openEditItem(ci, ii)">Edit</button>
+                <button class="item-del-btn" (click)="deleteItem(ci, ii)">✕</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty category -->
+          <div class="cat-empty" *ngIf="cat.items.length === 0">
+            No items yet — add your first dish below.
+          </div>
+
+          <!-- Add item -->
+          <button class="add-item-btn" (click)="openAddItem(ci)">+ Add Item</button>
+        </div>
+      </div>
+
     </div>
 
     <!-- ── Hours ───────────────────────────────────────────── -->
@@ -276,4 +405,111 @@
     </div>
 
   </main>
+</div>
+
+<!-- ── Add / Edit Item Modal ──────────────────────────────────── -->
+<div class="modal-backdrop" *ngIf="showItemForm" (click)="closeItemForm()"></div>
+<div class="modal-card item-modal" *ngIf="showItemForm" (click)="$event.stopPropagation()">
+
+  <div class="modal-header">
+    <div>
+      <h3 class="modal-title">{{ itemFormItemIdx === -1 ? 'Add Item' : 'Edit Item' }}</h3>
+      <span class="modal-subtitle">{{ itemFormCatIdx >= 0 ? menuCategories[itemFormCatIdx].category : '' }}</span>
+    </div>
+    <button class="modal-close" (click)="closeItemForm()">✕</button>
+  </div>
+
+  <div class="modal-body item-form-body">
+
+    <div class="item-form-grid">
+      <div class="form-group item-col-full">
+        <label class="form-label">Item Name <span class="required">*</span></label>
+        <input class="form-input" type="text" [(ngModel)]="itemDraft.name"
+               placeholder="e.g. Masala Dosa" />
+      </div>
+
+      <div class="form-group item-col-full">
+        <label class="form-label">Description <span class="optional">(optional)</span></label>
+        <input class="form-input" type="text" [(ngModel)]="itemDraft.description"
+               placeholder="e.g. Crispy dosa with spiced potato filling" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Base Price (₹) <span class="required">*</span></label>
+        <input class="form-input" type="number" [(ngModel)]="itemDraft.price"
+               min="0" placeholder="0" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">GST Slab</label>
+        <div class="gst-options">
+          <button type="button" class="gst-btn"
+                  *ngFor="let g of gstOptions"
+                  [class.gst-btn--active]="itemDraft.gstPercent === g"
+                  (click)="itemDraft.gstPercent = g">
+            {{ g === 0 ? 'None' : g + '%' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GST breakdown -->
+    <div class="gst-preview" *ngIf="itemDraft.price">
+      <span class="gst-preview-part">Base ₹{{ itemDraft.price }}</span>
+      <span class="gst-preview-op">+</span>
+      <span class="gst-preview-part">GST ({{ itemDraft.gstPercent }}%) ₹{{ getGstAmount(itemDraft.price, itemDraft.gstPercent) }}</span>
+      <span class="gst-preview-op">=</span>
+      <span class="gst-preview-total">Customer pays ₹{{ getTotalPrice(itemDraft.price, itemDraft.gstPercent) }}</span>
+    </div>
+
+    <!-- Toggles -->
+    <div class="item-toggles">
+      <label class="toggle-switch">
+        <input type="checkbox" [(ngModel)]="itemDraft.isVeg" />
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        <span class="toggle-label" [class.toggle-label--on]="itemDraft.isVeg">
+          {{ itemDraft.isVeg ? '🟢 Vegetarian' : '🔴 Non-Vegetarian' }}
+        </span>
+      </label>
+      <label class="toggle-switch">
+        <input type="checkbox" [(ngModel)]="itemDraft.available" />
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        <span class="toggle-label" [class.toggle-label--on]="itemDraft.available">
+          {{ itemDraft.available ? 'Available' : 'Unavailable' }}
+        </span>
+      </label>
+    </div>
+
+    <!-- Extras -->
+    <div class="extras-section">
+      <div class="extras-section-header">
+        <span class="extras-title">Extra Charges</span>
+        <span class="extras-hint">Customisable add-ons customers can select (e.g. Extra Cheese, Packaging)</span>
+      </div>
+
+      <div class="extra-row" *ngFor="let ex of itemDraft.extras; let ei = index">
+        <input class="form-input extra-label-input" type="text"
+               [(ngModel)]="ex.label" placeholder="e.g. Extra Cheese" />
+        <span class="extra-rupee">₹</span>
+        <input class="form-input extra-amt-input" type="number"
+               [(ngModel)]="ex.amount" min="0" placeholder="0" />
+        <button type="button" class="extra-remove-btn" (click)="removeExtra(ei)">✕</button>
+      </div>
+
+      <div class="extras-empty" *ngIf="itemDraft.extras.length === 0">
+        No extras defined yet.
+      </div>
+
+      <button type="button" class="add-extra-btn" (click)="addExtra()">+ Add Extra Field</button>
+    </div>
+
+    <div class="form-error" style="margin-top:.5rem" *ngIf="itemFormError">{{ itemFormError }}</div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn-primary" (click)="saveItem()">
+      {{ itemFormItemIdx === -1 ? 'Add Item' : 'Save Changes' }}
+    </button>
+    <button class="btn-secondary" (click)="closeItemForm()">Cancel</button>
+  </div>
 </div>

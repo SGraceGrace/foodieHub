@@ -1,6 +1,7 @@
 package com.project.foodservice.controller;
 
 import com.project.foodservice.document.DaySchedule;
+import com.project.foodservice.document.MenuCategory;
 import com.project.foodservice.dto.BaseAPIResponse;
 import com.project.foodservice.dto.RestaurantCreateRequestDTO;
 import com.project.foodservice.service.RestaurantService;
@@ -61,6 +62,15 @@ public class RestaurantController {
             @RequestBody List<DaySchedule> hours) {
         return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
                 restaurantService.updateHours(id, hours),
+                HttpStatus.OK.value(), null));
+    }
+
+    @PutMapping("/{id}/menu")
+    public ResponseEntity<BaseAPIResponse> updateMenu(
+            @PathVariable String id,
+            @RequestBody List<MenuCategory> menu) {
+        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+                restaurantService.updateMenu(id, menu),
                 HttpStatus.OK.value(), null));
     }
 }

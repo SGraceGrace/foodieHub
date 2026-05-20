@@ -1,9 +1,16 @@
+export interface MenuExtra {
+  label: string;
+  amount: number;
+}
+
 export interface MenuItem {
   name: string;
   price: number;
+  gstPercent?: number;
   isVeg: boolean;
   available: boolean;
   description?: string;
+  extras?: MenuExtra[];
 }
 
 export interface MenuCategory {

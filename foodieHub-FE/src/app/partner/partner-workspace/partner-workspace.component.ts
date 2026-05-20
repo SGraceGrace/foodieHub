@@ -17,6 +17,24 @@ export interface DayHours {
   closeTime: string;
 }
 
+interface MenuExtra { label: string; amount: number; }
+
+interface LocalMenuItem {
+  name: string;
+  price: number | null;
+  gstPercent: number;
+  isVeg: boolean;
+  available: boolean;
+  description: string;
+  extras: MenuExtra[];
+}
+
+interface LocalMenuCategory {
+  category: string;
+  items: LocalMenuItem[];
+  collapsed: boolean;
+}
+
 @Component({
   selector: 'app-partner-workspace',
   standalone: true,
@@ -43,6 +61,28 @@ export class PartnerWorkspaceComponent implements OnInit {
   savingHours = false;
   hoursSavedMsg = '';
 
+  // ── Menu ─────────────────────────────────────────────────────────
+  menuCategories: LocalMenuCategory[] = [];
+  menuDirty = false;
+  savingMenu = false;
+  menuSavedMsg = '';
+
+  showAddCategory = false;
+  newCategoryName = '';
+  categoryNameError = '';
+
+  editingCategoryIdx: number | null = null;
+  editingCategoryName = '';
+
+  showItemForm = false;
+  itemFormCatIdx = -1;
+  itemFormItemIdx = -1; // -1 = new item
+  itemDraft: LocalMenuItem = this.emptyItemDraft();
+  itemFormError = '';
+
+  readonly gstOptions = [0, 5, 12, 18];
+
+  // ── Hours getters/methods ─────────────────────────────────────────
   get openDaysCount(): number {
     return this.hours.filter(h => h.open).length;
   }
@@ -59,14 +99,10 @@ export class PartnerWorkspaceComponent implements OnInit {
     if (!this.restaurant) return;
     this.savingHours = true;
     this.hoursSavedMsg = '';
-
     const payload: DaySchedule[] = this.hours.map(h => ({
-      day:       h.day.toUpperCase(),
-      open:      h.open,
-      openTime:  h.openTime,
-      closeTime: h.closeTime,
+      day: h.day.toUpperCase(), open: h.open,
+      openTime: h.openTime, closeTime: h.closeTime,
     }));
-
     this.partnerService.updateRestaurantHours(this.restaurant.id, payload).subscribe({
       next: res => {
         if (res.data) this.restaurant = res.data;
@@ -82,7 +118,182 @@ export class PartnerWorkspaceComponent implements OnInit {
     });
   }
 
-  // ── Helpers ──────────────────────────────────────────────────────
+  // ── Menu: category operations ─────────────────────────────────────
+  initMenu() {
+    this.menuCategories = [];
+    this.menuDirty = false;
+  }
+
+  addCategory() {
+    const name = this.newCategoryName.trim();
+    if (!name) { this.categoryNameError = 'Category name is required.'; return; }
+    if (this.menuCategories.some(c => c.category.toLowerCase() === name.toLowerCase())) {
+      this.categoryNameError = 'Category already exists.'; return;
+    }
+    this.menuCategories = [...this.menuCategories, { category: name, items: [], collapsed: false }];
+    this.newCategoryName = '';
+    this.categoryNameError = '';
+    this.showAddCategory = false;
+    this.menuDirty = true;
+  }
+
+  deleteCategory(idx: number) {
+    this.menuCategories = this.menuCategories.filter((_, i) => i !== idx);
+    this.menuDirty = true;
+  }
+
+  startEditCategory(idx: number) {
+    this.editingCategoryIdx = idx;
+    this.editingCategoryName = this.menuCategories[idx].category;
+  }
+
+  saveEditCategory(idx: number) {
+    const name = this.editingCategoryName.trim();
+    if (!name) return;
+    this.menuCategories = this.menuCategories.map((c, i) =>
+      i === idx ? { ...c, category: name } : c
+    );
+    this.editingCategoryIdx = null;
+    this.menuDirty = true;
+  }
+
+  cancelEditCategory() { this.editingCategoryIdx = null; }
+
+  toggleCategory(idx: number) {
+    this.menuCategories[idx] = {
+      ...this.menuCategories[idx],
+      collapsed: !this.menuCategories[idx].collapsed,
+    };
+  }
+
+  // ── Menu: item operations ─────────────────────────────────────────
+  openAddItem(catIdx: number) {
+    this.itemFormCatIdx = catIdx;
+    this.itemFormItemIdx = -1;
+    this.itemDraft = this.emptyItemDraft();
+    this.itemFormError = '';
+    this.showItemForm = true;
+  }
+
+  openEditItem(catIdx: number, itemIdx: number) {
+    this.itemFormCatIdx = catIdx;
+    this.itemFormItemIdx = itemIdx;
+    const src = this.menuCategories[catIdx].items[itemIdx];
+    this.itemDraft = { ...src, extras: src.extras.map(e => ({ ...e })) };
+    this.itemFormError = '';
+    this.showItemForm = true;
+  }
+
+  closeItemForm() { this.showItemForm = false; }
+
+  saveItem() {
+    if (!this.itemDraft.name.trim())                { this.itemFormError = 'Item name is required.'; return; }
+    if (this.itemDraft.price === null || this.itemDraft.price === undefined || (this.itemDraft.price as any) === '') {
+      this.itemFormError = 'Price is required.'; return;
+    }
+    if (Number(this.itemDraft.price) < 0) { this.itemFormError = 'Price cannot be negative.'; return; }
+
+    const saved: LocalMenuItem = {
+      ...this.itemDraft,
+      name:  this.itemDraft.name.trim(),
+      price: Number(this.itemDraft.price),
+      extras: this.itemDraft.extras.filter(e => e.label.trim()),
+    };
+
+    this.menuCategories = this.menuCategories.map((cat, ci) => {
+      if (ci !== this.itemFormCatIdx) return cat;
+      const items = [...cat.items];
+      if (this.itemFormItemIdx === -1) {
+        items.push(saved);
+      } else {
+        items[this.itemFormItemIdx] = saved;
+      }
+      return { ...cat, items };
+    });
+
+    this.menuDirty = true;
+    this.showItemForm = false;
+  }
+
+  deleteItem(catIdx: number, itemIdx: number) {
+    this.menuCategories = this.menuCategories.map((cat, ci) =>
+      ci !== catIdx ? cat : { ...cat, items: cat.items.filter((_, ii) => ii !== itemIdx) }
+    );
+    this.menuDirty = true;
+  }
+
+  // ── Menu: extras ──────────────────────────────────────────────────
+  addExtra() {
+    this.itemDraft = {
+      ...this.itemDraft,
+      extras: [...this.itemDraft.extras, { label: '', amount: 0 }],
+    };
+  }
+
+  removeExtra(idx: number) {
+    this.itemDraft = {
+      ...this.itemDraft,
+      extras: this.itemDraft.extras.filter((_, i) => i !== idx),
+    };
+  }
+
+  // ── Menu: pricing helpers ─────────────────────────────────────────
+  getGstAmount(price: number | null, pct: number): number {
+    if (!price || !pct) return 0;
+    return Math.round(Number(price) * pct) / 100;
+  }
+
+  getTotalPrice(price: number | null, pct: number): number {
+    return (Number(price) || 0) + this.getGstAmount(price, pct);
+  }
+
+  get totalMenuItems(): number {
+    return this.menuCategories.reduce((sum, c) => sum + c.items.length, 0);
+  }
+
+  // ── Menu: save ────────────────────────────────────────────────────
+  saveMenu() {
+    if (!this.restaurant) return;
+    this.savingMenu = true;
+    this.menuSavedMsg = '';
+    const payload = this.menuCategories.map(cat => ({
+      category: cat.category,
+      items: cat.items.map(item => ({
+        name:        item.name,
+        price:       item.price ?? 0,
+        gstPercent:  item.gstPercent,
+        isVeg:       item.isVeg,
+        available:   item.available,
+        description: item.description,
+        extras:      item.extras,
+      })),
+    }));
+    this.partnerService.updateRestaurantMenu(this.restaurant.id, payload).subscribe({
+      next: res => {
+        if (res.data) this.restaurant = res.data;
+        this.menuCategories = [];
+        this.savingMenu = false;
+        this.menuSavedMsg = 'Menu saved successfully.';
+        this.menuDirty = false;
+        setTimeout(() => { this.menuSavedMsg = ''; }, 3000);
+      },
+      error: () => {
+        this.savingMenu = false;
+        this.menuSavedMsg = 'Failed to save. Please try again.';
+        setTimeout(() => { this.menuSavedMsg = ''; }, 3000);
+      }
+    });
+  }
+
+  private emptyItemDraft(): LocalMenuItem {
+    return {
+      name: '', price: null, gstPercent: 5,
+      isVeg: true, available: true,
+      description: '', extras: [],
+    };
+  }
+
+  // ── Common helpers ────────────────────────────────────────────────
   get ownerInitials(): string {
     const f = this.user?.firstName?.[0] ?? '';
     const l = this.user?.lastName?.[0] ?? '';
@@ -114,6 +325,7 @@ export class PartnerWorkspaceComponent implements OnInit {
         if (this.restaurant?.operatingHours?.length) {
           this.hours = this.mapHoursFromApi(this.restaurant.operatingHours);
         }
+        this.initMenu();
         this.loading = false;
       },
       error: () => {
@@ -132,11 +344,10 @@ export class PartnerWorkspaceComponent implements OnInit {
 
   goTab(tab: WorkspaceTab) {
     this.activeTab = tab;
+    if (tab === 'menu') this.initMenu();
   }
 
-  goBack() {
-    this.router.navigateByUrl('/partner');
-  }
+  goBack()  { this.router.navigateByUrl('/partner'); }
 
   logout() {
     if (confirm('Logout?')) {
@@ -146,8 +357,11 @@ export class PartnerWorkspaceComponent implements OnInit {
   }
 
   getMenuItemCount(): number {
+    if (this.menuCategories.length) {
+      return this.menuCategories.reduce((s, c) => s + c.items.length, 0);
+    }
     if (!this.restaurant?.menu) return 0;
-    return this.restaurant.menu.reduce((sum, cat) => sum + (cat.items?.length ?? 0), 0);
+    return this.restaurant.menu.reduce((s, c) => s + (c.items?.length ?? 0), 0);
   }
 
   formatTime(t: string): string {

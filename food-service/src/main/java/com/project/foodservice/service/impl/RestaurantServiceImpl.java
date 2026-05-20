@@ -1,6 +1,8 @@
 package com.project.foodservice.service.impl;
 
 import com.project.foodservice.document.DaySchedule;
+import com.project.foodservice.document.MenuCategory;
+import com.project.foodservice.document.MenuItem;
 import com.project.foodservice.document.Restaurant;
 import com.project.foodservice.dto.PaginatedResponse;
 import com.project.foodservice.dto.RestaurantCreateRequestDTO;
@@ -97,6 +99,32 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .orElseThrow(() -> new RuntimeException("Restaurant not found"));
         r.setOperatingHours(hours);
         r.setOpen(computeIsOpen(r));
+        return restaurantRepo.save(r);
+    }
+
+    @Override
+    public Restaurant updateMenu(String id, List<MenuCategory> incoming) {
+        Restaurant r = restaurantRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Restaurant not found"));
+
+        List<MenuCategory> merged = r.getMenu() != null ? new java.util.ArrayList<>(r.getMenu()) : new java.util.ArrayList<>();
+
+        for (MenuCategory inCat : incoming) {
+            merged.stream()
+                  .filter(c -> c.getCategory().equalsIgnoreCase(inCat.getCategory()))
+                  .findFirst()
+                  .ifPresentOrElse(
+                      existing -> {
+                          List<MenuItem> items = existing.getItems() != null
+                                  ? new java.util.ArrayList<>(existing.getItems()) : new java.util.ArrayList<>();
+                          if (inCat.getItems() != null) items.addAll(inCat.getItems());
+                          existing.setItems(items);
+                      },
+                      () -> merged.add(inCat)
+                  );
+        }
+
+        r.setMenu(merged);
         return restaurantRepo.save(r);
     }
 
