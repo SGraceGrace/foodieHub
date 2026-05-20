@@ -339,7 +339,7 @@ $font-sans:  'DM Sans', sans-serif;
 
 // ── Restaurant details edit ───────────────────────────────────────
 .details-image { margin-bottom: 1rem; }
-.details-img { width: 100%; max-height: 180px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); }
+.details-img { width: 200px; height: 130px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); display: block; }
 .details-edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .details-col-full { grid-column: 1 / -1; }
 
