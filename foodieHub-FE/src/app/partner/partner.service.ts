@@ -80,6 +80,7 @@ export class PartnerService {
     name?: string; cuisine?: string[]; address?: string;
     deliveryTime?: number; minOrder?: number;
     fssaiNumber?: string; gstNumber?: string; imageUrl?: string;
+    lat?: number; lng?: number;
   }): Observable<ApiResponse<Restaurant>> {
     return this.http.put<ApiResponse<Restaurant>>(`${this.restaurantBase}/${id}`, payload);
   }

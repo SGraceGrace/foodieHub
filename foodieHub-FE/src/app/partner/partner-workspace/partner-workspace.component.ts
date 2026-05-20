@@ -7,6 +7,7 @@ import { CloudinaryService } from '../../core/shared/cloudinary.service';
 import { PartnerService } from '../partner.service';
 import { UserDetails } from '../../model/user.model';
 import { Restaurant, DaySchedule, RestaurantStaff } from '../../model/restaurant.model';
+import { LocationPickerComponent, PickedLocation } from '../../core/shared/components/location-picker/location-picker.component';
 
 type WorkspaceTab = 'overview' | 'orders' | 'menu' | 'analytics' | 'hours' | 'settings';
 
@@ -40,7 +41,7 @@ interface LocalMenuCategory {
 @Component({
   selector: 'app-partner-workspace',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LocationPickerComponent],
   templateUrl: './partner-workspace.component.html',
   styleUrl: './partner-workspace.component.scss',
 })
@@ -90,6 +91,9 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
   editingDetails = false;
   detailsDraft = { name: '', cuisine: '', address: '', deliveryTime: null as number | null, minOrder: null as number | null, fssaiNumber: '', gstNumber: '' };
   detailsImageUrl = '';
+  detailsLat: number | undefined;
+  detailsLng: number | undefined;
+  showDetailsLocationPicker = false;
   uploadingDetailsImage = false;
   savingDetails = false;
   detailsSaveMsg = '';
@@ -451,11 +455,24 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
       gstNumber:    this.restaurant.gstNumber ?? '',
     };
     this.detailsImageUrl = this.restaurant.imageUrl ?? '';
+    this.detailsLat = this.restaurant.lat ?? undefined;
+    this.detailsLng = this.restaurant.lng ?? undefined;
     this.detailsSaveMsg = '';
     this.editingDetails = true;
   }
 
-  cancelEditDetails() { this.editingDetails = false; this.detailsSaveMsg = ''; }
+  cancelEditDetails() {
+    this.editingDetails = false;
+    this.detailsSaveMsg = '';
+    this.showDetailsLocationPicker = false;
+  }
+
+  onDetailsLocationPicked(loc: PickedLocation) {
+    this.detailsLat = loc.lat;
+    this.detailsLng = loc.lng;
+    if (!this.detailsDraft.address) this.detailsDraft.address = loc.displayName;
+    this.showDetailsLocationPicker = false;
+  }
 
   onDetailsImageSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
@@ -482,6 +499,8 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
       fssaiNumber:  this.detailsDraft.fssaiNumber.trim() || undefined,
       gstNumber:    this.detailsDraft.gstNumber.trim()   || undefined,
       imageUrl:     this.detailsImageUrl                 || undefined,
+      lat:          this.detailsLat,
+      lng:          this.detailsLng,
     }).subscribe({
       next: res => {
         if (res.data) this.restaurant = res.data;

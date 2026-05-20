@@ -343,6 +343,33 @@ $font-sans:  'DM Sans', sans-serif;
 .details-edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .details-col-full { grid-column: 1 / -1; }
 
+.location-pick-row { display: flex; align-items: center; gap: 10px; }
+.location-pick-val { font-size: .85rem; color: #2a2a2a; flex: 1; &.muted { color: #aaa; } }
+.btn-pick-map {
+  padding: 7px 14px; border-radius: 8px; border: 1.5px solid $gold;
+  background: transparent; color: $gold; font-size: .82rem; font-weight: 600;
+  cursor: pointer; white-space: nowrap; transition: all .2s;
+  &:hover { background: $gold; color: #2a2a2a; }
+}
+
+.lp-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.45);
+  z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem;
+}
+.lp-modal {
+  background: white; border-radius: 16px; width: 100%; max-width: 560px;
+  padding: 1.5rem; box-shadow: 0 12px 40px rgba(0,0,0,.2); max-height: 90vh; overflow-y: auto;
+}
+.lp-modal-hdr {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;
+  h3 { font-size: 1.1rem; font-weight: 700; color: #2a2a2a; margin: 0; }
+}
+.lp-close {
+  background: none; border: none; font-size: 1.1rem; cursor: pointer;
+  color: #888; padding: 4px 8px; border-radius: 6px;
+  &:hover { background: #f5f5f5; }
+}
+
 // ── Settings ──────────────────────────────────────────────────────
 .settings-section-hdr {
   display: flex; align-items: center; justify-content: space-between;
