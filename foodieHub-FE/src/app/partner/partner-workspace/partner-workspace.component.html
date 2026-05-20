@@ -89,41 +89,98 @@
       </div>
 
       <div class="section-box">
-        <h3 class="section-title">Restaurant Details</h3>
-        <div class="info-row">
-          <span class="info-label">Name</span>
-          <span class="info-val">{{ restaurant.name }}</span>
+        <div class="settings-section-hdr">
+          <h3 class="section-title">Restaurant Details</h3>
+          <button class="btn-secondary btn-sm" (click)="openEditDetails()" *ngIf="!editingDetails">Edit</button>
+          <button class="btn-secondary btn-sm" (click)="cancelEditDetails()" *ngIf="editingDetails">Cancel</button>
         </div>
-        <div class="info-row">
-          <span class="info-label">Cuisine</span>
-          <span class="info-val">{{ restaurant.cuisine?.join(', ') || '—' }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Address</span>
-          <span class="info-val">{{ restaurant.address || '—' }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Delivery Time</span>
-          <span class="info-val">{{ restaurant.deliveryTime ? restaurant.deliveryTime + ' min' : '—' }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Min Order</span>
-          <span class="info-val">{{ restaurant.minOrder ? '₹' + restaurant.minOrder : '—' }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">FSSAI</span>
-          <span class="info-val">{{ restaurant.fssaiNumber || '—' }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">GST</span>
-          <span class="info-val">{{ restaurant.gstNumber || '—' }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Status</span>
-          <span class="badge" [class.badge-open]="restaurant.open" [class.badge-closed]="!restaurant.open">
-            {{ restaurant.open ? 'Open' : 'Closed' }}
-          </span>
-        </div>
+
+        <!-- View mode -->
+        <ng-container *ngIf="!editingDetails">
+          <div class="details-image" *ngIf="restaurant.imageUrl">
+            <img [src]="restaurant.imageUrl" alt="Restaurant photo" class="details-img" />
+          </div>
+          <div class="info-row">
+            <span class="info-label">Name</span>
+            <span class="info-val">{{ restaurant.name }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Cuisine</span>
+            <span class="info-val">{{ restaurant.cuisine?.join(', ') || '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Address</span>
+            <span class="info-val">{{ restaurant.address || '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Delivery Time</span>
+            <span class="info-val">{{ restaurant.deliveryTime ? restaurant.deliveryTime + ' min' : '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Min Order</span>
+            <span class="info-val">{{ restaurant.minOrder ? '₹' + restaurant.minOrder : '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">FSSAI</span>
+            <span class="info-val">{{ restaurant.fssaiNumber || '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">GST</span>
+            <span class="info-val">{{ restaurant.gstNumber || '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Status</span>
+            <span class="badge" [class.badge-open]="restaurant.open" [class.badge-closed]="!restaurant.open">
+              {{ restaurant.open ? 'Open' : 'Closed' }}
+            </span>
+          </div>
+        </ng-container>
+
+        <!-- Edit mode -->
+        <ng-container *ngIf="editingDetails">
+          <div class="details-edit-grid">
+            <div class="form-group">
+              <label class="form-label">Name</label>
+              <input class="form-input" type="text" [(ngModel)]="detailsDraft.name" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cuisine <span class="optional">(comma separated)</span></label>
+              <input class="form-input" type="text" [(ngModel)]="detailsDraft.cuisine" placeholder="e.g. Indian, Biryani" />
+            </div>
+            <div class="form-group details-col-full">
+              <label class="form-label">Address</label>
+              <input class="form-input" type="text" [(ngModel)]="detailsDraft.address" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Delivery Time (min)</label>
+              <input class="form-input" type="number" [(ngModel)]="detailsDraft.deliveryTime" min="0" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Min Order (₹)</label>
+              <input class="form-input" type="number" [(ngModel)]="detailsDraft.minOrder" min="0" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">FSSAI Number</label>
+              <input class="form-input" type="text" [(ngModel)]="detailsDraft.fssaiNumber" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">GST Number</label>
+              <input class="form-input" type="text" [(ngModel)]="detailsDraft.gstNumber" />
+            </div>
+            <div class="form-group details-col-full">
+              <label class="form-label">Restaurant Photo</label>
+              <input type="file" accept="image/*" (change)="onDetailsImageSelected($event)" [disabled]="uploadingDetailsImage" />
+              <div class="img-upload-status" *ngIf="uploadingDetailsImage">Uploading…</div>
+              <img *ngIf="detailsImageUrl" [src]="detailsImageUrl" class="img-preview" alt="Preview" />
+            </div>
+          </div>
+          <div class="settings-save-row">
+            <span class="settings-msg" style="color:#e53935" *ngIf="detailsSaveMsg">{{ detailsSaveMsg }}</span>
+            <button class="btn-primary btn-sm" (click)="saveDetails()" [disabled]="savingDetails || uploadingDetailsImage">
+              {{ savingDetails ? 'Saving…' : 'Save Changes' }}
+            </button>
+          </div>
+        </ng-container>
       </div>
     </div>
 

@@ -74,6 +74,14 @@ export class PartnerService {
     return this.http.post<ApiResponse<RestaurantStaff>>(`${this.base}/staff`, payload);
   }
 
+  updateRestaurantDetails(id: string, payload: {
+    name?: string; cuisine?: string[]; address?: string;
+    deliveryTime?: number; minOrder?: number;
+    fssaiNumber?: string; gstNumber?: string; imageUrl?: string;
+  }): Observable<ApiResponse<Restaurant>> {
+    return this.http.put<ApiResponse<Restaurant>>(`${this.restaurantBase}/${id}`, payload);
+  }
+
   updateRestaurantHours(id: string, hours: DaySchedule[]): Observable<ApiResponse<Restaurant>> {
     return this.http.put<ApiResponse<Restaurant>>(`${this.restaurantBase}/${id}/hours`, hours);
   }

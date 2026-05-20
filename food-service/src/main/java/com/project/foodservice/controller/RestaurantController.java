@@ -4,6 +4,7 @@ import com.project.foodservice.document.DaySchedule;
 import com.project.foodservice.document.MenuCategory;
 import com.project.foodservice.dto.BaseAPIResponse;
 import com.project.foodservice.dto.RestaurantCreateRequestDTO;
+import com.project.foodservice.dto.RestaurantUpdateRequestDTO;
 import com.project.foodservice.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -53,6 +54,15 @@ public class RestaurantController {
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
                 restaurantService.getByOwner(ownerId, PageRequest.of(page, size)),
+                HttpStatus.OK.value(), null));
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<BaseAPIResponse> updateDetails(
+            @PathVariable String id,
+            @RequestBody RestaurantUpdateRequestDTO request) {
+        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+                restaurantService.updateDetails(id, request),
                 HttpStatus.OK.value(), null));
     }
 

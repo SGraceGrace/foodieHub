@@ -6,6 +6,7 @@ import com.project.foodservice.document.MenuItem;
 import com.project.foodservice.document.Restaurant;
 import com.project.foodservice.dto.PaginatedResponse;
 import com.project.foodservice.dto.RestaurantCreateRequestDTO;
+import com.project.foodservice.dto.RestaurantUpdateRequestDTO;
 import com.project.foodservice.enums.RestaurantStatus;
 import com.project.foodservice.repo.RestaurantRepo;
 import com.project.foodservice.service.RestaurantService;
@@ -108,6 +109,21 @@ public class RestaurantServiceImpl implements RestaurantService {
         Restaurant r = restaurantRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Restaurant not found"));
         r.setMenu(incoming);
+        return restaurantRepo.save(r);
+    }
+
+    @Override
+    public Restaurant updateDetails(String id, RestaurantUpdateRequestDTO req) {
+        Restaurant r = restaurantRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Restaurant not found"));
+        if (req.getName()         != null) r.setName(req.getName());
+        if (req.getCuisine()      != null) r.setCuisine(req.getCuisine());
+        if (req.getAddress()      != null) r.setAddress(req.getAddress());
+        if (req.getDeliveryTime() != null) r.setDeliveryTime(req.getDeliveryTime());
+        if (req.getMinOrder()     != null) r.setMinOrder(req.getMinOrder());
+        if (req.getFssaiNumber()  != null) r.setFssaiNumber(req.getFssaiNumber());
+        if (req.getGstNumber()    != null) r.setGstNumber(req.getGstNumber());
+        if (req.getImageUrl()     != null) r.setImageUrl(req.getImageUrl());
         return restaurantRepo.save(r);
     }
 

@@ -86,6 +86,14 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
 
   readonly gstOptions = [0, 5, 12, 18];
 
+  // ── Restaurant details edit ───────────────────────────────────────
+  editingDetails = false;
+  detailsDraft = { name: '', cuisine: '', address: '', deliveryTime: null as number | null, minOrder: null as number | null, fssaiNumber: '', gstNumber: '' };
+  detailsImageUrl = '';
+  uploadingDetailsImage = false;
+  savingDetails = false;
+  detailsSaveMsg = '';
+
   // ── Settings ──────────────────────────────────────────────────────
   staff: RestaurantStaff[] = [];
   staffLoading = false;
@@ -427,6 +435,64 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
         setTimeout(() => { this.staffActionMsg = ''; }, 3000);
       },
       error: () => { this.staffActionLoading = false; this.staffActionMsg = 'Action failed. Please try again.'; },
+    });
+  }
+
+  // ── Restaurant details edit ───────────────────────────────────────
+  openEditDetails() {
+    if (!this.restaurant) return;
+    this.detailsDraft = {
+      name:         this.restaurant.name ?? '',
+      cuisine:      this.restaurant.cuisine?.join(', ') ?? '',
+      address:      this.restaurant.address ?? '',
+      deliveryTime: this.restaurant.deliveryTime ?? null,
+      minOrder:     this.restaurant.minOrder ?? null,
+      fssaiNumber:  this.restaurant.fssaiNumber ?? '',
+      gstNumber:    this.restaurant.gstNumber ?? '',
+    };
+    this.detailsImageUrl = this.restaurant.imageUrl ?? '';
+    this.detailsSaveMsg = '';
+    this.editingDetails = true;
+  }
+
+  cancelEditDetails() { this.editingDetails = false; this.detailsSaveMsg = ''; }
+
+  onDetailsImageSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.uploadingDetailsImage = true;
+    this.cloudinary.upload(file).subscribe({
+      next: url => { this.detailsImageUrl = url; this.uploadingDetailsImage = false; },
+      error: () => { this.uploadingDetailsImage = false; this.detailsSaveMsg = 'Image upload failed.'; },
+    });
+  }
+
+  saveDetails() {
+    if (!this.restaurant) return;
+    this.savingDetails = true;
+    this.detailsSaveMsg = '';
+    const cuisineList = this.detailsDraft.cuisine
+      .split(',').map(c => c.trim()).filter(Boolean);
+    this.partnerService.updateRestaurantDetails(this.restaurant.id, {
+      name:         this.detailsDraft.name.trim()        || undefined,
+      cuisine:      cuisineList.length ? cuisineList     : undefined,
+      address:      this.detailsDraft.address.trim()     || undefined,
+      deliveryTime: this.detailsDraft.deliveryTime       ?? undefined,
+      minOrder:     this.detailsDraft.minOrder           ?? undefined,
+      fssaiNumber:  this.detailsDraft.fssaiNumber.trim() || undefined,
+      gstNumber:    this.detailsDraft.gstNumber.trim()   || undefined,
+      imageUrl:     this.detailsImageUrl                 || undefined,
+    }).subscribe({
+      next: res => {
+        if (res.data) this.restaurant = res.data;
+        this.savingDetails = false;
+        this.editingDetails = false;
+        this.detailsSaveMsg = '';
+      },
+      error: () => {
+        this.savingDetails = false;
+        this.detailsSaveMsg = 'Failed to save. Please try again.';
+      },
     });
   }
 

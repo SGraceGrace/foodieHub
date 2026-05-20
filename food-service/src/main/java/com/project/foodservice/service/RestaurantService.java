@@ -3,6 +3,7 @@ package com.project.foodservice.service;
 import com.project.foodservice.document.Restaurant;
 import com.project.foodservice.dto.PaginatedResponse;
 import com.project.foodservice.dto.RestaurantCreateRequestDTO;
+import com.project.foodservice.dto.RestaurantUpdateRequestDTO;
 import com.project.foodservice.enums.RestaurantStatus;
 import org.springframework.data.domain.Pageable;
 
@@ -18,4 +19,5 @@ public interface RestaurantService {
     PaginatedResponse<Restaurant> getAllForAdmin(String status, String cuisine, Pageable pageable);
     Restaurant updateHours(String id, java.util.List<com.project.foodservice.document.DaySchedule> hours);
     Restaurant updateMenu(String id, java.util.List<com.project.foodservice.document.MenuCategory> menu);
+    Restaurant updateDetails(String id, RestaurantUpdateRequestDTO request);
 }
