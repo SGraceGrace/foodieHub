@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { HomeService } from './home.service';
 import { Slide, Restaurant } from '../model/restaurant.model';
 import { CUISINE_EMOJI, getCuisineEmoji, getCuisineBg } from '../core/constants/cuisine.constants';
-import { LocationPickerComponent, PickedLocation } from '../core/shared/components/location-picker/location-picker.component';
+import { DeliveryAddressService } from '../core/shared/delivery-address.service';
 
 interface FoodCard {
   emoji: string; name: string; price: number;
@@ -14,7 +14,7 @@ interface FoodCard {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule, LocationPickerComponent],
+  imports: [CommonModule, RouterModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
@@ -27,26 +27,30 @@ export class HomeComponent implements OnInit, OnDestroy {
   selectedCuisine = 'All';
   popularDishes: FoodCard[] = [];
 
-  userLat: number | undefined;
-  userLng: number | undefined;
-  userLocationName = '';
-  showLocationPicker = false;
+  private userLat: number | undefined;
+  private userLng: number | undefined;
+  hasDeliveryAddress = false;
+  deliveryAddressText = '';
+  deliveryAddressLabel = '';
 
   private timer: ReturnType<typeof setInterval> | null = null;
 
-  constructor(private homeService: HomeService) {}
+  constructor(
+    private homeService: HomeService,
+    private deliveryAddressService: DeliveryAddressService
+  ) {}
 
   ngOnInit() {
     this.loadSlides();
     this.cuisineFilters = Object.keys(CUISINE_EMOJI).filter(k => k !== 'default');
-    const saved = localStorage.getItem('userLocation');
-    if (saved) {
-      const loc: PickedLocation = JSON.parse(saved);
-      this.userLat = loc.lat;
-      this.userLng = loc.lng;
-      this.userLocationName = loc.displayName;
-    }
-    this.loadRestaurants();
+    this.deliveryAddressService.selected$.subscribe(addr => {
+      this.userLat = addr?.lat ?? undefined;
+      this.userLng = addr?.lng ?? undefined;
+      this.hasDeliveryAddress = !!addr;
+      this.deliveryAddressText = addr?.addressText ?? '';
+      this.deliveryAddressLabel = addr?.label ?? '';
+      this.loadRestaurants();
+    });
   }
 
   ngOnDestroy() {
@@ -84,23 +88,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   nextSlide() {
     this.goToSlide((this.activeSlide + 1) % this.slides.length);
-  }
-
-  onLocationPicked(loc: PickedLocation) {
-    this.userLat = loc.lat;
-    this.userLng = loc.lng;
-    this.userLocationName = loc.displayName;
-    localStorage.setItem('userLocation', JSON.stringify(loc));
-    this.showLocationPicker = false;
-    this.loadRestaurants();
-  }
-
-  clearLocation() {
-    this.userLat = undefined;
-    this.userLng = undefined;
-    this.userLocationName = '';
-    localStorage.removeItem('userLocation');
-    this.loadRestaurants();
   }
 
   selectCuisine(cuisine?: string) {

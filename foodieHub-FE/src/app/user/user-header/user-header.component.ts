@@ -6,6 +6,7 @@ import { SharedServiceService } from '../../core/shared/shared-service.service';
 import { TokenService } from '../../core/shared/token.service';
 import { UserService } from '../user.service';
 import { ToastrService } from 'ngx-toastr';
+import { DeliveryAddressService } from '../../core/shared/delivery-address.service';
 
 @Component({
   selector: 'app-user-header',
@@ -27,7 +28,8 @@ export class UserHeaderComponent implements OnInit {
     private tokenService: TokenService,
     private userService: UserService,
     private toaster: ToastrService,
-    private elRef: ElementRef
+    private elRef: ElementRef,
+    private deliveryAddressService: DeliveryAddressService
   ) {}
 
   ngOnInit() {
@@ -39,6 +41,16 @@ export class UserHeaderComponent implements OnInit {
         this.initials = 'U';
       }
     });
+    if (!this.deliveryAddressService.get()) {
+      this.userService.getAddresses().subscribe({
+        next: (res) => {
+          const defaultAddr = (res?.data ?? []).find(a => a.defaultAddress);
+          if (defaultAddr) {
+            this.deliveryAddressService.set(defaultAddr);
+          }
+        },
+      });
+    }
   }
 
   @HostListener('document:click', ['$event'])

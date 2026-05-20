@@ -29,4 +29,10 @@ public class UserAddress extends BaseEntity {
 
     @Column(name = "is_default")
     private boolean defaultAddress;
+
+    @Column(name = "lat")
+    private Double lat;
+
+    @Column(name = "lng")
+    private Double lng;
 }

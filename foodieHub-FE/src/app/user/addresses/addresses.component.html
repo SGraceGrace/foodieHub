@@ -24,28 +24,37 @@
   </div>
 
   <!-- Address Cards -->
-  <div
-    class="addr-card-mgmt"
-    *ngFor="let addr of addresses"
-    [class.default]="addr.defaultAddress"
-  >
+  <div class="addr-card-mgmt"
+       *ngFor="let addr of addresses"
+       [class.default]="addr.defaultAddress"
+       [class.delivering]="addr.id === selectedAddressId">
+
     <div class="addr-icon-big">{{ getIcon(addr.label) }}</div>
 
     <div class="addr-card-info">
-      <div class="addr-card-label">{{ addr.label | titlecase }}</div>
+      <div class="addr-card-label">
+        {{ addr.label | titlecase }}
+        <span class="delivering-badge" *ngIf="addr.id === selectedAddressId">Delivering here</span>
+      </div>
       <div class="addr-card-text">{{ addr.addressText }}</div>
       <div class="addr-card-text" *ngIf="addr.landmark" style="font-size:.8rem;color:#888;margin-top:2px">
         {{ addr.landmark }}
       </div>
+      <div class="addr-has-location" *ngIf="addr.lat">📌 Location pinned</div>
       <span class="addr-card-default-tag" *ngIf="addr.defaultAddress">Default address</span>
-      <button
-        class="set-default-btn"
-        *ngIf="!addr.defaultAddress"
-        (click)="setDefault(addr)"
-      >Set as default</button>
     </div>
 
     <div class="addr-card-actions">
+      <button class="deliver-here-btn"
+              *ngIf="addr.id !== selectedAddressId"
+              (click)="deliverHere(addr)">
+        Deliver here
+      </button>
+      <button class="set-default-btn"
+              *ngIf="!addr.defaultAddress"
+              (click)="setDefault(addr)">
+        Set as default
+      </button>
       <button class="addr-action-btn delete" (click)="deleteAddress(addr)">Delete</button>
     </div>
   </div>
@@ -73,6 +82,18 @@
             </label>
             <span class="toggle-label">{{ addressForm.value.defaultAddress ? 'Yes' : 'No' }}</span>
           </div>
+        </div>
+      </div>
+
+      <!-- Location Picker -->
+      <div class="form-group">
+        <label>Pin Location on Map <span style="font-weight:400">(recommended)</span></label>
+        <div class="location-pick-row">
+          <span class="location-pick-val" *ngIf="pickedLocationName">📌 {{ pickedLocationName | slice:0:60 }}</span>
+          <span class="location-pick-val muted" *ngIf="!pickedLocationName">Not pinned yet</span>
+          <button type="button" class="btn-pick-map" (click)="showLocationPicker = true">
+            {{ pickedLocationName ? 'Change Pin' : 'Pick on Map' }}
+          </button>
         </div>
       </div>
 
@@ -109,4 +130,19 @@
     <div class="add-address-sub">Home, Work or Other</div>
   </div>
 
+</div>
+
+<!-- Location Picker Modal -->
+<div class="lp-overlay" *ngIf="showLocationPicker" (click)="showLocationPicker = false">
+  <div class="lp-modal" (click)="$event.stopPropagation()">
+    <div class="lp-modal-hdr">
+      <h3>Pin Your Location</h3>
+      <button class="lp-close" (click)="showLocationPicker = false">✕</button>
+    </div>
+    <app-location-picker
+      placeholder="Search your area, street or landmark..."
+      (locationPicked)="onLocationPicked($event)"
+      (cancelled)="showLocationPicker = false">
+    </app-location-picker>
+  </div>
 </div>

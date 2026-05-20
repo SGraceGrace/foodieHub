@@ -15,4 +15,8 @@ public class UserAddressRequestDTO {
     private String landmark;
 
     private boolean defaultAddress;
+
+    private Double lat;
+
+    private Double lng;
 }

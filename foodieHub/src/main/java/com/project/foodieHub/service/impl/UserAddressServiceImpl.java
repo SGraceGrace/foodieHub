@@ -47,6 +47,8 @@ public class UserAddressServiceImpl implements UserAddressService {
         address.setAddressText(dto.getAddressText());
         address.setLandmark(dto.getLandmark());
         address.setDefaultAddress(dto.isDefaultAddress());
+        address.setLat(dto.getLat());
+        address.setLng(dto.getLng());
         return userAddressRepo.save(address);
     }
 

@@ -1,35 +1,21 @@
-<!-- ── Location Bar ────────────────────────────────────────────────── -->
-<div class="location-bar">
-  <div class="location-bar-inner">
-    <span class="location-icon">📍</span>
-    <div class="location-info" *ngIf="userLocationName; else noLocation">
-      <span class="location-label">Delivering to</span>
-      <span class="location-name">{{ userLocationName | slice:0:50 }}{{ userLocationName.length > 50 ? '...' : '' }}</span>
+<!-- ── Delivery Address Bar ──────────────────────────────────────── -->
+<div class="delivery-bar">
+  <div class="delivery-bar-inner">
+    <span class="delivery-bar-pin">📍</span>
+    <div class="delivery-bar-info" *ngIf="hasDeliveryAddress">
+      <span class="delivery-bar-label">Delivering to</span>
+      <span class="delivery-bar-address">
+        <strong>{{ deliveryAddressLabel | titlecase }}</strong>
+        &nbsp;·&nbsp;
+        {{ deliveryAddressText | slice:0:60 }}{{ deliveryAddressText.length > 60 ? '…' : '' }}
+      </span>
     </div>
-    <ng-template #noLocation>
-      <span class="location-prompt">Set your location to see nearby restaurants</span>
-    </ng-template>
-    <div class="location-actions">
-      <button class="location-btn" (click)="showLocationPicker = true">
-        {{ userLocationName ? 'Change' : 'Set Location' }}
-      </button>
-      <button class="location-clear-btn" *ngIf="userLocationName" (click)="clearLocation()">✕</button>
-    </div>
-  </div>
-</div>
-
-<!-- ── Location Picker Modal ──────────────────────────────────────── -->
-<div class="lp-modal-overlay" *ngIf="showLocationPicker" (click)="showLocationPicker = false">
-  <div class="lp-modal" (click)="$event.stopPropagation()">
-    <div class="lp-modal-hdr">
-      <h3>Choose Your Location</h3>
-      <button class="lp-modal-close" (click)="showLocationPicker = false">✕</button>
-    </div>
-    <app-location-picker
-      placeholder="Search your area, city or street..."
-      (locationPicked)="onLocationPicked($event)"
-      (cancelled)="showLocationPicker = false">
-    </app-location-picker>
+    <span class="delivery-bar-prompt" *ngIf="!hasDeliveryAddress">
+      Add a delivery address to see nearby restaurants
+    </span>
+    <a class="delivery-bar-change" routerLink="/user/addresses">
+      {{ hasDeliveryAddress ? 'Change' : 'Add Address' }}
+    </a>
   </div>
 </div>
 
@@ -136,7 +122,7 @@
       <button class="see-all" routerLink="/user/cuisine">See all →</button>
     </div>
     <div class="rest-empty" *ngIf="restaurants.length === 0">
-      {{ userLocationName ? 'No restaurants found nearby. Try changing your location.' : 'No restaurants found for this cuisine yet.' }}
+      {{ hasDeliveryAddress ? 'No restaurants found nearby. Try a different address.' : 'No restaurants found for this cuisine yet.' }}
     </div>
     <div class="rest-grid" *ngIf="restaurants.length > 0">
       <div class="rest-card" *ngFor="let r of restaurants">

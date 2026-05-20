@@ -4,4 +4,6 @@ export interface UserAddress {
   addressText: string;
   landmark?: string;
   defaultAddress: boolean;
+  lat?: number;
+  lng?: number;
 }
