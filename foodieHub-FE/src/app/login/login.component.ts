@@ -12,6 +12,7 @@ import { TokenService } from '../core/shared/token.service';
 import { UserService } from '../user/user.service';
 import { UserDetails } from '../model/user.model';
 import { toUserDetails } from '../convertors/user-details.converter';
+import { getHomeRouteForRole } from '../core/shared/role-redirect.util';
 
 @Component({
   selector: 'app-login',
@@ -132,8 +133,9 @@ export class LoginComponent implements OnInit, OnDestroy {
         this.tokenService.setUserInfo(this.userDetails);
         this.toastr.success('Login Successful!');
         this.loginForm.reset();
-        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
-        this.router.navigateByUrl(returnUrl);
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+        const defaultRoute = getHomeRouteForRole(this.userDetails.role?.roleName);
+        this.router.navigateByUrl(returnUrl || defaultRoute);
       },
       error: () => {
         this.tokenService.clearTokens();

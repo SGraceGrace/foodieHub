@@ -5,6 +5,7 @@ import { UserService } from '../user/user.service';
 import { ToastrService } from 'ngx-toastr';
 import { toUserDetails } from '../convertors/user-details.converter';
 import { UserDetails } from '../model/user.model';
+import { getHomeRouteForRole } from '../core/shared/role-redirect.util';
 
 @Component({
   selector: 'app-google-callback',
@@ -40,9 +41,9 @@ export class GoogleCallbackComponent implements OnInit {
         const user: UserDetails = toUserDetails(apiResponse.data);
         this.tokenService.setUserInfo(user);
         this.toastr.success('Login Successful!');
-        const returnUrl =
-          this.route.snapshot.queryParamMap.get('returnUrl') || '/home';
-        this.router.navigateByUrl(returnUrl);
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+        const defaultRoute = getHomeRouteForRole(user.role?.roleName);
+        this.router.navigateByUrl(returnUrl || defaultRoute);
       },
       error: () => {
         this.tokenService.clearTokens();
