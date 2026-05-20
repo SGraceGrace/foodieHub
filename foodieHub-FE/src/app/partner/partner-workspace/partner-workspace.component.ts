@@ -94,6 +94,7 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
   detailsLat: number | undefined;
   detailsLng: number | undefined;
   showDetailsLocationPicker = false;
+  detailsLocationError = false;
   uploadingDetailsImage = false;
   savingDetails = false;
   detailsSaveMsg = '';
@@ -464,12 +465,14 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
   cancelEditDetails() {
     this.editingDetails = false;
     this.detailsSaveMsg = '';
+    this.detailsLocationError = false;
     this.showDetailsLocationPicker = false;
   }
 
   onDetailsLocationPicked(loc: PickedLocation) {
     this.detailsLat = loc.lat;
     this.detailsLng = loc.lng;
+    this.detailsLocationError = false;
     if (!this.detailsDraft.address) this.detailsDraft.address = loc.displayName;
     this.showDetailsLocationPicker = false;
   }
@@ -486,6 +489,11 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
 
   saveDetails() {
     if (!this.restaurant) return;
+    if (!this.detailsLat || !this.detailsLng) {
+      this.detailsLocationError = true;
+      return;
+    }
+    this.detailsLocationError = false;
     this.savingDetails = true;
     this.detailsSaveMsg = '';
     const cuisineList = this.detailsDraft.cuisine

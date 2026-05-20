@@ -219,6 +219,7 @@ export class PartnerDashboardComponent implements OnInit {
     if (!name.trim())        { this.createError = 'Restaurant name is required.'; return; }
     if (!address.trim())     { this.createError = 'Address is required.'; return; }
     if (!fssaiNumber.trim()) { this.createError = 'FSSAI number is required.'; return; }
+    if (!this.restaurantLat || !this.restaurantLng) { this.createError = 'location'; return; }
     if (!this.user?.id) return;
 
     this.creating = true;

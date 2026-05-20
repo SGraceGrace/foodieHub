@@ -343,6 +343,9 @@ $font-sans:  'DM Sans', sans-serif;
 .details-edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .details-col-full { grid-column: 1 / -1; }
 
+.required-star { color: #e53935; margin-left: 2px; }
+.field-error-msg { font-size: .75rem; color: #e53935; margin-top: 4px; display: block; }
+
 .location-pick-row { display: flex; align-items: center; gap: 10px; }
 .location-pick-val { font-size: .85rem; color: #2a2a2a; flex: 1; &.muted { color: #aaa; } }
 .btn-pick-map {

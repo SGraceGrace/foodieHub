@@ -152,14 +152,15 @@
               <input class="form-input" type="text" [(ngModel)]="detailsDraft.address" />
             </div>
             <div class="form-group details-col-full">
-              <label class="form-label">Location on Map</label>
+              <label class="form-label">Location on Map <span class="required-star">*</span></label>
               <div class="location-pick-row">
                 <span class="location-pick-val" *ngIf="detailsLat">📌 Pinned ({{ detailsLat | number:'1.4-4' }}, {{ detailsLng | number:'1.4-4' }})</span>
-                <span class="location-pick-val muted" *ngIf="!detailsLat">Not pinned yet</span>
+                <span class="location-pick-val muted" *ngIf="!detailsLat">Required — pin your restaurant on the map</span>
                 <button type="button" class="btn-pick-map" (click)="showDetailsLocationPicker = true">
                   {{ detailsLat ? 'Change Pin' : 'Pick on Map' }}
                 </button>
               </div>
+              <span class="field-error-msg" *ngIf="detailsLocationError">Please pin the restaurant location on the map.</span>
             </div>
             <div class="form-group">
               <label class="form-label">Delivery Time (min)</label>
