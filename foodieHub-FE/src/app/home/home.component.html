@@ -1,3 +1,38 @@
+<!-- ── Location Bar ────────────────────────────────────────────────── -->
+<div class="location-bar">
+  <div class="location-bar-inner">
+    <span class="location-icon">📍</span>
+    <div class="location-info" *ngIf="userLocationName; else noLocation">
+      <span class="location-label">Delivering to</span>
+      <span class="location-name">{{ userLocationName | slice:0:50 }}{{ userLocationName.length > 50 ? '...' : '' }}</span>
+    </div>
+    <ng-template #noLocation>
+      <span class="location-prompt">Set your location to see nearby restaurants</span>
+    </ng-template>
+    <div class="location-actions">
+      <button class="location-btn" (click)="showLocationPicker = true">
+        {{ userLocationName ? 'Change' : 'Set Location' }}
+      </button>
+      <button class="location-clear-btn" *ngIf="userLocationName" (click)="clearLocation()">✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Location Picker Modal ──────────────────────────────────────── -->
+<div class="lp-modal-overlay" *ngIf="showLocationPicker" (click)="showLocationPicker = false">
+  <div class="lp-modal" (click)="$event.stopPropagation()">
+    <div class="lp-modal-hdr">
+      <h3>Choose Your Location</h3>
+      <button class="lp-modal-close" (click)="showLocationPicker = false">✕</button>
+    </div>
+    <app-location-picker
+      placeholder="Search your area, city or street..."
+      (locationPicked)="onLocationPicked($event)"
+      (cancelled)="showLocationPicker = false">
+    </app-location-picker>
+  </div>
+</div>
+
 <!-- ── Slideshow ───────────────────────────────────────────────────── -->
 <div class="slideshow-container" *ngIf="slides.length > 0">
   <button class="slide-nav prev" (click)="prevSlide()">❮</button>
@@ -44,17 +79,31 @@
   </div>
 </div>
 
+<!-- ── Browse by Cuisine ──────────────────────────────────────────── -->
+<div class="section" *ngIf="cuisineFilters.length > 0">
+  <div class="section-hdr">
+    <h2>Browse by Cuisine</h2>
+    <button class="see-all" routerLink="/user/cuisine">See all →</button>
+  </div>
+  <div class="cuisine-grid">
+    <div class="cuisine-card" [class.cuisine-card--active]="selectedCuisine === 'All'" (click)="selectCuisine()">
+      <div class="cuisine-card-emoji" style="background:linear-gradient(135deg,#f5f5f5,#eeeeee)">🍽️</div>
+      <span class="cuisine-card-label">All</span>
+    </div>
+    <div class="cuisine-card" *ngFor="let c of cuisineFilters"
+         [class.cuisine-card--active]="selectedCuisine === c"
+         (click)="selectCuisine(c)">
+      <div class="cuisine-card-emoji" [style.background]="getCuisineBg(c)">{{ getCuisineEmoji(c) }}</div>
+      <span class="cuisine-card-label">{{ c }}</span>
+    </div>
+  </div>
+</div>
+
 <!-- ── Popular Dishes ─────────────────────────────────────────────── -->
 <div class="section" *ngIf="popularDishes.length > 0">
   <div class="section-hdr">
-    <h2>Popular Dishes</h2>
+    <h2>{{ selectedCuisine === 'All' ? 'Popular Dishes' : selectedCuisine + ' Dishes' }}</h2>
     <button class="see-all" routerLink="/user/cuisine">See all →</button>
-  </div>
-  <div class="cuisine-tags">
-    <button class="ctag" [class.active]="selectedCuisine === 'All'" (click)="loadRestaurants()">All</button>
-    <button class="ctag" *ngFor="let c of cuisineFilters"
-            [class.active]="selectedCuisine === c"
-            (click)="loadRestaurants(c)">{{ c }}</button>
   </div>
   <div class="food-grid">
     <div class="food-card" *ngFor="let dish of popularDishes">
@@ -83,10 +132,13 @@
 <div style="background:var(--bg-warm);padding:3rem 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
   <div class="section" style="padding-top:0;padding-bottom:0">
     <div class="section-hdr">
-      <h2>Top Restaurants</h2>
+      <h2>{{ selectedCuisine === 'All' ? 'Top Restaurants' : selectedCuisine + ' Restaurants' }}</h2>
       <button class="see-all" routerLink="/user/cuisine">See all →</button>
     </div>
-    <div class="rest-grid">
+    <div class="rest-empty" *ngIf="restaurants.length === 0">
+      {{ userLocationName ? 'No restaurants found nearby. Try changing your location.' : 'No restaurants found for this cuisine yet.' }}
+    </div>
+    <div class="rest-grid" *ngIf="restaurants.length > 0">
       <div class="rest-card" *ngFor="let r of restaurants">
         <div class="rest-img" [style.background]="getBg(r)">{{ getEmoji(r) }}</div>
         <div class="rest-body">
@@ -95,6 +147,7 @@
             <span>⭐ {{ r.rating }}</span>
             <span>⏱ {{ r.deliveryTime }} min</span>
             <span>Min ₹{{ r.minOrder }}</span>
+            <span class="rest-distance" *ngIf="getDistanceLabel(r)">📍 {{ getDistanceLabel(r) }}</span>
           </div>
           <div class="rtags">
             <span class="rtag" *ngFor="let c of r.cuisine">{{ c }}</span>

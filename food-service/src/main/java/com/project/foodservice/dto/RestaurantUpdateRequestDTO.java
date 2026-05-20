@@ -13,4 +13,6 @@ public class RestaurantUpdateRequestDTO {
     private String fssaiNumber;
     private String gstNumber;
     private String imageUrl;
+    private Double lat;
+    private Double lng;
 }

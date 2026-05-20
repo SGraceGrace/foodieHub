@@ -43,6 +43,9 @@ export interface Restaurant {
   fssaiNumber?: string;
   gstNumber?: string;
   operatingHours?: DaySchedule[];
+  lat?: number;
+  lng?: number;
+  distanceKm?: number;
 }
 
 export interface AdminUserResponse {

@@ -1,0 +1,46 @@
+<div class="lp-wrap">
+
+  <!-- Search -->
+  <div class="lp-search-wrap">
+    <div class="lp-search-box">
+      <span class="lp-search-icon">🔍</span>
+      <input
+        class="lp-search-input"
+        type="text"
+        [placeholder]="placeholder"
+        [(ngModel)]="searchQuery"
+        (input)="onSearchInput()"
+        autocomplete="off"
+      />
+      <span class="lp-spinner" *ngIf="searching">⏳</span>
+    </div>
+
+    <div class="lp-suggestions" *ngIf="suggestions.length > 0">
+      <div class="lp-suggestion-item"
+           *ngFor="let s of suggestions"
+           (click)="selectSuggestion(s)">
+        📍 {{ s.display_name }}
+      </div>
+    </div>
+  </div>
+
+  <!-- Map -->
+  <div id="location-map" class="lp-map"></div>
+
+  <p class="lp-hint">Click on map or drag the pin to fine-tune your location</p>
+
+  <!-- Selected -->
+  <div class="lp-selected" *ngIf="picked">
+    <span class="lp-selected-icon">✅</span>
+    <span class="lp-selected-name">{{ picked.displayName | slice:0:80 }}</span>
+  </div>
+
+  <!-- Actions -->
+  <div class="lp-actions">
+    <button class="lp-btn lp-btn-outline" (click)="cancel()">Cancel</button>
+    <button class="lp-btn lp-btn-confirm" [disabled]="!picked" (click)="confirm()">
+      Confirm Location
+    </button>
+  </div>
+
+</div>

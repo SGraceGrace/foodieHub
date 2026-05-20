@@ -63,6 +63,18 @@
           <input class="form-input" type="text" [(ngModel)]="newRestaurant.gstNumber" placeholder="e.g. 22AAAAA0000A1Z5" />
         </div>
         <div class="form-group form-group--full">
+          <label class="form-label">Restaurant Location <span class="optional">(optional)</span></label>
+          <div class="location-pick-row">
+            <span class="location-pick-val" *ngIf="restaurantLat">
+              📍 {{ restaurantLat | number:'1.4-4' }}, {{ restaurantLng | number:'1.4-4' }}
+            </span>
+            <span class="location-pick-val muted" *ngIf="!restaurantLat">Not set</span>
+            <button type="button" class="btn-pick-location" (click)="showRestaurantLocationPicker = true">
+              {{ restaurantLat ? 'Change Location' : 'Pick on Map' }}
+            </button>
+          </div>
+        </div>
+        <div class="form-group form-group--full">
           <label class="form-label">Restaurant Photo <span class="optional">(optional)</span></label>
           <input type="file" accept="image/*" (change)="onRestaurantImageSelected($event)" [disabled]="uploadingRestaurantImage" />
           <div class="img-upload-status" *ngIf="uploadingRestaurantImage">Uploading…</div>
@@ -429,6 +441,22 @@
       {{ inlineCreating ? 'Creating…' : 'Create & Select' }}
     </button>
     <button type="button" class="btn-secondary" (click)="cancelInlineCreate()" [disabled]="inlineCreating">Cancel</button>
+  </div>
+</div>
+
+<!-- ── Restaurant Location Picker Modal ──────────────────────── -->
+<div class="modal-backdrop" *ngIf="showRestaurantLocationPicker" (click)="showRestaurantLocationPicker = false"></div>
+<div class="modal-card location-modal" *ngIf="showRestaurantLocationPicker" (click)="$event.stopPropagation()">
+  <div class="modal-header">
+    <h3 class="modal-title">Pin Restaurant Location</h3>
+    <button type="button" class="modal-close" (click)="showRestaurantLocationPicker = false">✕</button>
+  </div>
+  <div class="modal-body">
+    <app-location-picker
+      placeholder="Search restaurant address..."
+      (locationPicked)="onRestaurantLocationPicked($event)"
+      (cancelled)="showRestaurantLocationPicker = false">
+    </app-location-picker>
   </div>
 </div>
 

@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -15,10 +15,12 @@ export class HomeService {
     return this.http.get<ApiResponse<Slide[]>>(`${this.base}/api/v1/slides`);
   }
 
-  getRestaurants(cuisine?: string): Observable<ApiResponse<PaginatedResponse<Restaurant>>> {
-    const url = cuisine
-      ? `${this.base}/api/v1/restaurants?cuisine=${cuisine}`
-      : `${this.base}/api/v1/restaurants`;
-    return this.http.get<ApiResponse<PaginatedResponse<Restaurant>>>(url);
+  getRestaurants(cuisine?: string, lat?: number, lng?: number): Observable<ApiResponse<PaginatedResponse<Restaurant>>> {
+    let params = new HttpParams();
+    if (cuisine)            params = params.set('cuisine', cuisine);
+    if (lat != null)        params = params.set('lat', lat.toString());
+    if (lng != null)        params = params.set('lng', lng.toString());
+    if (lat != null)        params = params.set('radiusKm', '10');
+    return this.http.get<ApiResponse<PaginatedResponse<Restaurant>>>(`${this.base}/api/v1/restaurants`, { params });
   }
 }

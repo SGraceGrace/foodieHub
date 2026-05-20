@@ -28,13 +28,40 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final RestaurantRepo restaurantRepo;
 
     @Override
-    public PaginatedResponse<Restaurant> getAll(String cuisine, Pageable pageable) {
+    public PaginatedResponse<Restaurant> getAll(String cuisine, Double lat, Double lng, Double radiusKm, Pageable pageable) {
+        boolean hasLocation = lat != null && lng != null;
+        double radius = (radiusKm != null) ? radiusKm : 10.0;
+
+        List<Restaurant> all;
         if (cuisine != null && !cuisine.isBlank()) {
-            return PaginatedResponse.of(
-                restaurantRepo.findByStatusAndCuisineContainingIgnoreCase(RestaurantStatus.ACTIVE, cuisine, pageable)
-            );
+            all = restaurantRepo.findByStatusAndCuisineContainingIgnoreCase(RestaurantStatus.ACTIVE, cuisine, pageable).getContent();
+        } else {
+            all = restaurantRepo.findByStatus(RestaurantStatus.ACTIVE, pageable).getContent();
         }
-        return PaginatedResponse.of(restaurantRepo.findByStatus(RestaurantStatus.ACTIVE, pageable));
+
+        if (!hasLocation) {
+            return PaginatedResponse.of(restaurantRepo.findByStatus(RestaurantStatus.ACTIVE, pageable));
+        }
+
+        List<Restaurant> nearby = all.stream()
+            .filter(r -> r.getLat() != null && r.getLng() != null)
+            .filter(r -> haversineKm(lat, lng, r.getLat(), r.getLng()) <= radius)
+            .sorted((a, b) -> Double.compare(
+                haversineKm(lat, lng, a.getLat(), a.getLng()),
+                haversineKm(lat, lng, b.getLat(), b.getLng())))
+            .collect(Collectors.toList());
+
+        return PaginatedResponse.ofList(nearby, pageable);
+    }
+
+    private double haversineKm(double lat1, double lng1, double lat2, double lng2) {
+        final double R = 6371.0;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLng = Math.toRadians(lng2 - lng1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                 + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
+                 * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
     @Override
@@ -62,6 +89,8 @@ public class RestaurantServiceImpl implements RestaurantService {
         restaurant.setFssaiNumber(request.getFssaiNumber());
         restaurant.setGstNumber(request.getGstNumber());
         restaurant.setImageUrl(request.getImageUrl());
+        restaurant.setLat(request.getLat());
+        restaurant.setLng(request.getLng());
         return restaurantRepo.save(restaurant);
     }
 
@@ -124,6 +153,8 @@ public class RestaurantServiceImpl implements RestaurantService {
         if (req.getFssaiNumber()  != null) r.setFssaiNumber(req.getFssaiNumber());
         if (req.getGstNumber()    != null) r.setGstNumber(req.getGstNumber());
         if (req.getImageUrl()     != null) r.setImageUrl(req.getImageUrl());
+        if (req.getLat()          != null) r.setLat(req.getLat());
+        if (req.getLng()          != null) r.setLng(req.getLng());
         return restaurantRepo.save(r);
     }
 

@@ -33,4 +33,7 @@ public class Restaurant {
     private RestaurantStatus status = RestaurantStatus.PENDING;
 
     private List<DaySchedule> operatingHours;
+
+    private Double lat;
+    private Double lng;
 }

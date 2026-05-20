@@ -24,10 +24,13 @@ public class RestaurantController {
     @GetMapping
     public ResponseEntity<BaseAPIResponse> getAll(
             @RequestParam(required = false) String cuisine,
+            @RequestParam(required = false) Double lat,
+            @RequestParam(required = false) Double lng,
+            @RequestParam(required = false) Double radiusKm,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
-                restaurantService.getAll(cuisine, PageRequest.of(page, size)),
+                restaurantService.getAll(cuisine, lat, lng, radiusKm, PageRequest.of(page, size)),
                 HttpStatus.OK.value(), null));
     }
 

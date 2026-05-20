@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { HomeService } from './home.service';
 import { Slide, Restaurant } from '../model/restaurant.model';
 import { CUISINE_EMOJI, getCuisineEmoji, getCuisineBg } from '../core/constants/cuisine.constants';
+import { LocationPickerComponent, PickedLocation } from '../core/shared/components/location-picker/location-picker.component';
 
 interface FoodCard {
   emoji: string; name: string; price: number;
@@ -13,7 +14,7 @@ interface FoodCard {
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, LocationPickerComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss',
 })
@@ -26,6 +27,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   selectedCuisine = 'All';
   popularDishes: FoodCard[] = [];
 
+  userLat: number | undefined;
+  userLng: number | undefined;
+  userLocationName = '';
+  showLocationPicker = false;
+
   private timer: ReturnType<typeof setInterval> | null = null;
 
   constructor(private homeService: HomeService) {}
@@ -33,6 +39,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.loadSlides();
     this.cuisineFilters = Object.keys(CUISINE_EMOJI).filter(k => k !== 'default');
+    const saved = localStorage.getItem('userLocation');
+    if (saved) {
+      const loc: PickedLocation = JSON.parse(saved);
+      this.userLat = loc.lat;
+      this.userLng = loc.lng;
+      this.userLocationName = loc.displayName;
+    }
     this.loadRestaurants();
   }
 
@@ -73,9 +86,26 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.goToSlide((this.activeSlide + 1) % this.slides.length);
   }
 
+  onLocationPicked(loc: PickedLocation) {
+    this.userLat = loc.lat;
+    this.userLng = loc.lng;
+    this.userLocationName = loc.displayName;
+    localStorage.setItem('userLocation', JSON.stringify(loc));
+    this.showLocationPicker = false;
+    this.loadRestaurants();
+  }
+
+  clearLocation() {
+    this.userLat = undefined;
+    this.userLng = undefined;
+    this.userLocationName = '';
+    localStorage.removeItem('userLocation');
+    this.loadRestaurants();
+  }
+
   selectCuisine(cuisine?: string) {
     this.selectedCuisine = cuisine ?? 'All';
-    this.homeService.getRestaurants(cuisine).subscribe({
+    this.homeService.getRestaurants(cuisine, this.userLat, this.userLng).subscribe({
       next: (res) => {
         this.restaurants = res.data?.content ?? [];
         this.buildPopularDishes(this.restaurants);
@@ -85,7 +115,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   loadRestaurants(cuisine?: string) {
     this.selectedCuisine = cuisine ?? 'All';
-    this.homeService.getRestaurants(cuisine).subscribe({
+    this.homeService.getRestaurants(cuisine, this.userLat, this.userLng).subscribe({
       next: (res) => {
         this.restaurants = res.data?.content ?? [];
         if (!cuisine) this.buildPopularDishes(this.restaurants);
@@ -117,6 +147,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   getBg(r: Restaurant): string    { return getCuisineBg(r.cuisine?.[0]); }
   getCuisineEmoji(c: string): string { return getCuisineEmoji(c); }
   getCuisineBg(c: string): string    { return getCuisineBg(c); }
+  getDistanceLabel(r: Restaurant): string {
+    if (r.distanceKm == null) return '';
+    return r.distanceKm < 1 ? `${Math.round(r.distanceKm * 1000)}m` : `${r.distanceKm.toFixed(1)}km`;
+  }
 
   starsArray(rating: number): boolean[] {
     return Array.from({ length: 5 }, (_, i) => i < Math.round(rating));

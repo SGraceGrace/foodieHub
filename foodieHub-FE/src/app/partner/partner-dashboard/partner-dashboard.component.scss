@@ -162,6 +162,17 @@ $font-sans:  'DM Sans', sans-serif;
 .img-upload-status { font-size: 0.8rem; color: #888; margin-top: 4px; }
 .img-preview { display: block; margin-top: 8px; width: 120px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
 
+.location-pick-row { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+.location-pick-val { font-size: .85rem; color: #2a2a2a; flex: 1; }
+.location-pick-val.muted { color: #aaa; }
+.btn-pick-location {
+  padding: 7px 14px; border-radius: 8px; border: 1.5px solid #f9b303;
+  background: transparent; color: #f9b303; font-size: .82rem; font-weight: 600;
+  cursor: pointer; white-space: nowrap; transition: all .2s;
+  &:hover { background: #f9b303; color: #2a2a2a; }
+}
+.location-modal { max-width: 580px; }
+
 // ── Loading / Empty ───────────────────────────────────────────────
 .loading-state {
   text-align: center;

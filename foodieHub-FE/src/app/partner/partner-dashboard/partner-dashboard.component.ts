@@ -9,13 +9,14 @@ import { CloudinaryService } from '../../core/shared/cloudinary.service';
 import { PartnerService } from '../partner.service';
 import { UserDetails } from '../../model/user.model';
 import { Restaurant, RestaurantStaff } from '../../model/restaurant.model';
+import { LocationPickerComponent, PickedLocation } from '../../core/shared/components/location-picker/location-picker.component';
 
 type DashboardSection = 'restaurants' | 'staff';
 
 @Component({
   selector: 'app-partner-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LocationPickerComponent],
   templateUrl: './partner-dashboard.component.html',
   styleUrl: './partner-dashboard.component.scss',
 })
@@ -33,6 +34,9 @@ export class PartnerDashboardComponent implements OnInit {
   createError = '';
   restaurantImageUrl = '';
   uploadingRestaurantImage = false;
+  restaurantLat: number | undefined;
+  restaurantLng: number | undefined;
+  showRestaurantLocationPicker = false;
 
   // ── Staff ────────────────────────────────────────────────────────
   ownerRestaurants: Restaurant[] = [];
@@ -194,10 +198,19 @@ export class PartnerDashboardComponent implements OnInit {
     });
   }
 
+  onRestaurantLocationPicked(loc: PickedLocation) {
+    this.restaurantLat = loc.lat;
+    this.restaurantLng = loc.lng;
+    if (!this.newRestaurant.address) this.newRestaurant.address = loc.displayName;
+    this.showRestaurantLocationPicker = false;
+  }
+
   cancelCreate() {
     this.showCreateForm = false;
     this.newRestaurant = { name: '', address: '', fssaiNumber: '', gstNumber: '' };
     this.restaurantImageUrl = '';
+    this.restaurantLat = undefined;
+    this.restaurantLng = undefined;
     this.createError = '';
   }
 
@@ -216,12 +229,16 @@ export class PartnerDashboardComponent implements OnInit {
       gstNumber: this.newRestaurant.gstNumber.trim() || undefined,
       ownerId: this.user.id,
       imageUrl: this.restaurantImageUrl || undefined,
+      lat: this.restaurantLat,
+      lng: this.restaurantLng,
     }).subscribe({
       next: () => {
         this.creating = false;
         this.showCreateForm = false;
         this.newRestaurant = { name: '', address: '', fssaiNumber: '', gstNumber: '' };
         this.restaurantImageUrl = '';
+        this.restaurantLat = undefined;
+        this.restaurantLng = undefined;
         this.loadRestaurants(0);
       },
       error: () => {
