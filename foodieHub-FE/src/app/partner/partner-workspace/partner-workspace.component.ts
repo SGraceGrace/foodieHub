@@ -6,7 +6,7 @@ import { TokenService } from '../../core/shared/token.service';
 import { CloudinaryService } from '../../core/shared/cloudinary.service';
 import { PartnerService } from '../partner.service';
 import { UserDetails } from '../../model/user.model';
-import { Restaurant, DaySchedule } from '../../model/restaurant.model';
+import { Restaurant, DaySchedule, RestaurantStaff } from '../../model/restaurant.model';
 
 type WorkspaceTab = 'overview' | 'orders' | 'menu' | 'analytics' | 'hours' | 'settings';
 
@@ -85,6 +85,19 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
   uploadingItemImage = false;
 
   readonly gstOptions = [0, 5, 12, 18];
+
+  // ── Settings ──────────────────────────────────────────────────────
+  staff: RestaurantStaff[] = [];
+  staffLoading = false;
+
+  editingStaff: RestaurantStaff | null = null;
+  staffActionLoading = false;
+  staffActionMsg = '';
+
+  editingOwner = false;
+  ownerDraft = { firstName: '', lastName: '', phone: '' };
+  savingOwner = false;
+  ownerSaveMsg = '';
 
   // ── Hours getters/methods ─────────────────────────────────────────
   initHours() {
@@ -375,6 +388,63 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
     this.activeTab = tab;
     if (tab === 'menu') this.initMenu();
     if (tab === 'hours') this.refreshHours();
+    if (tab === 'settings') this.loadStaff();
+  }
+
+  // ── Settings: staff ───────────────────────────────────────────────
+  loadStaff() {
+    if (!this.restaurant) return;
+    this.staffLoading = true;
+    this.partnerService.getRestaurantStaff(this.restaurant.id).subscribe({
+      next: res => { this.staff = res.data ?? []; this.staffLoading = false; },
+      error: () => { this.staffLoading = false; },
+    });
+  }
+
+  openEditStaff(s: RestaurantStaff) {
+    this.editingStaff = { ...s };
+    this.staffActionMsg = '';
+  }
+
+  closeEditStaff() { this.editingStaff = null; this.staffActionMsg = ''; }
+
+  toggleStaffStatus() {
+    if (!this.editingStaff) return;
+    const isActive = this.editingStaff.status === 'ACTIVE';
+    this.staffActionLoading = true;
+    const call = isActive
+      ? this.partnerService.archiveStaff(this.editingStaff.id)
+      : this.partnerService.activateStaff(this.editingStaff.id);
+    call.subscribe({
+      next: () => {
+        const newStatus = isActive ? 'INACTIVE' : 'ACTIVE';
+        this.staff = this.staff.map(s =>
+          s.id === this.editingStaff!.id ? { ...s, status: newStatus } : s
+        );
+        this.editingStaff = { ...this.editingStaff!, status: newStatus };
+        this.staffActionLoading = false;
+        this.staffActionMsg = `Staff ${isActive ? 'deactivated' : 'activated'} successfully.`;
+        setTimeout(() => { this.staffActionMsg = ''; }, 3000);
+      },
+      error: () => { this.staffActionLoading = false; this.staffActionMsg = 'Action failed. Please try again.'; },
+    });
+  }
+
+  // ── Settings: owner edit ─────────────────────────────────────────
+  openEditOwner() {
+    this.ownerDraft = {
+      firstName: this.user?.firstName ?? '',
+      lastName:  this.user?.lastName  ?? '',
+      phone:     this.user?.phone     ?? '',
+    };
+    this.ownerSaveMsg = '';
+    this.editingOwner = true;
+  }
+
+  cancelEditOwner() { this.editingOwner = false; this.ownerSaveMsg = ''; }
+
+  getStaffInitials(s: RestaurantStaff): string {
+    return ((s.firstName?.[0] ?? '') + (s.lastName?.[0] ?? '')).toUpperCase() || '?';
   }
 
   refreshHours() {

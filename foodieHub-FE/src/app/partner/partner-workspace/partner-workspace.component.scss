@@ -337,6 +337,61 @@ $font-sans:  'DM Sans', sans-serif;
 .img-upload-status { font-size: 0.8rem; color: #888; margin-top: 4px; }
 .img-preview { display: block; margin-top: 8px; width: 120px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
 
+// ── Settings ──────────────────────────────────────────────────────
+.settings-section-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1rem;
+  .section-title { margin: 0; }
+}
+
+.btn-sm { padding: 5px 14px; font-size: 0.8rem; }
+
+.btn-danger {
+  background: #e53935; border-color: #e53935; color: #fff;
+  &:hover { background: #c62828; }
+}
+
+.owner-edit-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;
+  .form-group:last-child { grid-column: 1 / -1; }
+}
+
+.settings-save-row {
+  display: flex; align-items: center; justify-content: flex-end;
+  gap: 12px; margin-top: 1rem;
+}
+
+.settings-msg { font-size: 0.82rem; color: #2e7d32; }
+
+.staff-loading, .staff-empty { font-size: 0.85rem; color: #888; padding: 8px 0; }
+
+.staff-list { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+
+.staff-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+  &:last-child { border-bottom: none; }
+}
+
+.staff-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--gold); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 0.85rem; flex-shrink: 0;
+  &--lg { width: 52px; height: 52px; font-size: 1.1rem; }
+}
+
+.staff-info { flex: 1; min-width: 0; }
+.staff-name  { font-weight: 600; font-size: 0.88rem; }
+.staff-email { font-size: 0.78rem; color: #888; }
+.staff-phone { font-size: 0.78rem; color: #888; }
+
+.staff-modal-profile {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 4px;
+}
+
+.staff-action-msg { font-size: 0.82rem; color: #2e7d32; margin-top: 10px; }
+
 // ── Multi-select restaurant search ────────────────────────────────
 .selected-tags {
   display: flex;

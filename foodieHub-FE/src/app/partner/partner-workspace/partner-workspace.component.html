@@ -387,23 +387,86 @@
     <!-- ── Settings ─────────────────────────────────────────── -->
     <div *ngIf="activeTab === 'settings'">
       <div class="page-title">Settings</div>
+
+      <!-- Owner -->
       <div class="section-box settings-box">
-        <h3 class="section-title">Owner Information</h3>
-        <div class="info-row">
-          <span class="info-label">Name</span>
-          <span class="info-val">{{ user?.firstName }} {{ user?.lastName }}</span>
+        <div class="settings-section-hdr">
+          <h3 class="section-title">Owner Information</h3>
+          <button class="btn-secondary btn-sm" (click)="openEditOwner()" *ngIf="!editingOwner">Edit</button>
+          <button class="btn-secondary btn-sm" (click)="cancelEditOwner()" *ngIf="editingOwner">Cancel</button>
         </div>
-        <div class="info-row">
-          <span class="info-label">Email</span>
-          <span class="info-val">{{ user?.email }}</span>
+
+        <ng-container *ngIf="!editingOwner">
+          <div class="info-row">
+            <span class="info-label">Name</span>
+            <span class="info-val">{{ user?.firstName }} {{ user?.lastName }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Email</span>
+            <span class="info-val">{{ user?.email }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Phone</span>
+            <span class="info-val">{{ user?.phone || '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Status</span>
+            <span class="badge badge-open">Active</span>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="editingOwner">
+          <div class="owner-edit-grid">
+            <div class="form-group">
+              <label class="form-label">First Name</label>
+              <input class="form-input" type="text" [(ngModel)]="ownerDraft.firstName" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
+              <input class="form-input" type="text" [(ngModel)]="ownerDraft.lastName" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input class="form-input" type="text" [(ngModel)]="ownerDraft.phone" />
+            </div>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Email</span>
+            <span class="info-val">{{ user?.email }}</span>
+          </div>
+          <div class="settings-save-row">
+            <span class="settings-msg" *ngIf="ownerSaveMsg">{{ ownerSaveMsg }}</span>
+            <button class="btn-primary btn-sm" [disabled]="savingOwner">
+              {{ savingOwner ? 'Saving…' : 'Save Changes' }}
+            </button>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Staff -->
+      <div class="section-box settings-box" style="margin-top:1.25rem">
+        <h3 class="section-title">Restaurant Staff</h3>
+
+        <div class="staff-loading" *ngIf="staffLoading">Loading staff…</div>
+
+        <div class="staff-empty" *ngIf="!staffLoading && staff.length === 0">
+          No staff assigned to this restaurant yet.
         </div>
-        <div class="info-row">
-          <span class="info-label">Phone</span>
-          <span class="info-val">{{ user?.phone || '—' }}</span>
-        </div>
-        <div class="info-row">
-          <span class="info-label">Status</span>
-          <span class="badge badge-open">Active</span>
+
+        <div class="staff-list" *ngIf="!staffLoading && staff.length > 0">
+          <div class="staff-row" *ngFor="let s of staff">
+            <div class="staff-avatar">{{ getStaffInitials(s) }}</div>
+            <div class="staff-info">
+              <div class="staff-name">{{ s.firstName }} {{ s.lastName }}</div>
+              <div class="staff-email">{{ s.email }}</div>
+            </div>
+            <span class="avail-pill"
+                  [class.avail-pill--on]="s.status === 'ACTIVE'"
+                  [class.avail-pill--off]="s.status !== 'ACTIVE'">
+              {{ s.status === 'ACTIVE' ? 'Active' : 'Inactive' }}
+            </span>
+            <button class="btn-secondary btn-sm" (click)="openEditStaff(s)">Edit</button>
+          </div>
         </div>
       </div>
     </div>
@@ -522,5 +585,49 @@
       {{ uploadingItemImage ? 'Uploading…' : (itemFormItemIdx === -1 ? 'Add Item' : 'Save Changes') }}
     </button>
     <button class="btn-secondary" (click)="closeItemForm()">Cancel</button>
+  </div>
+</div>
+
+<!-- ── Edit Staff Modal ────────────────────────────────────────── -->
+<div class="modal-backdrop" *ngIf="editingStaff" (click)="closeEditStaff()"></div>
+<div class="modal-card" *ngIf="editingStaff" (click)="$event.stopPropagation()">
+  <div class="modal-header">
+    <div>
+      <h3 class="modal-title">Edit Staff</h3>
+      <span class="modal-subtitle">{{ editingStaff.email }}</span>
+    </div>
+    <button class="modal-close" (click)="closeEditStaff()">✕</button>
+  </div>
+
+  <div class="modal-body">
+    <div class="staff-modal-profile">
+      <div class="staff-avatar staff-avatar--lg">{{ getStaffInitials(editingStaff) }}</div>
+      <div>
+        <div class="staff-name">{{ editingStaff.firstName }} {{ editingStaff.lastName }}</div>
+        <div class="staff-email">{{ editingStaff.email }}</div>
+        <div class="staff-phone" *ngIf="editingStaff.phone">{{ editingStaff.phone }}</div>
+      </div>
+    </div>
+
+    <div class="info-row" style="margin-top:1rem">
+      <span class="info-label">Current Status</span>
+      <span class="avail-pill"
+            [class.avail-pill--on]="editingStaff.status === 'ACTIVE'"
+            [class.avail-pill--off]="editingStaff.status !== 'ACTIVE'">
+        {{ editingStaff.status === 'ACTIVE' ? 'Active' : 'Inactive' }}
+      </span>
+    </div>
+
+    <div class="staff-action-msg" *ngIf="staffActionMsg">{{ staffActionMsg }}</div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn-primary"
+            [class.btn-danger]="editingStaff.status === 'ACTIVE'"
+            (click)="toggleStaffStatus()"
+            [disabled]="staffActionLoading">
+      {{ staffActionLoading ? 'Updating…' : (editingStaff.status === 'ACTIVE' ? 'Deactivate' : 'Activate') }}
+    </button>
+    <button class="btn-secondary" (click)="closeEditStaff()">Close</button>
   </div>
 </div>
