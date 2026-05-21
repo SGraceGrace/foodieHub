@@ -4,6 +4,8 @@ import com.project.foodieHub.dto.ActivityLogDTO;
 import com.project.foodieHub.dto.AdminUserResponseDTO;
 import com.project.foodieHub.dto.CreateAdminRequestDTO;
 import com.project.foodieHub.dto.PaginatedResponse;
+import com.project.foodieHub.dto.LocationDTO;
+import com.project.foodieHub.entity.PartnerProfile;
 import com.project.foodieHub.entity.User;
 import com.project.foodieHub.enums.Role;
 import com.project.foodieHub.enums.UserStatus;
@@ -11,6 +13,7 @@ import com.project.foodieHub.exception_handler.CommonException;
 import com.project.foodieHub.messaging.OwnerStatusEvent;
 import com.project.foodieHub.messaging.RabbitMQConfig;
 import com.project.foodieHub.repo.ActivityLogRepo;
+import com.project.foodieHub.repo.PartnerProfileRepo;
 import com.project.foodieHub.repo.RoleRepo;
 import com.project.foodieHub.repo.UserRepo;
 import com.project.foodieHub.service.ActivityLogService;
@@ -32,6 +35,7 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     private final UserRepo userRepo;
     private final RoleRepo roleRepo;
+    private final PartnerProfileRepo partnerProfileRepo;
     private final PasswordEncoder passwordEncoder;
     private final ActivityLogService activityLogService;
     private final ActivityLogRepo activityLogRepo;
@@ -158,11 +162,13 @@ public class AdminUserServiceImpl implements AdminUserService {
     }
 
     private void publishOwnerStatus(User user, String status) {
+        String restaurantName = partnerProfileRepo.findById(user.getId())
+                .map(PartnerProfile::getRestaurantName).orElse(null);
         var event = new OwnerStatusEvent(
                 String.valueOf(user.getId()),
                 user.getEmail(),
                 user.getFirstName() + " " + user.getLastName(),
-                user.getBio(),
+                restaurantName,
                 status
         );
         rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.OWNER_STATUS_RKEY, event);
@@ -174,6 +180,12 @@ public class AdminUserServiceImpl implements AdminUserService {
     }
 
     private AdminUserResponseDTO toDTO(User user) {
+        PartnerProfile profile = partnerProfileRepo.findById(user.getId()).orElse(null);
+        LocationDTO locationDTO = null;
+        if (profile != null && profile.getRestaurantLocation() != null) {
+            var loc = profile.getRestaurantLocation();
+            locationDTO = new LocationDTO(loc.getCity(), loc.getState(), loc.getCountry(), loc.getLat(), loc.getLng());
+        }
         return new AdminUserResponseDTO(
                 user.getId(),
                 user.getFirstName(),
@@ -182,10 +194,10 @@ public class AdminUserServiceImpl implements AdminUserService {
                 user.getPhone(),
                 user.getRole().getRoleName(),
                 user.getStatus().name(),
-                user.getBio(),
-                user.getRestaurantAddress(),
-                user.getFssaiNumber(),
-                user.getGstNumber(),
+                profile != null ? profile.getRestaurantName() : null,
+                locationDTO,
+                profile != null ? profile.getFssaiNumber() : null,
+                profile != null ? profile.getGstNumber() : null,
                 user.getVehicleType(),
                 user.getLicenseNumber()
         );

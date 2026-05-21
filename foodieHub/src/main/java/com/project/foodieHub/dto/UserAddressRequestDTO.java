@@ -16,7 +16,5 @@ public class UserAddressRequestDTO {
 
     private boolean defaultAddress;
 
-    private Double lat;
-
-    private Double lng;
+    private LocationDTO location;
 }

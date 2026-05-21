@@ -28,8 +28,7 @@ export class AddressesComponent implements OnInit {
   showForm = false;
   saving = false;
 
-  pickedLat: number | undefined;
-  pickedLng: number | undefined;
+  pickedLocation: PickedLocation | null = null;
   pickedLocationName = '';
   showLocationPicker = false;
 
@@ -79,8 +78,7 @@ export class AddressesComponent implements OnInit {
   }
 
   onLocationPicked(loc: PickedLocation) {
-    this.pickedLat = loc.lat;
-    this.pickedLng = loc.lng;
+    this.pickedLocation = loc;
     this.pickedLocationName = loc.displayName;
     if (!this.addressForm.value.addressText) {
       this.addressForm.patchValue({ addressText: loc.displayName.slice(0, 200) });
@@ -99,16 +97,20 @@ export class AddressesComponent implements OnInit {
 
     this.userService.addAddress({
       label, addressText, landmark, defaultAddress,
-      lat: this.pickedLat,
-      lng: this.pickedLng,
+      location: this.pickedLocation ? {
+        city: this.pickedLocation.city,
+        state: this.pickedLocation.state,
+        country: this.pickedLocation.country,
+        lat: this.pickedLocation.lat,
+        lng: this.pickedLocation.lng,
+      } : undefined,
     }).subscribe({
       next: (res) => {
         this.saving = false;
         this.showForm = false;
         this.toastr.success('Address saved!');
         this.addressForm.reset({ label: 'HOME', defaultAddress: false });
-        this.pickedLat = undefined;
-        this.pickedLng = undefined;
+        this.pickedLocation = null;
         this.pickedLocationName = '';
         this.loadAddresses();
         if (defaultAddress && res.data) {
@@ -154,8 +156,7 @@ export class AddressesComponent implements OnInit {
 
   cancelForm() {
     this.showForm = false;
-    this.pickedLat = undefined;
-    this.pickedLng = undefined;
+    this.pickedLocation = null;
     this.pickedLocationName = '';
     this.addressForm.reset({ label: 'HOME', defaultAddress: false });
   }

@@ -1,13 +1,16 @@
 package com.project.foodservice.service.impl;
 
 import com.project.foodservice.document.DaySchedule;
+import com.project.foodservice.document.Location;
 import com.project.foodservice.document.MenuCategory;
 import com.project.foodservice.document.MenuItem;
+import com.project.foodservice.document.OwnerApproval;
 import com.project.foodservice.document.Restaurant;
 import com.project.foodservice.dto.PaginatedResponse;
 import com.project.foodservice.dto.RestaurantCreateRequestDTO;
 import com.project.foodservice.dto.RestaurantUpdateRequestDTO;
 import com.project.foodservice.enums.RestaurantStatus;
+import com.project.foodservice.repo.OwnerApprovalRepo;
 import com.project.foodservice.repo.RestaurantRepo;
 import com.project.foodservice.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +29,7 @@ import java.util.stream.Collectors;
 public class RestaurantServiceImpl implements RestaurantService {
 
     private final RestaurantRepo restaurantRepo;
+    private final OwnerApprovalRepo ownerApprovalRepo;
 
     @Override
     public PaginatedResponse<Restaurant> getAll(String cuisine, Double lat, Double lng, Double radiusKm, Pageable pageable) {
@@ -44,11 +48,11 @@ public class RestaurantServiceImpl implements RestaurantService {
         }
 
         List<Restaurant> nearby = all.stream()
-            .filter(r -> r.getLat() != null && r.getLng() != null)
-            .filter(r -> haversineKm(lat, lng, r.getLat(), r.getLng()) <= radius)
+            .filter(r -> r.getLocation() != null && r.getLocation().getLat() != null && r.getLocation().getLng() != null)
+            .filter(r -> haversineKm(lat, lng, r.getLocation().getLat(), r.getLocation().getLng()) <= radius)
             .sorted((a, b) -> Double.compare(
-                haversineKm(lat, lng, a.getLat(), a.getLng()),
-                haversineKm(lat, lng, b.getLat(), b.getLng())))
+                haversineKm(lat, lng, a.getLocation().getLat(), a.getLocation().getLng()),
+                haversineKm(lat, lng, b.getLocation().getLat(), b.getLocation().getLng())))
             .collect(Collectors.toList());
 
         return PaginatedResponse.ofList(nearby, pageable);
@@ -85,12 +89,16 @@ public class RestaurantServiceImpl implements RestaurantService {
         Restaurant restaurant = new Restaurant();
         restaurant.setName(request.getName());
         restaurant.setOwnerId(request.getOwnerId());
-        restaurant.setAddress(request.getAddress());
         restaurant.setFssaiNumber(request.getFssaiNumber());
         restaurant.setGstNumber(request.getGstNumber());
         restaurant.setImageUrl(request.getImageUrl());
-        restaurant.setLat(request.getLat());
-        restaurant.setLng(request.getLng());
+        if (request.getLocation() != null) {
+            var l = request.getLocation();
+            restaurant.setLocation(new Location(l.getCity(), l.getState(), l.getCountry(), l.getLat(), l.getLng()));
+        }
+        boolean approved = ownerApprovalRepo.findById(request.getOwnerId())
+                .map(OwnerApproval::isApproved).orElse(false);
+        restaurant.setStatus(approved ? RestaurantStatus.ACTIVE : RestaurantStatus.PENDING);
         return restaurantRepo.save(restaurant);
     }
 
@@ -147,14 +155,15 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .orElseThrow(() -> new RuntimeException("Restaurant not found"));
         if (req.getName()         != null) r.setName(req.getName());
         if (req.getCuisine()      != null) r.setCuisine(req.getCuisine());
-        if (req.getAddress()      != null) r.setAddress(req.getAddress());
         if (req.getDeliveryTime() != null) r.setDeliveryTime(req.getDeliveryTime());
         if (req.getMinOrder()     != null) r.setMinOrder(req.getMinOrder());
         if (req.getFssaiNumber()  != null) r.setFssaiNumber(req.getFssaiNumber());
         if (req.getGstNumber()    != null) r.setGstNumber(req.getGstNumber());
         if (req.getImageUrl()     != null) r.setImageUrl(req.getImageUrl());
-        if (req.getLat()          != null) r.setLat(req.getLat());
-        if (req.getLng()          != null) r.setLng(req.getLng());
+        if (req.getLocation()     != null) {
+            var l = req.getLocation();
+            r.setLocation(new Location(l.getCity(), l.getState(), l.getCountry(), l.getLat(), l.getLng()));
+        }
         return restaurantRepo.save(r);
     }
 

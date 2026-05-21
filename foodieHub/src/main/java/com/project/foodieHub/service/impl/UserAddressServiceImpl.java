@@ -1,6 +1,7 @@
 package com.project.foodieHub.service.impl;
 
 import com.project.foodieHub.dto.UserAddressRequestDTO;
+import com.project.foodieHub.entity.Location;
 import com.project.foodieHub.entity.User;
 import com.project.foodieHub.entity.UserAddress;
 import com.project.foodieHub.enums.UserStatus;
@@ -47,8 +48,10 @@ public class UserAddressServiceImpl implements UserAddressService {
         address.setAddressText(dto.getAddressText());
         address.setLandmark(dto.getLandmark());
         address.setDefaultAddress(dto.isDefaultAddress());
-        address.setLat(dto.getLat());
-        address.setLng(dto.getLng());
+        if (dto.getLocation() != null) {
+            var loc = dto.getLocation();
+            address.setLocation(new Location(loc.getCity(), loc.getState(), loc.getCountry(), loc.getLat(), loc.getLng()));
+        }
         return userAddressRepo.save(address);
     }
 

@@ -29,13 +29,12 @@ export class PartnerDashboardComponent implements OnInit {
   pagination = { currentPage: 0, totalPages: 0, totalElements: 0, pageSize: 12 };
   loading = false;
   showCreateForm = false;
-  newRestaurant = { name: '', address: '', fssaiNumber: '', gstNumber: '' };
+  newRestaurant = { name: '', fssaiNumber: '', gstNumber: '' };
   creating = false;
   createError = '';
   restaurantImageUrl = '';
   uploadingRestaurantImage = false;
-  restaurantLat: number | undefined;
-  restaurantLng: number | undefined;
+  restaurantLocation: PickedLocation | null = null;
   showRestaurantLocationPicker = false;
 
   // ── Staff ────────────────────────────────────────────────────────
@@ -199,47 +198,47 @@ export class PartnerDashboardComponent implements OnInit {
   }
 
   onRestaurantLocationPicked(loc: PickedLocation) {
-    this.restaurantLat = loc.lat;
-    this.restaurantLng = loc.lng;
-    if (!this.newRestaurant.address) this.newRestaurant.address = loc.displayName;
+    this.restaurantLocation = loc;
     this.showRestaurantLocationPicker = false;
   }
 
   cancelCreate() {
     this.showCreateForm = false;
-    this.newRestaurant = { name: '', address: '', fssaiNumber: '', gstNumber: '' };
+    this.newRestaurant = { name: '', fssaiNumber: '', gstNumber: '' };
     this.restaurantImageUrl = '';
-    this.restaurantLat = undefined;
-    this.restaurantLng = undefined;
+    this.restaurantLocation = null;
     this.createError = '';
   }
 
   submitCreate() {
-    const { name, address, fssaiNumber } = this.newRestaurant;
+    const { name, fssaiNumber } = this.newRestaurant;
     if (!name.trim())        { this.createError = 'Restaurant name is required.'; return; }
-    if (!address.trim())     { this.createError = 'Address is required.'; return; }
     if (!fssaiNumber.trim()) { this.createError = 'FSSAI number is required.'; return; }
-    if (!this.restaurantLat || !this.restaurantLng) { this.createError = 'location'; return; }
+    if (!this.restaurantLocation) { this.createError = 'location'; return; }
     if (!this.user?.id) return;
 
     this.creating = true;
     this.createError = '';
     this.partnerService.createRestaurant({
-      name: name.trim(), address: address.trim(),
+      name: name.trim(),
       fssaiNumber: fssaiNumber.trim(),
       gstNumber: this.newRestaurant.gstNumber.trim() || undefined,
       ownerId: this.user.id,
       imageUrl: this.restaurantImageUrl || undefined,
-      lat: this.restaurantLat,
-      lng: this.restaurantLng,
+      location: this.restaurantLocation ? {
+        city: this.restaurantLocation.city,
+        state: this.restaurantLocation.state,
+        country: this.restaurantLocation.country,
+        lat: this.restaurantLocation.lat,
+        lng: this.restaurantLocation.lng,
+      } : undefined,
     }).subscribe({
       next: () => {
         this.creating = false;
         this.showCreateForm = false;
-        this.newRestaurant = { name: '', address: '', fssaiNumber: '', gstNumber: '' };
+        this.newRestaurant = { name: '', fssaiNumber: '', gstNumber: '' };
         this.restaurantImageUrl = '';
-        this.restaurantLat = undefined;
-        this.restaurantLng = undefined;
+        this.restaurantLocation = null;
         this.loadRestaurants(0);
       },
       error: () => {

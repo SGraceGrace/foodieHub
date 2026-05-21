@@ -25,7 +25,6 @@ public class Restaurant {
     private int deliveryTime;
     private boolean isOpen;
     private String imageUrl;
-    private String address;
     private int minOrder;
     private String priceRange;
     private List<MenuCategory> menu;
@@ -34,6 +33,5 @@ public class Restaurant {
 
     private List<DaySchedule> operatingHours;
 
-    private Double lat;
-    private Double lng;
+    private Location location;
 }

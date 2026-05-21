@@ -3,6 +3,7 @@ package com.project.foodieHub.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import com.project.foodieHub.entity.Location;
 
 @Entity
 @Table(name = "user_address")
@@ -30,9 +31,6 @@ public class UserAddress extends BaseEntity {
     @Column(name = "is_default")
     private boolean defaultAddress;
 
-    @Column(name = "lat")
-    private Double lat;
-
-    @Column(name = "lng")
-    private Double lng;
+    @Embedded
+    private Location location;
 }

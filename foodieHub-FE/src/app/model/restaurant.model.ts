@@ -1,3 +1,11 @@
+export interface Location {
+  city: string;
+  state: string;
+  country: string;
+  lat: number;
+  lng: number;
+}
+
 export interface MenuExtra {
   label: string;
   amount: number;
@@ -43,8 +51,7 @@ export interface Restaurant {
   fssaiNumber?: string;
   gstNumber?: string;
   operatingHours?: DaySchedule[];
-  lat?: number;
-  lng?: number;
+  location?: Location;
   distanceKm?: number;
 }
 
@@ -57,7 +64,7 @@ export interface AdminUserResponse {
   roleName: string;
   status: string;
   restaurantName?: string;
-  restaurantAddress?: string;
+  restaurantLocation?: Location;
   fssaiNumber?: string;
   gstNumber?: string;
   vehicleType?: string;

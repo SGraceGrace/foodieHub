@@ -30,9 +30,20 @@
           <input type="text" placeholder="Restaurant Name" formControlName="restaurantName" />
         </div>
 
-        <div class="input-field">
+        <div class="input-field location-field" (click)="showLocationPicker = true">
           <span>📍</span>
-          <input type="text" placeholder="Restaurant Address" formControlName="restaurantAddress" />
+          <span class="location-text" [class.placeholder]="!restaurantLocation">
+            {{ restaurantLocation ? restaurantLocation.city + ', ' + restaurantLocation.state + ', ' + restaurantLocation.country : 'Pin Restaurant Location' }}
+          </span>
+        </div>
+        <div class="field-hint error" *ngIf="locationError">Please pin your restaurant location on the map.</div>
+
+        <div class="location-picker-overlay" *ngIf="showLocationPicker">
+          <app-location-picker
+            placeholder="Search restaurant location..."
+            (locationPicked)="onLocationPicked($event)"
+            (cancelled)="showLocationPicker = false">
+          </app-location-picker>
         </div>
 
         <div class="input-row">

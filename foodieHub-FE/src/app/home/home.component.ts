@@ -44,8 +44,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.loadSlides();
     this.cuisineFilters = Object.keys(CUISINE_EMOJI).filter(k => k !== 'default');
     this.deliveryAddressService.selected$.subscribe(addr => {
-      this.userLat = addr?.lat ?? undefined;
-      this.userLng = addr?.lng ?? undefined;
+      this.userLat = addr?.location?.lat ?? undefined;
+      this.userLng = addr?.location?.lng ?? undefined;
       this.hasDeliveryAddress = !!addr;
       this.deliveryAddressText = addr?.addressText ?? '';
       this.deliveryAddressLabel = addr?.label ?? '';

@@ -9,6 +9,9 @@ import com.project.foodieHub.enums.Role;
 import com.project.foodieHub.enums.UserStatus;
 import com.project.foodieHub.exception_handler.CommonException;
 import com.project.foodieHub.exception_handler.UserAlreadyExistsException;
+import com.project.foodieHub.entity.Location;
+import com.project.foodieHub.entity.PartnerProfile;
+import com.project.foodieHub.repo.PartnerProfileRepo;
 import com.project.foodieHub.repo.RoleRepo;
 import com.project.foodieHub.repo.UserRepo;
 import com.project.foodieHub.service.PartnerService;
@@ -36,6 +39,7 @@ public class PartnerServiceImpl implements PartnerService {
 
     private final UserRepo userRepo;
     private final RoleRepo roleRepo;
+    private final PartnerProfileRepo partnerProfileRepo;
     private final PasswordEncoder passwordEncoder;
     private final RestTemplate restTemplate;
     private final RabbitTemplate rabbitTemplate;
@@ -60,10 +64,6 @@ public class PartnerServiceImpl implements PartnerService {
         owner.setUserName(dto.getEmail());
         owner.setPassword(passwordEncoder.encode(dto.getPassword()));
         owner.setPhone(dto.getPhone());
-        owner.setBio(dto.getRestaurantName());
-        owner.setRestaurantAddress(dto.getRestaurantAddress());
-        owner.setFssaiNumber(dto.getFssaiNumber());
-        owner.setGstNumber(dto.getGstNumber());
         owner.setRole(ownerRole);
         owner.setStatus(UserStatus.PENDING);
         owner.setAuthProvider(AuthProvider.LOCAL);
@@ -76,6 +76,14 @@ public class PartnerServiceImpl implements PartnerService {
         } finally {
             SecurityContextHolder.clearContext();
         }
+
+        Location loc = null;
+        if (dto.getRestaurantLocation() != null) {
+            var l = dto.getRestaurantLocation();
+            loc = new Location(l.getCity(), l.getState(), l.getCountry(), l.getLat(), l.getLng());
+        }
+        partnerProfileRepo.save(new PartnerProfile(saved, dto.getRestaurantName(),
+                dto.getFssaiNumber(), dto.getGstNumber(), loc));
 
         createRestaurantInFoodService(dto, saved.getId());
         publishPartnerRegisteredEvent(dto, saved);
@@ -163,17 +171,15 @@ public class PartnerServiceImpl implements PartnerService {
 
     private void createRestaurantInFoodService(PartnerRegisterRequestDTO dto, Long ownerId) {
         try {
-            restTemplate.postForObject(
-                    foodServiceUrl + "/api/v1/restaurants",
-                    Map.of(
-                            "name", dto.getRestaurantName(),
-                            "ownerId", String.valueOf(ownerId),
-                            "address", dto.getRestaurantAddress() != null ? dto.getRestaurantAddress() : "",
-                            "fssaiNumber", dto.getFssaiNumber() != null ? dto.getFssaiNumber() : "",
-                            "gstNumber", dto.getGstNumber() != null ? dto.getGstNumber() : ""
-                    ),
-                    Object.class
-            );
+            var body = new java.util.HashMap<String, Object>();
+            body.put("name", dto.getRestaurantName());
+            body.put("ownerId", String.valueOf(ownerId));
+            body.put("fssaiNumber", dto.getFssaiNumber() != null ? dto.getFssaiNumber() : "");
+            body.put("gstNumber", dto.getGstNumber() != null ? dto.getGstNumber() : "");
+            if (dto.getRestaurantLocation() != null) {
+                body.put("location", dto.getRestaurantLocation());
+            }
+            restTemplate.postForObject(foodServiceUrl + "/api/v1/restaurants", body, Object.class);
         } catch (Exception e) {
             log.warn("Could not create restaurant in food-service for owner {}: {}", ownerId, e.getMessage());
         }

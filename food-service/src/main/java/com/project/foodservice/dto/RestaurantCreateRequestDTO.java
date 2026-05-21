@@ -6,10 +6,8 @@ import lombok.Data;
 public class RestaurantCreateRequestDTO {
     private String name;
     private String ownerId;
-    private String address;
     private String fssaiNumber;
     private String gstNumber;
     private String imageUrl;
-    private Double lat;
-    private Double lng;
+    private LocationDTO location;
 }

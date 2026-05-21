@@ -11,12 +11,25 @@ export interface PickedLocation {
   lat: number;
   lng: number;
   displayName: string;
+  city: string;
+  state: string;
+  country: string;
+}
+
+interface NominatimAddress {
+  city?: string;
+  town?: string;
+  village?: string;
+  municipality?: string;
+  state?: string;
+  country?: string;
 }
 
 interface NominatimResult {
   lat: string;
   lon: string;
   display_name: string;
+  address?: NominatimAddress;
 }
 
 @Component({
@@ -52,7 +65,7 @@ export class LocationPickerComponent implements OnInit, OnDestroy {
         if (q.trim().length < 3) return of([]);
         this.searching = true;
         return this.http.get<NominatimResult[]>(
-          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5`,
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&addressdetails=1`,
           { headers: { 'Accept-Language': 'en' } }
         );
       })
@@ -105,7 +118,7 @@ export class LocationPickerComponent implements OnInit, OnDestroy {
     const lng = parseFloat(s.lon);
     this.searchQuery = s.display_name;
     this.suggestions = [];
-    this.picked = { lat, lng, displayName: s.display_name };
+    this.picked = { lat, lng, displayName: s.display_name, ...this.extractAddress(s.address) };
     this.marker.setLatLng([lat, lng]);
     this.map.setView([lat, lng], 15);
   }
@@ -117,12 +130,20 @@ export class LocationPickerComponent implements OnInit, OnDestroy {
       next: res => {
         const name = res.display_name ?? `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
         this.searchQuery = name;
-        this.picked = { lat, lng, displayName: name };
+        this.picked = { lat, lng, displayName: name, ...this.extractAddress(res.address) };
       },
       error: () => {
-        this.picked = { lat, lng, displayName: `${lat.toFixed(5)}, ${lng.toFixed(5)}` };
+        this.picked = { lat, lng, displayName: `${lat.toFixed(5)}, ${lng.toFixed(5)}`, city: '', state: '', country: '' };
       }
     });
+  }
+
+  private extractAddress(address?: NominatimAddress): { city: string; state: string; country: string } {
+    return {
+      city: address?.city ?? address?.town ?? address?.village ?? address?.municipality ?? '',
+      state: address?.state ?? '',
+      country: address?.country ?? '',
+    };
   }
 
   confirm() {

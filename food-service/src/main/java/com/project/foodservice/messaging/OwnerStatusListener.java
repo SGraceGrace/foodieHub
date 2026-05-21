@@ -1,6 +1,8 @@
 package com.project.foodservice.messaging;
 
+import com.project.foodservice.document.OwnerApproval;
 import com.project.foodservice.enums.RestaurantStatus;
+import com.project.foodservice.repo.OwnerApprovalRepo;
 import com.project.foodservice.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Component;
 public class OwnerStatusListener {
 
     private final RestaurantService restaurantService;
+    private final OwnerApprovalRepo ownerApprovalRepo;
 
     @RabbitListener(queues = RabbitMQConfig.OWNER_STATUS_QUEUE)
     public void handleOwnerStatus(OwnerStatusEvent event) {
@@ -28,6 +31,7 @@ public class OwnerStatusListener {
         };
 
         if (newStatus != null) {
+            ownerApprovalRepo.save(new OwnerApproval(event.getOwnerId(), newStatus == RestaurantStatus.ACTIVE));
             restaurantService.updateStatusByOwnerId(event.getOwnerId(), newStatus);
             log.info("Updated restaurants for ownerId={} to status={}", event.getOwnerId(), newStatus);
         }

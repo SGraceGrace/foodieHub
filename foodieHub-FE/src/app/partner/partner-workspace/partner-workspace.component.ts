@@ -89,10 +89,9 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
 
   // ── Restaurant details edit ───────────────────────────────────────
   editingDetails = false;
-  detailsDraft = { name: '', cuisine: '', address: '', deliveryTime: null as number | null, minOrder: null as number | null, fssaiNumber: '', gstNumber: '' };
+  detailsDraft = { name: '', cuisine: '', deliveryTime: null as number | null, minOrder: null as number | null, fssaiNumber: '', gstNumber: '' };
   detailsImageUrl = '';
-  detailsLat: number | undefined;
-  detailsLng: number | undefined;
+  detailsLocation: PickedLocation | null = null;
   showDetailsLocationPicker = false;
   detailsLocationError = false;
   uploadingDetailsImage = false;
@@ -449,15 +448,16 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
     this.detailsDraft = {
       name:         this.restaurant.name ?? '',
       cuisine:      this.restaurant.cuisine?.join(', ') ?? '',
-      address:      this.restaurant.address ?? '',
       deliveryTime: this.restaurant.deliveryTime ?? null,
       minOrder:     this.restaurant.minOrder ?? null,
       fssaiNumber:  this.restaurant.fssaiNumber ?? '',
       gstNumber:    this.restaurant.gstNumber ?? '',
     };
     this.detailsImageUrl = this.restaurant.imageUrl ?? '';
-    this.detailsLat = this.restaurant.lat ?? undefined;
-    this.detailsLng = this.restaurant.lng ?? undefined;
+    const loc = this.restaurant.location;
+    this.detailsLocation = loc
+      ? { lat: loc.lat, lng: loc.lng, city: loc.city, state: loc.state, country: loc.country, displayName: `${loc.city}, ${loc.state}, ${loc.country}` }
+      : null;
     this.detailsSaveMsg = '';
     this.editingDetails = true;
   }
@@ -470,10 +470,8 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   onDetailsLocationPicked(loc: PickedLocation) {
-    this.detailsLat = loc.lat;
-    this.detailsLng = loc.lng;
+    this.detailsLocation = loc;
     this.detailsLocationError = false;
-    if (!this.detailsDraft.address) this.detailsDraft.address = loc.displayName;
     this.showDetailsLocationPicker = false;
   }
 
@@ -489,7 +487,7 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
 
   saveDetails() {
     if (!this.restaurant) return;
-    if (!this.detailsLat || !this.detailsLng) {
+    if (!this.detailsLocation) {
       this.detailsLocationError = true;
       return;
     }
@@ -501,14 +499,15 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
     this.partnerService.updateRestaurantDetails(this.restaurant.id, {
       name:         this.detailsDraft.name.trim()        || undefined,
       cuisine:      cuisineList.length ? cuisineList     : undefined,
-      address:      this.detailsDraft.address.trim()     || undefined,
       deliveryTime: this.detailsDraft.deliveryTime       ?? undefined,
       minOrder:     this.detailsDraft.minOrder           ?? undefined,
       fssaiNumber:  this.detailsDraft.fssaiNumber.trim() || undefined,
       gstNumber:    this.detailsDraft.gstNumber.trim()   || undefined,
       imageUrl:     this.detailsImageUrl                 || undefined,
-      lat:          this.detailsLat,
-      lng:          this.detailsLng,
+      location:     this.detailsLocation ? {
+        city: this.detailsLocation.city, state: this.detailsLocation.state,
+        country: this.detailsLocation.country, lat: this.detailsLocation.lat, lng: this.detailsLocation.lng,
+      } : undefined,
     }).subscribe({
       next: res => {
         if (res.data) this.restaurant = res.data;
