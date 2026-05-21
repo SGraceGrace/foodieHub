@@ -29,7 +29,7 @@ export class PartnerDashboardComponent implements OnInit {
   pagination = { currentPage: 0, totalPages: 0, totalElements: 0, pageSize: 12 };
   loading = false;
   showCreateForm = false;
-  newRestaurant = { name: '', fssaiNumber: '', gstNumber: '' };
+  newRestaurant = { name: '', address: '', fssaiNumber: '', gstNumber: '' };
   creating = false;
   createError = '';
   restaurantImageUrl = '';
@@ -135,6 +135,9 @@ export class PartnerDashboardComponent implements OnInit {
     return !!(this.staffRestaurantFilter || this.staffStatusFilter);
   }
 
+  get restaurantLat(): number | null { return this.restaurantLocation?.lat ?? null; }
+  get restaurantLng(): number | null { return this.restaurantLocation?.lng ?? null; }
+
   constructor(
     private tokenService: TokenService,
     private partnerService: PartnerService,
@@ -204,7 +207,7 @@ export class PartnerDashboardComponent implements OnInit {
 
   cancelCreate() {
     this.showCreateForm = false;
-    this.newRestaurant = { name: '', fssaiNumber: '', gstNumber: '' };
+    this.newRestaurant = { name: '', address: '', fssaiNumber: '', gstNumber: '' };
     this.restaurantImageUrl = '';
     this.restaurantLocation = null;
     this.createError = '';
@@ -236,7 +239,7 @@ export class PartnerDashboardComponent implements OnInit {
       next: () => {
         this.creating = false;
         this.showCreateForm = false;
-        this.newRestaurant = { name: '', fssaiNumber: '', gstNumber: '' };
+        this.newRestaurant = { name: '', address: '', fssaiNumber: '', gstNumber: '' };
         this.restaurantImageUrl = '';
         this.restaurantLocation = null;
         this.loadRestaurants(0);

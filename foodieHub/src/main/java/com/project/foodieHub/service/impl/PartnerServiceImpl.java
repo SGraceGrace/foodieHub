@@ -90,12 +90,14 @@ public class PartnerServiceImpl implements PartnerService {
     }
 
     private void publishPartnerRegisteredEvent(PartnerRegisterRequestDTO dto, User saved) {
+        var loc = dto.getRestaurantLocation();
+        String address = loc != null ? String.join(", ", loc.getCity(), loc.getState(), loc.getCountry()) : "";
         var event = new PartnerRegisteredEvent(
                 saved.getFirstName() + " " + saved.getLastName(),
                 saved.getEmail(),
                 saved.getPhone(),
                 dto.getRestaurantName(),
-                dto.getRestaurantAddress(),
+                address,
                 dto.getFssaiNumber(),
                 dto.getGstNumber()
         );

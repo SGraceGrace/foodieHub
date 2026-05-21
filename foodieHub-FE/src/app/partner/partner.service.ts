@@ -12,9 +12,9 @@ export interface PartnerRegisterRequest {
   password: string;
   phone: string;
   restaurantName: string;
-  restaurantAddress: string;
   fssaiNumber: string;
   gstNumber?: string;
+  restaurantLocation: { city: string; state: string; country: string; lat: number; lng: number };
 }
 
 @Injectable({ providedIn: 'root' })
@@ -38,12 +38,11 @@ export class PartnerService {
   createRestaurant(payload: {
     name: string;
     ownerId: number;
-    address: string;
+    address?: string;
     fssaiNumber: string;
     gstNumber?: string;
     imageUrl?: string;
-    lat?: number;
-    lng?: number;
+    location?: { city: string; state: string; country: string; lat: number; lng: number };
   }): Observable<ApiResponse<Restaurant>> {
     return this.http.post<ApiResponse<Restaurant>>(this.restaurantBase, {
       ...payload,
@@ -80,7 +79,7 @@ export class PartnerService {
     name?: string; cuisine?: string[]; address?: string;
     deliveryTime?: number; minOrder?: number;
     fssaiNumber?: string; gstNumber?: string; imageUrl?: string;
-    lat?: number; lng?: number;
+    location?: { city: string; state: string; country: string; lat: number; lng: number };
   }): Observable<ApiResponse<Restaurant>> {
     return this.http.put<ApiResponse<Restaurant>>(`${this.restaurantBase}/${id}`, payload);
   }

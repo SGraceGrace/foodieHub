@@ -38,7 +38,7 @@ export class UserService {
     return this.http.get<ApiResponse<UserAddress[]>>(this.addressesUrl);
   }
 
-  addAddress(data: { label: string; addressText: string; landmark?: string; defaultAddress: boolean; lat?: number; lng?: number }): Observable<ApiResponse<UserAddress>> {
+  addAddress(data: { label: string; addressText: string; landmark?: string; defaultAddress: boolean; location?: { city: string; state: string; country: string; lat: number; lng: number } }): Observable<ApiResponse<UserAddress>> {
     return this.http.post<ApiResponse<UserAddress>>(this.addressesUrl, data);
   }
 

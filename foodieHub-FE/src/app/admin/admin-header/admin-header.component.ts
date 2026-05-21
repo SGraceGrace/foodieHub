@@ -1,9 +1,11 @@
 import { Component, EventEmitter, HostListener, OnDestroy, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
 import { TokenService } from '../../core/shared/token.service';
 import { AdminService } from '../admin.service';
 import { PushNotificationService } from '../../core/services/push-notification.service';
+import { AdminNotificationWsService } from '../../core/services/admin-notification-ws.service';
 import { AdminNotification } from '../../model/restaurant.model';
 
 @Component({
@@ -25,18 +27,25 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
   pushSupported = false;
   pushPermission: NotificationPermission = 'default';
 
-  private pollInterval: ReturnType<typeof setInterval> | null = null;
+  private wsSub: Subscription | null = null;
 
   constructor(
     private tokenService: TokenService,
     private router: Router,
     private adminService: AdminService,
     private pushService: PushNotificationService,
+    private notificationWs: AdminNotificationWsService,
   ) {}
 
   ngOnInit() {
     this.loadNotifications();
-    this.pollInterval = setInterval(() => this.loadNotifications(), 30_000);
+
+    this.notificationWs.connect();
+    this.wsSub = this.notificationWs.notification$.subscribe(n => {
+      this.notifications = [n, ...this.notifications];
+      this.unreadCount++;
+      this.refreshPendingCounts();
+    });
 
     this.pushSupported = this.pushService.isSupported;
     this.pushService.init();
@@ -44,7 +53,8 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.pollInterval) clearInterval(this.pollInterval);
+    this.wsSub?.unsubscribe();
+    this.notificationWs.disconnect();
   }
 
   loadNotifications() {

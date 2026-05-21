@@ -89,7 +89,7 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
 
   // ── Restaurant details edit ───────────────────────────────────────
   editingDetails = false;
-  detailsDraft = { name: '', cuisine: '', deliveryTime: null as number | null, minOrder: null as number | null, fssaiNumber: '', gstNumber: '' };
+  detailsDraft = { name: '', address: '', cuisine: '', deliveryTime: null as number | null, minOrder: null as number | null, fssaiNumber: '', gstNumber: '' };
   detailsImageUrl = '';
   detailsLocation: PickedLocation | null = null;
   showDetailsLocationPicker = false;
@@ -355,6 +355,9 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   // ── Common helpers ────────────────────────────────────────────────
+  get detailsLat(): number | null { return this.detailsLocation?.lat ?? null; }
+  get detailsLng(): number | null { return this.detailsLocation?.lng ?? null; }
+
   get ownerInitials(): string {
     const f = this.user?.firstName?.[0] ?? '';
     const l = this.user?.lastName?.[0] ?? '';
@@ -447,6 +450,7 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
     if (!this.restaurant) return;
     this.detailsDraft = {
       name:         this.restaurant.name ?? '',
+      address:      this.restaurant.address ?? '',
       cuisine:      this.restaurant.cuisine?.join(', ') ?? '',
       deliveryTime: this.restaurant.deliveryTime ?? null,
       minOrder:     this.restaurant.minOrder ?? null,

@@ -1,6 +1,7 @@
 package com.project.notificationservice.listener;
 
 import com.project.notificationservice.config.RabbitMQConfig;
+import com.project.notificationservice.dto.NotificationDTO;
 import com.project.notificationservice.entity.Notification;
 import com.project.notificationservice.event.ActivityLoggedEvent;
 import com.project.notificationservice.event.DriverRegisteredEvent;
@@ -14,6 +15,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -23,11 +25,20 @@ public class NotificationListener {
 
     private final JavaMailSender mailSender;
     private final NotificationRepo notificationRepo;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Value("${admin.email}")
     private String adminEmail;
 
     // ── Partner registration → save notification + email admin ───
+
+    private void saveAndPush(Notification n) {
+        Notification saved = notificationRepo.save(n);
+        NotificationDTO dto = new NotificationDTO(
+                saved.getId(), saved.getType(), saved.getMessage(),
+                saved.getActorEmail(), saved.getCreatedAt());
+        messagingTemplate.convertAndSend("/topic/admin-notifications", dto);
+    }
 
     @RabbitListener(queues = RabbitMQConfig.PARTNER_QUEUE)
     public void onPartnerRegistered(PartnerRegisteredEvent event) {
@@ -36,7 +47,7 @@ public class NotificationListener {
         n.setMessage("New restaurant registration: " + event.getRestaurantName()
                 + " by " + event.getOwnerName());
         n.setVisibleTo("ALL_ADMINS");
-        notificationRepo.save(n);
+        saveAndPush(n);
         log.info("Saved PENDING_OWNER notification for partner: {}", event.getEmail());
 
         try {
@@ -59,7 +70,7 @@ public class NotificationListener {
         n.setMessage("New driver registration by " + event.getDriverName()
                 + " (" + event.getVehicleType() + ")");
         n.setVisibleTo("ALL_ADMINS");
-        notificationRepo.save(n);
+        saveAndPush(n);
         log.info("Saved PENDING_DRIVER notification for driver: {}", event.getEmail());
     }
 
@@ -74,7 +85,7 @@ public class NotificationListener {
         n.setMessage(event.getMessage());
         n.setActorEmail(event.getActorEmail()); // stored for display, not for filtering
         n.setVisibleTo("SUPER_ADMIN_ONLY");
-        notificationRepo.save(n);
+        saveAndPush(n);
         log.info("Saved ACTIVITY notification: {}", event.getMessage());
     }
 

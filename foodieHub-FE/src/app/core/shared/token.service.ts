@@ -35,11 +35,8 @@ export class TokenService {
   }
 
   clearTokens(): void {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('userInfo');
-    localStorage.removeItem('isAuthenticated');
-    this.userInfoSubject.next(null); 
+    localStorage.clear();
+    this.userInfoSubject.next(null);
   }
 
   private getUserInfoFromStorage(): UserDetails | null {

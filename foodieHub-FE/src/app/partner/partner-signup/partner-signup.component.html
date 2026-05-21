@@ -38,14 +38,6 @@
         </div>
         <div class="field-hint error" *ngIf="locationError">Please pin your restaurant location on the map.</div>
 
-        <div class="location-picker-overlay" *ngIf="showLocationPicker">
-          <app-location-picker
-            placeholder="Search restaurant location..."
-            (locationPicked)="onLocationPicked($event)"
-            (cancelled)="showLocationPicker = false">
-          </app-location-picker>
-        </div>
-
         <div class="input-row">
           <div>
             <div class="input-field" [class.field-error]="fssaiInvalid">
@@ -104,5 +96,19 @@
       </div>
     </div>
 
+  </div>
+</div>
+
+<div class="location-picker-overlay" *ngIf="showLocationPicker" (click).self="showLocationPicker = false">
+  <div class="location-picker-modal">
+    <div class="lp-modal-hdr">
+      <h3>Pin Restaurant Location</h3>
+      <button type="button" class="lp-close" (click)="showLocationPicker = false">✕</button>
+    </div>
+    <app-location-picker
+      placeholder="Search restaurant location..."
+      (locationPicked)="onLocationPicked($event)"
+      (cancelled)="showLocationPicker = false">
+    </app-location-picker>
   </div>
 </div>
