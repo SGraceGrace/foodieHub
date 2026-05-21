@@ -9,13 +9,13 @@ import com.project.notificationservice.event.OrderPlacedEvent;
 import com.project.notificationservice.event.OwnerStatusEvent;
 import com.project.notificationservice.event.PartnerRegisteredEvent;
 import com.project.notificationservice.repo.NotificationRepo;
+import com.project.notificationservice.service.SseEmitterService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 @Slf4j
@@ -25,7 +25,7 @@ public class NotificationListener {
 
     private final JavaMailSender mailSender;
     private final NotificationRepo notificationRepo;
-    private final SimpMessagingTemplate messagingTemplate;
+    private final SseEmitterService sseEmitterService;
 
     @Value("${admin.email}")
     private String adminEmail;
@@ -37,7 +37,11 @@ public class NotificationListener {
         NotificationDTO dto = new NotificationDTO(
                 saved.getId(), saved.getType(), saved.getMessage(),
                 saved.getActorEmail(), saved.getCreatedAt());
-        messagingTemplate.convertAndSend("/topic/admin-notifications", dto);
+        if ("SUPER_ADMIN_ONLY".equals(saved.getVisibleTo())) {
+            sseEmitterService.pushToSuperAdmins(dto);
+        } else {
+            sseEmitterService.pushToAllAdmins(dto);
+        }
     }
 
     @RabbitListener(queues = RabbitMQConfig.PARTNER_QUEUE)

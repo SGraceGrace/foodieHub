@@ -1,38 +1,70 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { Client, IMessage } from '@stomp/stompjs';
-import SockJS from 'sockjs-client';
 import { Subject } from 'rxjs';
 import { AdminNotification } from '../../model/restaurant.model';
 import { environment } from '../../../environments/environment';
+import { TokenService } from '../shared/token.service';
 
 @Injectable({ providedIn: 'root' })
 export class AdminNotificationWsService implements OnDestroy {
 
-  private client: Client | null = null;
   private readonly notificationSubject = new Subject<AdminNotification>();
-
   readonly notification$ = this.notificationSubject.asObservable();
 
+  private abortController: AbortController | null = null;
+
+  constructor(private tokenService: TokenService) {}
+
   connect(): void {
-    if (this.client?.active) return;
+    if (this.abortController) return;
+    const token = this.tokenService.getAccessToken();
+    if (!token) return;
+    this.abortController = new AbortController();
+    this.stream(token);
+  }
 
-    this.client = new Client({
-      webSocketFactory: () => new SockJS(`${environment.notificationServiceUrl}/ws`),
-      reconnectDelay: 5000,
-      onConnect: () => {
-        this.client!.subscribe('/topic/admin-notifications', (msg: IMessage) => {
-          const notification: AdminNotification = JSON.parse(msg.body);
-          this.notificationSubject.next(notification);
+  private async stream(token: string): Promise<void> {
+    const url = `${environment.apiBaseUrl}/api/v1/admin/notifications/stream`;
+    while (!this.abortController?.signal.aborted) {
+      try {
+        const res = await fetch(url, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: this.abortController!.signal,
         });
-      },
-    });
 
-    this.client.activate();
+        if (res.status === 401) return;
+
+        const reader = res.body!.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const parts = buffer.split('\n\n');
+          buffer = parts.pop() ?? '';
+
+          for (const part of parts) {
+            const dataLine = part.split('\n').find(l => l.startsWith('data:'));
+            if (dataLine) {
+              try {
+                const notification: AdminNotification = JSON.parse(dataLine.slice(5).trim());
+                this.notificationSubject.next(notification);
+              } catch { /* malformed event — skip */ }
+            }
+          }
+        }
+      } catch (e: unknown) {
+        if (e instanceof DOMException && e.name === 'AbortError') return;
+        await new Promise(r => setTimeout(r, 5000));
+      }
+    }
   }
 
   disconnect(): void {
-    this.client?.deactivate();
-    this.client = null;
+    this.abortController?.abort();
+    this.abortController = null;
   }
 
   ngOnDestroy(): void {
