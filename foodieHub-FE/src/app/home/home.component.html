@@ -126,19 +126,38 @@
     </div>
     <div class="rest-grid" *ngIf="restaurants.length > 0">
       <div class="rest-card" *ngFor="let r of restaurants">
-        <div class="rest-img" [style.background]="getBg(r)">{{ getEmoji(r) }}</div>
+
+        <!-- Image area -->
+        <div class="rest-img" [style.background]="r.imageUrl ? 'none' : getBg(r)">
+          <img *ngIf="r.imageUrl" [src]="r.imageUrl" [alt]="r.name" class="rest-cover" />
+          <span *ngIf="!r.imageUrl" class="rest-emoji">{{ getEmoji(r) }}</span>
+
+          <span class="rest-badge-status" [class.closed]="r.open === false">
+            {{ r.open === false ? 'Closed' : 'Open now' }}
+          </span>
+          <span class="rest-badge-dist" *ngIf="getDistanceLabel(r)">
+            📍 {{ getDistanceLabel(r) }}
+          </span>
+        </div>
+
+        <!-- Card body -->
         <div class="rest-body">
-          <h3>{{ r.name }}</h3>
-          <div class="rest-meta">
-            <span>⭐ {{ r.rating }}</span>
-            <span>⏱ {{ r.deliveryTime }} min</span>
-            <span>Min ₹{{ r.minOrder }}</span>
-            <span class="rest-distance" *ngIf="getDistanceLabel(r)">📍 {{ getDistanceLabel(r) }}</span>
+          <div class="rest-body-top">
+            <h3>{{ r.name }}</h3>
+            <span class="rest-rating">⭐ {{ r.rating ?? '—' }}</span>
           </div>
           <div class="rtags">
-            <span class="rtag" *ngFor="let c of r.cuisine">{{ c }}</span>
+            <span class="rtag" *ngFor="let c of (r.cuisine ?? []) | slice:0:3">{{ c }}</span>
+          </div>
+          <div class="rest-meta">
+            <span>⏱ {{ r.deliveryTime ?? '—' }} min</span>
+            <span class="meta-dot">·</span>
+            <span>Min ₹{{ r.minOrder ?? 0 }}</span>
+            <span class="meta-dot">·</span>
+            <span>{{ r.priceRange ?? '₹₹' }}</span>
           </div>
         </div>
+
       </div>
     </div>
   </div>

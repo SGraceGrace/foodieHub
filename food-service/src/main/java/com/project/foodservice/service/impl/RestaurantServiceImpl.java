@@ -96,6 +96,14 @@ public class RestaurantServiceImpl implements RestaurantService {
             var l = request.getLocation();
             restaurant.setLocation(new Location(l.getCity(), l.getState(), l.getCountry(), l.getLat(), l.getLng()));
         }
+        if (request.getCuisine() != null)       restaurant.setCuisine(request.getCuisine());
+        if (request.getMinOrder() > 0)          restaurant.setMinOrder(request.getMinOrder());
+        if (request.getDeliveryTime() > 0)      restaurant.setDeliveryTime(request.getDeliveryTime());
+        if (request.getPriceRange() != null)    restaurant.setPriceRange(request.getPriceRange());
+        if (request.getOperatingHours() != null) {
+            restaurant.setOperatingHours(request.getOperatingHours());
+            restaurant.setOpen(computeIsOpen(restaurant));
+        }
         boolean approved = ownerApprovalRepo.findById(request.getOwnerId())
                 .map(OwnerApproval::isApproved).orElse(false);
         restaurant.setStatus(approved ? RestaurantStatus.ACTIVE : RestaurantStatus.PENDING);

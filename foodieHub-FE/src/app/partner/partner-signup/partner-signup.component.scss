@@ -141,6 +141,33 @@ $font-sans: 'DM Sans', sans-serif;
   &.selected { background: $gold; border-color: $gold; color: $text-dark; font-weight: 600; }
 }
 
+// ── Cover image upload ─────────────────────────────────────────
+.upload-area {
+  border: 1.5px dashed #ddd; border-radius: 8px;
+  padding: 1rem; margin-bottom: .8rem;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; cursor: pointer; text-align: center; transition: border-color .2s;
+  min-height: 90px; position: relative;
+
+  &:hover { border-color: $gold; }
+}
+
+.upload-icon  { font-size: 1.5rem; }
+.upload-label { font-size: 0.85rem; font-weight: 600; color: $text-dark; }
+.upload-sub   { font-size: 0.75rem; color: $text-light; }
+
+.image-preview {
+  width: 100%; max-height: 140px; object-fit: cover;
+  border-radius: 6px; display: block;
+}
+
+.remove-image {
+  margin-top: 6px; padding: 4px 12px; border-radius: 6px;
+  border: 1px solid #ddd; background: white; color: #e53935;
+  font-size: 0.78rem; cursor: pointer; font-family: $font-sans;
+  &:hover { background: #ffeaea; }
+}
+
 // ── Location ───────────────────────────────────────────────────
 .location-field { cursor: pointer; }
 .location-text {
@@ -281,6 +308,77 @@ $font-sans: 'DM Sans', sans-serif;
   display: flex; align-items: flex-start; gap: 10px;
   font-size: 0.82rem; color: $text; line-height: 1.4;
   span:first-child { font-size: 1rem; flex-shrink: 0; }
+}
+
+// ── Responsive ────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .auth-bg {
+    padding: 1rem;
+    align-items: flex-start;
+  }
+
+  .auth-card {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 100%;
+  }
+
+  .auth-right {
+    display: none;
+  }
+
+  .auth-left {
+    padding: 1.5rem 1.25rem;
+    border-right: none;
+    overflow-y: visible;
+    height: auto;
+  }
+
+  .input-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .biz-row {
+    grid-template-columns: 1fr;
+
+    .biz-field.full-width {
+      grid-column: 1;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-left {
+    padding: 1.25rem 1rem;
+  }
+
+  .step-title {
+    font-size: 1rem;
+  }
+
+  .day-row {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .day-toggle {
+    width: 72px;
+  }
+
+  .time-input {
+    width: 80px;
+    padding: 4px 6px;
+  }
+
+  .form-nav {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cuisine-chip {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+  }
 }
 
 // ── Location picker modal ─────────────────────────────────────

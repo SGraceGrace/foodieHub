@@ -80,9 +80,17 @@
             <input type="text" placeholder="Restaurant Name" formControlName="restaurantName" />
           </div>
 
-          <div class="input-field">
-            <span>🖼️</span>
-            <input type="url" placeholder="Cover Image URL (optional)" formControlName="imageUrl" />
+          <div class="upload-area" (click)="imageInput.click()">
+            <input #imageInput type="file" accept="image/*" hidden (change)="onImageSelected($event)" />
+            <ng-container *ngIf="!imagePreviewUrl">
+              <span class="upload-icon">🖼️</span>
+              <div class="upload-label">Upload Cover Image</div>
+              <div class="upload-sub">Optional · JPG, PNG, WebP</div>
+            </ng-container>
+            <ng-container *ngIf="imagePreviewUrl">
+              <img [src]="imagePreviewUrl" class="image-preview" alt="Cover preview" />
+              <button type="button" class="remove-image" (click)="removeImage($event)">✕ Remove</button>
+            </ng-container>
           </div>
 
           <!-- Cuisine -->

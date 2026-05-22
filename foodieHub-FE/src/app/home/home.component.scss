@@ -389,22 +389,69 @@ $font-sans:  'DM Sans', sans-serif;
   grid-template-columns: repeat(auto-fill, minmax(270px,1fr));
   gap: 18px;
 }
+
 .rest-card {
-  background: white; border-radius: 12px; overflow: hidden;
+  background: white; border-radius: 14px; overflow: hidden;
   box-shadow: $shadow; cursor: pointer; transition: all .3s;
   &:hover { transform: translateY(-4px); box-shadow: $shadow-lg; }
 }
+
 .rest-img {
-  height: 130px; display: flex;
-  align-items: center; justify-content: center; font-size: 52px;
+  position: relative;
+  height: 160px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
 }
+
+.rest-cover {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+
+.rest-emoji { font-size: 56px; line-height: 1; }
+
+.rest-badge-status {
+  position: absolute; top: 10px; left: 10px;
+  padding: 3px 9px; border-radius: 20px;
+  font-size: 11px; font-weight: 700;
+  background: #4caf50; color: white;
+  &.closed { background: #e53935; }
+}
+
+.rest-badge-dist {
+  position: absolute; top: 10px; right: 10px;
+  padding: 3px 9px; border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+  background: rgba(0,0,0,.45); color: white;
+  backdrop-filter: blur(4px);
+}
+
 .rest-body { padding: 13px; }
-.rest-body h3 { font-size: .95rem; color: $text-dark; font-weight: 700; margin: 0 0 4px; }
-.rest-meta {
-  display: flex; gap: 10px; font-size: .78rem;
-  color: $text-light; flex-wrap: wrap;
+
+.rest-body-top {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 6px;
+  margin-bottom: 5px;
+  h3 { font-size: .95rem; color: $text-dark; font-weight: 700; margin: 0; flex: 1; }
 }
-.rtags { display: flex; gap: 5px; margin-top: 7px; flex-wrap: wrap; }
+
+.rest-rating {
+  font-size: .8rem; font-weight: 700;
+  color: $text-dark; white-space: nowrap;
+  background: $gold-light; padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.rest-meta {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .78rem; color: $text-light;
+  margin-top: 7px; flex-wrap: wrap;
+}
+
+.meta-dot { color: #ccc; }
+
+.rtags { display: flex; gap: 5px; flex-wrap: wrap; }
 .rtag {
   font-size: 11px; padding: 3px 9px;
   background: $bg-warm; border-radius: 20px; color: $text-light;

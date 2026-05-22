@@ -29,6 +29,8 @@ export class PartnerSignupComponent {
   restaurantLocation: PickedLocation | null = null;
   locationError = false;
 
+  imagePreviewUrl: string | null = null;
+
   readonly cuisines = CUISINES;
   selectedCuisines = new Set<string>();
   cuisineError = false;
@@ -99,6 +101,19 @@ export class PartnerSignupComponent {
     this.form.get('priceRange')?.setValue(p);
   }
 
+  onImageSelected(event: Event) {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => { this.imagePreviewUrl = e.target?.result as string; };
+    reader.readAsDataURL(file);
+  }
+
+  removeImage(event: MouseEvent) {
+    event.stopPropagation();
+    this.imagePreviewUrl = null;
+  }
+
   onSubmit() {
     ['restaurantName', 'fssaiNumber', 'minOrder', 'deliveryTime'].forEach(k => this.form.get(k)?.markAsTouched());
     if (this.form.invalid) return;
@@ -111,7 +126,7 @@ export class PartnerSignupComponent {
       email: v.email, password: v.password, phone: v.phone,
       restaurantName: v.restaurantName,
       fssaiNumber: v.fssaiNumber, gstNumber: v.gstNumber,
-      imageUrl: v.imageUrl,
+      imageUrl: this.imagePreviewUrl ?? '',
       minOrder: v.minOrder, deliveryTime: v.deliveryTime, priceRange: v.priceRange,
       cuisine: Array.from(this.selectedCuisines),
       operatingHours: this.operatingHours,
