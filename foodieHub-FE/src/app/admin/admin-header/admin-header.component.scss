@@ -62,6 +62,11 @@ $font-sans: 'DM Sans', sans-serif;
   &:hover { border-color: $gold; color: $gold; }
 }
 
+.push-blocked-msg {
+  font-size: 0.75rem; color: #c0392b; font-family: $font-sans;
+  cursor: help;
+}
+
 // ── Notification bell ──────────────────────────────────────────
 .notif-wrapper {
   position: relative;

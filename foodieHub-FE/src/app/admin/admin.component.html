@@ -243,6 +243,7 @@
               <th>ID</th>
               <th>Owner</th>
               <th>Contact</th>
+              <th>Restaurant</th>
               <th>FSSAI / GST</th>
               <th>Status</th>
               <th>Actions</th>
@@ -255,6 +256,12 @@
               <td>
                 <div>{{ owner.email }}</div>
                 <div class="sub-text">{{ owner.phone || '—' }}</div>
+              </td>
+              <td>
+                <div>{{ owner.restaurantName || '—' }}</div>
+                <div class="sub-text" *ngIf="owner.restaurantLocation">
+                  📍 {{ owner.restaurantLocation.city }}, {{ owner.restaurantLocation.state }}
+                </div>
               </td>
               <td>
                 <div>{{ owner.fssaiNumber || '—' }}</div>
@@ -275,7 +282,7 @@
               </td>
             </tr>
             <tr *ngIf="owners.length === 0">
-              <td colspan="6" class="empty-cell">No restaurant owners found</td>
+              <td colspan="7" class="empty-cell">No restaurant owners found</td>
             </tr>
           </tbody>
         </table>

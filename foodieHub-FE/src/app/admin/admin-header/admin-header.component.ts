@@ -54,7 +54,9 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.wsSub?.unsubscribe();
-    this.notificationWs.disconnect();
+    // Do NOT disconnect here — the SSE connection is session-scoped, not component-scoped.
+    // Disconnecting on component destroy causes a reconnect on every route change.
+    // disconnect() is called only on explicit logout below.
   }
 
   loadNotifications() {
@@ -134,6 +136,7 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
 
   logout() {
     if (confirm('Logout from admin panel?')) {
+      this.notificationWs.disconnect();
       this.tokenService.clearTokens();
       this.router.navigateByUrl('/admin/login');
     }

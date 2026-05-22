@@ -27,11 +27,16 @@ export class AdminNotificationWsService implements OnDestroy {
     while (!this.abortController?.signal.aborted) {
       try {
         const res = await fetch(url, {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: token },
           signal: this.abortController!.signal,
         });
 
-        if (res.status === 401) return;
+        if (res.status === 401) {
+          // Token may have been refreshed by another request — pick it up and retry once
+          const fresh = this.tokenService.getAccessToken();
+          if (fresh && fresh !== token) { token = fresh; continue; }
+          return;
+        }
 
         const reader = res.body!.getReader();
         const decoder = new TextDecoder();

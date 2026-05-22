@@ -2,6 +2,7 @@
   <div class="auth-card">
 
     <div class="auth-left">
+      <!-- Brand -->
       <div class="auth-brand">
         <div class="logo-icon">F</div>
         <div class="divider"></div>
@@ -11,71 +12,166 @@
         </div>
       </div>
 
-      <h2 class="auth-title">Register Your Restaurant</h2>
-
-      <form [formGroup]="form" (ngSubmit)="onSubmit()">
-        <div class="input-row">
-          <div class="input-field">
-            <span>👤</span>
-            <input type="text" placeholder="First Name" formControlName="firstName" />
-          </div>
-          <div class="input-field">
-            <span>👤</span>
-            <input type="text" placeholder="Last Name" formControlName="lastName" />
-          </div>
+      <!-- Step indicator -->
+      <div class="stepper">
+        <div class="step-item" [class.active]="currentStep === 1" [class.done]="currentStep > 1">
+          <div class="step-dot">{{ currentStep > 1 ? '✓' : '1' }}</div>
+          <span>Your Details</span>
         </div>
-
-        <div class="input-field">
-          <span>🍛</span>
-          <input type="text" placeholder="Restaurant Name" formControlName="restaurantName" />
+        <div class="step-line"></div>
+        <div class="step-item" [class.active]="currentStep === 2">
+          <div class="step-dot">2</div>
+          <span>Restaurant Info</span>
         </div>
+      </div>
 
-        <div class="input-field location-field" (click)="showLocationPicker = true">
-          <span>📍</span>
-          <span class="location-text" [class.placeholder]="!restaurantLocation">
-            {{ restaurantLocation ? restaurantLocation.city + ', ' + restaurantLocation.state + ', ' + restaurantLocation.country : 'Pin Restaurant Location' }}
-          </span>
-        </div>
-        <div class="field-hint error" *ngIf="locationError">Please pin your restaurant location on the map.</div>
+      <form [formGroup]="form">
 
-        <div class="input-row">
-          <div>
-            <div class="input-field" [class.field-error]="fssaiInvalid">
-              <span>📋</span>
-              <input type="text" placeholder="FSSAI Number (14 digits)" formControlName="fssaiNumber" maxlength="14" />
+        <!-- ── STEP 1: Owner Details ── -->
+        <div *ngIf="currentStep === 1">
+          <h2 class="step-title">Tell us about yourself</h2>
+
+          <div class="input-row">
+            <div class="input-field">
+              <span>👤</span>
+              <input type="text" placeholder="First Name" formControlName="firstName" />
             </div>
-            <div class="field-hint" *ngIf="fssaiInvalid">Must be exactly 14 digits</div>
+            <div class="input-field">
+              <span>👤</span>
+              <input type="text" placeholder="Last Name" formControlName="lastName" />
+            </div>
           </div>
+
           <div class="input-field">
-            <span>🏷️</span>
-            <input type="text" placeholder="GST Number (optional)" formControlName="gstNumber" />
+            <span>📧</span>
+            <input type="email" placeholder="Email" formControlName="email" autocomplete="email" />
+          </div>
+
+          <div class="input-field">
+            <span>📞</span>
+            <input type="tel" placeholder="Phone" formControlName="phone" />
+          </div>
+
+          <div class="input-field">
+            <span>🔒</span>
+            <input [type]="showPassword ? 'text' : 'password'" placeholder="Password"
+              formControlName="password" autocomplete="new-password" />
+            <span class="eye" (click)="showPassword = !showPassword">{{ showPassword ? '🙈' : '👁️' }}</span>
+          </div>
+
+          <div class="pw-rules" *ngIf="form.get('password')?.dirty">
+            <div [class.ok]="pwHasLength">{{ pwHasLength ? '✓' : '○' }} Min 8 characters</div>
+            <div [class.ok]="pwHasUppercase">{{ pwHasUppercase ? '✓' : '○' }} One uppercase letter</div>
+            <div [class.ok]="pwHasNumber">{{ pwHasNumber ? '✓' : '○' }} One number</div>
+          </div>
+
+          <button type="button" class="btn btn-gold" (click)="nextStep()">
+            Next — Restaurant Info →
+          </button>
+        </div>
+
+        <!-- ── STEP 2: Restaurant Details ── -->
+        <div *ngIf="currentStep === 2">
+          <h2 class="step-title">Set up your restaurant</h2>
+
+          <!-- Basic info -->
+          <div class="input-field">
+            <span>🍛</span>
+            <input type="text" placeholder="Restaurant Name" formControlName="restaurantName" />
+          </div>
+
+          <div class="input-field">
+            <span>🖼️</span>
+            <input type="url" placeholder="Cover Image URL (optional)" formControlName="imageUrl" />
+          </div>
+
+          <!-- Cuisine -->
+          <div class="field-label">Cuisine Types <span class="required">*</span></div>
+          <div class="cuisine-grid">
+            <button type="button" class="cuisine-chip"
+              *ngFor="let c of cuisines"
+              [class.selected]="selectedCuisines.has(c)"
+              (click)="toggleCuisine(c)">{{ c }}</button>
+          </div>
+          <div class="field-hint error" *ngIf="cuisineError">Select at least one cuisine type.</div>
+
+          <!-- Location -->
+          <div class="input-field location-field" (click)="showLocationPicker = true">
+            <span>📍</span>
+            <span class="location-text" [class.placeholder]="!restaurantLocation">
+              {{ restaurantLocation
+                  ? restaurantLocation.city + ', ' + restaurantLocation.state + ', ' + restaurantLocation.country
+                  : 'Pin Restaurant Location' }}
+            </span>
+          </div>
+          <div class="field-hint error" *ngIf="locationError">Please pin your restaurant location.</div>
+
+          <!-- FSSAI / GST -->
+          <div class="input-row">
+            <div>
+              <div class="input-field" [class.field-error]="fssaiInvalid">
+                <span>📋</span>
+                <input type="text" placeholder="FSSAI Number (14 digits)" formControlName="fssaiNumber" maxlength="14" />
+              </div>
+              <div class="field-hint" *ngIf="fssaiInvalid">Must be exactly 14 digits</div>
+            </div>
+            <div class="input-field">
+              <span>🏷️</span>
+              <input type="text" placeholder="GST Number (optional)" formControlName="gstNumber" />
+            </div>
+          </div>
+
+          <!-- Business details -->
+          <div class="biz-row">
+            <div class="biz-field">
+              <label class="field-label">Min Order (₹)</label>
+              <div class="input-field compact">
+                <input type="number" min="0" formControlName="minOrder" />
+              </div>
+            </div>
+            <div class="biz-field">
+              <label class="field-label">Delivery Time (min)</label>
+              <div class="input-field compact">
+                <input type="number" min="1" formControlName="deliveryTime" />
+              </div>
+            </div>
+            <div class="biz-field full-width">
+              <label class="field-label">Price Range</label>
+              <div class="price-group">
+                <button type="button" class="price-btn"
+                  *ngFor="let p of ['₹', '₹₹', '₹₹₹']"
+                  [class.selected]="form.get('priceRange')?.value === p"
+                  (click)="setPriceRange(p)">{{ p }}</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Operating Hours -->
+          <div class="field-label">Operating Hours</div>
+          <div class="hours-grid">
+            <div class="day-row" *ngFor="let d of operatingHours">
+              <label class="day-toggle">
+                <input type="checkbox" [(ngModel)]="d.open" [ngModelOptions]="{standalone: true}" />
+                <span class="day-name">{{ d.day.slice(0, 3) }}</span>
+              </label>
+              <ng-container *ngIf="d.open; else closedTpl">
+                <input type="time" class="time-input" [(ngModel)]="d.openTime" [ngModelOptions]="{standalone: true}" />
+                <span class="time-sep">–</span>
+                <input type="time" class="time-input" [(ngModel)]="d.closeTime" [ngModelOptions]="{standalone: true}" />
+              </ng-container>
+              <ng-template #closedTpl>
+                <span class="closed-label">Closed</span>
+              </ng-template>
+            </div>
+          </div>
+
+          <!-- Navigation -->
+          <div class="form-nav">
+            <button type="button" class="btn btn-outline" (click)="prevStep()">← Back</button>
+            <button type="button" class="btn btn-gold" (click)="onSubmit()">Submit Application</button>
           </div>
         </div>
 
-        <div class="input-field">
-          <span>📧</span>
-          <input type="email" placeholder="Email" formControlName="email" autocomplete="email" />
-        </div>
-
-        <div class="input-field">
-          <span>📞</span>
-          <input type="tel" placeholder="Phone" formControlName="phone" />
-        </div>
-
-        <div class="input-field">
-          <span>🔒</span>
-          <input [type]="showPassword ? 'text' : 'password'" placeholder="Password"
-            formControlName="password" autocomplete="new-password" />
-          <span class="eye" (click)="showPassword = !showPassword">{{ showPassword ? '🙈' : '👁️' }}</span>
-        </div>
-
-        <div class="pw-rules" *ngIf="form.get('password')?.dirty">
-          <div [class.ok]="pwHasLength">{{ pwHasLength ? '✓' : '○' }} Min 8 characters</div>
-          <div [class.ok]="pwHasUppercase">{{ pwHasUppercase ? '✓' : '○' }} One uppercase letter</div>
-          <div [class.ok]="pwHasNumber">{{ pwHasNumber ? '✓' : '○' }} One number</div>
-        </div>
-
-        <button class="btn btn-gold" type="submit" [disabled]="form.invalid">Create Account</button>
       </form>
 
       <div class="auth-footer">
@@ -83,15 +179,27 @@
       </div>
     </div>
 
+    <!-- Right panel -->
     <div class="auth-right">
-      <div class="promo-card">
+      <div class="promo-card" *ngIf="currentStep === 1">
         <div class="promo-emoji">🎉</div>
         <div class="promo-title">Join 1,200+ Partners</div>
         <div class="promo-desc">Start selling on FoodieHub and reach hungry customers today. Your application will be reviewed within 24 hours.</div>
         <div class="steps">
           <div class="step"><span class="step-num">1</span><span>Register your restaurant</span></div>
-          <div class="step"><span class="step-num">2</span><span>Admin reviews & approves</span></div>
+          <div class="step"><span class="step-num">2</span><span>Admin reviews &amp; approves</span></div>
           <div class="step"><span class="step-num">3</span><span>Start receiving orders!</span></div>
+        </div>
+      </div>
+      <div class="promo-card" *ngIf="currentStep === 2">
+        <div class="promo-emoji">🍽️</div>
+        <div class="promo-title">Make a great first impression</div>
+        <div class="promo-desc">A complete profile gets approved faster and attracts more customers from day one.</div>
+        <div class="tips">
+          <div class="tip"><span>📸</span><span>Add a high-quality cover photo</span></div>
+          <div class="tip"><span>⏰</span><span>Set accurate operating hours</span></div>
+          <div class="tip"><span>🏷️</span><span>Choose all relevant cuisine types</span></div>
+          <div class="tip"><span>📋</span><span>Keep your FSSAI number handy</span></div>
         </div>
       </div>
     </div>
@@ -99,6 +207,7 @@
   </div>
 </div>
 
+<!-- Location picker overlay -->
 <div class="location-picker-overlay" *ngIf="showLocationPicker" (click).self="showLocationPicker = false">
   <div class="location-picker-modal">
     <div class="lp-modal-hdr">

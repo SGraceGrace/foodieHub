@@ -10,7 +10,7 @@ export class PushNotificationService {
    * Generate it once with: webpush.generateVAPIDKeys() (Java: vapid-jose or web-push library)
    * Paste the urlSafeBase64 public key string here.
    */
-  private readonly VAPID_PUBLIC_KEY = 'REPLACE_WITH_YOUR_VAPID_PUBLIC_KEY';
+  private readonly VAPID_PUBLIC_KEY = 'BBExuSKx28RTr_4tt3TJIqAfVoWOfTpwNExZez0UjTUx4rnrSEgyjX0tFqmQPGYY5YS_CZeSRIFvmBL0S-39UQw';
 
   private permissionSubject = new BehaviorSubject<NotificationPermission>(
     'Notification' in window ? Notification.permission : 'denied'

@@ -14,6 +14,8 @@
 
 **This is NOT an enterprise app.** Keep it simple, keep it working, keep it deployable.
 
+> ⚠️ **"It's a POC" is never a reason to skip a proper fix.** If something is wrong, fix it correctly. Cutting corners on bugs or architecture because "it's just a POC" produces bad habits and a weak portfolio. Build it as you would in a real job.
+
 ---
 
 ## 👩‍💻 Developer Context

@@ -1,8 +1,10 @@
 package com.project.notificationservice.controller;
 
 import com.project.notificationservice.dto.BaseAPIResponse;
+import com.project.notificationservice.dto.PushSubscriptionRequest;
 import com.project.notificationservice.service.AdminNotificationService;
 import com.project.notificationservice.service.SseEmitterService;
+import com.project.notificationservice.service.WebPushService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -16,6 +18,7 @@ public class AdminNotificationController {
 
     private final AdminNotificationService notificationService;
     private final SseEmitterService sseEmitterService;
+    private final WebPushService webPushService;
 
     @GetMapping(value = "/api/v1/admin/notifications/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter stream(
@@ -50,5 +53,15 @@ public class AdminNotificationController {
         notificationService.clearAll(adminEmail, adminRole);
         return ResponseEntity.ok(new BaseAPIResponse(
                 "All notifications cleared", null, HttpStatus.OK.value(), null));
+    }
+
+    @PostMapping("/api/v1/admin/push-subscription")
+    public ResponseEntity<BaseAPIResponse> savePushSubscription(
+            @RequestHeader("X-User-Id") String adminEmail,
+            @RequestHeader("X-User-Role") String adminRole,
+            @RequestBody PushSubscriptionRequest request) {
+        webPushService.saveSubscription(adminEmail, adminRole, request);
+        return ResponseEntity.ok(new BaseAPIResponse(
+                "Push subscription saved", null, HttpStatus.OK.value(), null));
     }
 }

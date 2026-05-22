@@ -10,6 +10,7 @@ import com.project.notificationservice.event.OwnerStatusEvent;
 import com.project.notificationservice.event.PartnerRegisteredEvent;
 import com.project.notificationservice.repo.NotificationRepo;
 import com.project.notificationservice.service.SseEmitterService;
+import com.project.notificationservice.service.WebPushService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -26,6 +27,7 @@ public class NotificationListener {
     private final JavaMailSender mailSender;
     private final NotificationRepo notificationRepo;
     private final SseEmitterService sseEmitterService;
+    private final WebPushService webPushService;
 
     @Value("${admin.email}")
     private String adminEmail;
@@ -39,8 +41,10 @@ public class NotificationListener {
                 saved.getActorEmail(), saved.getCreatedAt());
         if ("SUPER_ADMIN_ONLY".equals(saved.getVisibleTo())) {
             sseEmitterService.pushToSuperAdmins(dto);
+            webPushService.sendToSuperAdmins(saved.getType(), saved.getMessage());
         } else {
             sseEmitterService.pushToAllAdmins(dto);
+            webPushService.sendToAllAdmins(saved.getType(), saved.getMessage());
         }
     }
 

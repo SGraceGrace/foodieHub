@@ -9,18 +9,26 @@
 
   <div class="header-right">
 
-    <!-- Enable push notifications button (only shown when not yet granted) -->
-    <button
-      *ngIf="pushSupported && pushPermission !== 'granted'"
-      class="push-enable-btn"
-      (click)="enablePushNotifications()"
-      title="Enable browser push notifications">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-      </svg>
-      Enable Notifications
-    </button>
+    <!-- Push notifications: prompt if default, warn if denied -->
+    <ng-container *ngIf="pushSupported && pushPermission !== 'granted'">
+      <button
+        *ngIf="pushPermission !== 'denied'"
+        class="push-enable-btn"
+        (click)="enablePushNotifications()"
+        title="Enable browser push notifications">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        Enable Notifications
+      </button>
+      <span
+        *ngIf="pushPermission === 'denied'"
+        class="push-blocked-msg"
+        title="Notifications are blocked. Go to browser Site Settings → Notifications → Allow for this site.">
+        🔕 Notifications blocked — allow in browser settings
+      </span>
+    </ng-container>
 
     <!-- Notification Bell -->
     <div class="notif-wrapper" (click)="toggleDropdown($event)">

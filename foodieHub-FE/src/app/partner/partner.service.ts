@@ -15,6 +15,12 @@ export interface PartnerRegisterRequest {
   fssaiNumber: string;
   gstNumber?: string;
   restaurantLocation: { city: string; state: string; country: string; lat: number; lng: number };
+  cuisine: string[];
+  imageUrl?: string;
+  minOrder: number;
+  deliveryTime: number;
+  priceRange: string;
+  operatingHours: DaySchedule[];
 }
 
 @Injectable({ providedIn: 'root' })

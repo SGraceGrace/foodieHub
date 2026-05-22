@@ -181,6 +181,12 @@ public class PartnerServiceImpl implements PartnerService {
             if (dto.getRestaurantLocation() != null) {
                 body.put("location", dto.getRestaurantLocation());
             }
+            if (dto.getCuisine() != null)        body.put("cuisine", dto.getCuisine());
+            if (dto.getImageUrl() != null)        body.put("imageUrl", dto.getImageUrl());
+            if (dto.getPriceRange() != null)      body.put("priceRange", dto.getPriceRange());
+            if (dto.getMinOrder() > 0)            body.put("minOrder", dto.getMinOrder());
+            if (dto.getDeliveryTime() > 0)        body.put("deliveryTime", dto.getDeliveryTime());
+            if (dto.getOperatingHours() != null)  body.put("operatingHours", dto.getOperatingHours());
             restTemplate.postForObject(foodServiceUrl + "/api/v1/restaurants", body, Object.class);
         } catch (Exception e) {
             log.warn("Could not create restaurant in food-service for owner {}: {}", ownerId, e.getMessage());
