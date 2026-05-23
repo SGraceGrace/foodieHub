@@ -97,6 +97,11 @@ export const routes: Routes = [
     canActivate: [driverGuard],
   },
   {
+    path: 'restaurants/:id',
+    loadComponent: () =>
+      import('./restaurant-detail/restaurant-detail.component').then((m) => m.RestaurantDetailComponent),
+  },
+  {
     path: '**',
     component: NotFoundComponent,
   },

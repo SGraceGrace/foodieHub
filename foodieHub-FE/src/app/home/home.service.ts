@@ -27,4 +27,8 @@ export class HomeService {
   getCuisines(): Observable<ApiResponse<string[]>> {
     return this.http.get<ApiResponse<string[]>>(`${this.base}/api/v1/restaurants/cuisines`);
   }
+
+  getRestaurantById(id: string): Observable<ApiResponse<Restaurant>> {
+    return this.http.get<ApiResponse<Restaurant>>(`${this.base}/api/v1/restaurants/${id}`);
+  }
 }

@@ -124,7 +124,7 @@
       {{ hasDeliveryAddress ? 'No restaurants found nearby. Try a different address.' : 'No restaurants found for this cuisine yet.' }}
     </div>
     <div class="rest-grid" *ngIf="restaurants.length > 0">
-      <div class="rest-card" *ngFor="let r of restaurants">
+      <div class="rest-card" *ngFor="let r of restaurants" [routerLink]="['/restaurants', r.id]" style="cursor:pointer">
 
         <!-- Image area -->
         <div class="rest-img" [style.background]="r.imageUrl ? 'none' : getBg(r)">
