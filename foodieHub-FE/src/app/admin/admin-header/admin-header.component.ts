@@ -19,6 +19,7 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
   @Output() navigateTab = new EventEmitter<string>();
   @Output() pendingOwnerCountChange = new EventEmitter<number>();
   @Output() pendingDriverCountChange = new EventEmitter<number>();
+  @Output() contactMessageCountChange = new EventEmitter<number>();
 
   notifications: AdminNotification[] = [];
   unreadCount = 0;
@@ -95,6 +96,10 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
       next: count => this.pendingDriverCountChange.emit(count),
       error: () => {},
     });
+    this.adminService.getUnreadContactCount().subscribe({
+      next: count => this.contactMessageCountChange.emit(count),
+      error: () => {},
+    });
   }
 
   enablePushNotifications() {
@@ -114,19 +119,22 @@ export class AdminHeaderComponent implements OnInit, OnDestroy {
 
   openNotification(n: AdminNotification) {
     this.showDropdown = false;
-    if (n.type === 'PENDING_OWNER') this.navigateTab.emit('restaurant-owners');
-    else if (n.type === 'PENDING_DRIVER') this.navigateTab.emit('drivers');
+    if (n.type === 'PENDING_OWNER')    this.navigateTab.emit('restaurant-owners');
+    else if (n.type === 'PENDING_DRIVER')   this.navigateTab.emit('drivers');
+    else if (n.type === 'CONTACT_MESSAGE')  this.navigateTab.emit('contact-messages');
     else this.navigateTab.emit('activity-log');
   }
 
   notifIcon(n: AdminNotification): string {
-    if (n.type === 'PENDING_OWNER')  return '🏪';
-    if (n.type === 'PENDING_DRIVER') return '🛵';
+    if (n.type === 'PENDING_OWNER')    return '🏪';
+    if (n.type === 'PENDING_DRIVER')   return '🛵';
+    if (n.type === 'CONTACT_MESSAGE')  return '📩';
     return '📋';
   }
 
   notifClass(n: AdminNotification): string {
     if (n.type === 'PENDING_OWNER' || n.type === 'PENDING_DRIVER') return 'pending';
+    if (n.type === 'CONTACT_MESSAGE') return 'contact';
     return 'activity';
   }
 

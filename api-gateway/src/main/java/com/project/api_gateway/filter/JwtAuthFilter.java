@@ -55,7 +55,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            sendUnauthorized(response, request.getHeader("Origin"), "Missing or invalid Authorization header");
+            sendUnauthorized(response, "Missing or invalid Authorization header");
             return;
         }
 
@@ -74,16 +74,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(mutableRequest, response);
         } catch (Exception e) {
-            sendUnauthorized(response, request.getHeader("Origin"), "Invalid or expired token");
+            sendUnauthorized(response, "Invalid or expired token");
         }
     }
 
-    private void sendUnauthorized(HttpServletResponse response, String origin, String message) throws IOException {
-        if (origin != null) {
-            response.setHeader("Access-Control-Allow-Origin", origin);
-            response.setHeader("Access-Control-Allow-Credentials", "true");
-            response.setHeader("Vary", "Origin");
-        }
+    private void sendUnauthorized(HttpServletResponse response, String message) throws IOException {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         response.getWriter().write(message);
     }

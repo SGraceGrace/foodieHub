@@ -15,6 +15,7 @@ public class RabbitMQConfig {
     public static final String OWNER_STATUS_RKEY  = "owner.status";
     public static final String DRIVER_RKEY        = "driver.registered";
     public static final String ACTIVITY_RKEY      = "activity.logged";
+    public static final String CONTACT_RKEY       = "contact.message";
 
     @Bean
     public TopicExchange foodiehubExchange() {

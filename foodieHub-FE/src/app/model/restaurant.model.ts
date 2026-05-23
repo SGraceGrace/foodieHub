@@ -91,7 +91,7 @@ export interface ActivityLog {
 
 export interface AdminNotification {
   id: string;
-  type: 'ACTIVITY' | 'PENDING_OWNER' | 'PENDING_DRIVER';
+  type: 'ACTIVITY' | 'PENDING_OWNER' | 'PENDING_DRIVER' | 'CONTACT_MESSAGE';
   message: string;
   actorEmail?: string;
   timestamp: string;
@@ -105,6 +105,16 @@ export interface RestaurantStaff {
   phone?: string;
   status: string;
   assignedRestaurantIds: string[];
+}
+
+export interface ContactMessage {
+  id: number;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  createdDate: string;
+  read: boolean;
 }
 
 export interface Slide {

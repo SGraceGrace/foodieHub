@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { ApiResponse } from '../model/apiResponse.model';
-import { ActivityLog, AdminNotification, AdminUserResponse, PaginatedResponse, Restaurant, Slide } from '../model/restaurant.model';
+import { ActivityLog, AdminNotification, AdminUserResponse, ContactMessage, PaginatedResponse, Restaurant, Slide } from '../model/restaurant.model';
 
 export interface SlideRequest {
   title: string;
@@ -165,5 +165,25 @@ export class AdminService {
 
   rejectDriver(id: number): Observable<ApiResponse<AdminUserResponse>> {
     return this.http.put<ApiResponse<AdminUserResponse>>(`${this.driversBase}/${id}/reject`, {});
+  }
+
+  // Contact Messages
+  private contactMessagesBase = `${environment.apiBaseUrl}/api/v1/admin/contact-messages`;
+
+  getContactMessages(page = 0, size = 10): Observable<ApiResponse<PaginatedResponse<ContactMessage>>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<ApiResponse<PaginatedResponse<ContactMessage>>>(this.contactMessagesBase, { params });
+  }
+
+  getUnreadContactCount(): Observable<number> {
+    return this.http.get<ApiResponse<number>>(`${this.contactMessagesBase}/unread-count`).pipe(
+      map(res => res.data ?? 0)
+    );
+  }
+
+  markContactMessageRead(id: number): Observable<ApiResponse<null>> {
+    return this.http.patch<ApiResponse<null>>(`${this.contactMessagesBase}/${id}/read`, {});
   }
 }

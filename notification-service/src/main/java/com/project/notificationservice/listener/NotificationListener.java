@@ -4,6 +4,7 @@ import com.project.notificationservice.config.RabbitMQConfig;
 import com.project.notificationservice.dto.NotificationDTO;
 import com.project.notificationservice.entity.Notification;
 import com.project.notificationservice.event.ActivityLoggedEvent;
+import com.project.notificationservice.event.ContactMessageEvent;
 import com.project.notificationservice.event.DriverRegisteredEvent;
 import com.project.notificationservice.event.OrderPlacedEvent;
 import com.project.notificationservice.event.OwnerStatusEvent;
@@ -80,6 +81,19 @@ public class NotificationListener {
         n.setVisibleTo("ALL_ADMINS");
         saveAndPush(n);
         log.info("Saved PENDING_DRIVER notification for driver: {}", event.getEmail());
+    }
+
+    // ── Contact message submitted → save notification ────────────
+
+    @RabbitListener(queues = RabbitMQConfig.CONTACT_QUEUE)
+    public void onContactMessage(ContactMessageEvent event) {
+        Notification n = new Notification();
+        n.setType("CONTACT_MESSAGE");
+        n.setMessage("New message from " + event.getName() + ": " + event.getSubject());
+        n.setActorEmail(event.getEmail());
+        n.setVisibleTo("ALL_ADMINS");
+        saveAndPush(n);
+        log.info("Saved CONTACT_MESSAGE notification from: {}", event.getEmail());
     }
 
     // ── Activity logged → save notification ───────────────────────

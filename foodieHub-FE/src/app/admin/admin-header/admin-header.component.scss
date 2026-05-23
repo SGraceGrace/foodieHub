@@ -171,8 +171,9 @@ $font-sans: 'DM Sans', sans-serif;
   &:hover { background: #f4f6ff; }
   &:hover .dismiss-btn { opacity: 1; }
 
-  &.pending .notif-icon { background: #fff7e6; }
+  &.pending .notif-icon  { background: #fff7e6; }
   &.activity .notif-icon { background: #f0f4ff; }
+  &.contact .notif-icon  { background: #fff8e1; }
 }
 
 .notif-icon {

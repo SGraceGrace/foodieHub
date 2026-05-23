@@ -3,10 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { AdminService, CreateAdminRequest, SlideRequest } from './admin.service';
-import { ActivityLog, AdminUserResponse, PaginatedResponse, Restaurant, Slide } from '../model/restaurant.model';
+import { ActivityLog, AdminUserResponse, ContactMessage, PaginatedResponse, Restaurant, Slide } from '../model/restaurant.model';
 import { AdminHeaderComponent } from './admin-header/admin-header.component';
 
-type Tab = 'dashboard' | 'users' | 'restaurants' | 'restaurant-owners' | 'drivers' | 'orders' | 'payments' | 'support' | 'reports' | 'slides' | 'activity-log';
+type Tab = 'dashboard' | 'users' | 'restaurants' | 'restaurant-owners' | 'drivers' | 'orders' | 'payments' | 'support' | 'contact-messages' | 'reports' | 'slides' | 'activity-log';
 
 @Component({
   selector: 'app-admin',
@@ -52,6 +52,13 @@ export class AdminComponent implements OnInit {
   // Activity Log
   activityLogs: ActivityLog[] = [];
 
+  // Contact Messages
+  contactMessages: ContactMessage[] = [];
+  contactPagination = { currentPage: 0, totalPages: 0, totalElements: 0, pageSize: 10 };
+  selectedContactMessage: ContactMessage | null = null;
+  showContactModal = false;
+  contactMessageCount = 0;
+
   // Slides
   slides: Slide[] = [];
   showEditModal = false;
@@ -89,8 +96,9 @@ export class AdminComponent implements OnInit {
     if (tab === 'restaurants'       && this.restaurants.length === 0)  this.loadRestaurants();
     if (tab === 'restaurant-owners' && this.owners.length === 0)       { this.loadOwners(); this.loadPendingOwnerCount(); }
     if (tab === 'drivers'           && this.drivers.length === 0)      { this.loadDrivers(); this.loadPendingDriverCount(); }
-    if (tab === 'slides'            && this.slides.length === 0)       this.loadSlides();
-    if (tab === 'activity-log'      && this.activityLogs.length === 0) this.loadActivityLogs();
+    if (tab === 'slides'            && this.slides.length === 0)           this.loadSlides();
+    if (tab === 'activity-log'      && this.activityLogs.length === 0)     this.loadActivityLogs();
+    if (tab === 'contact-messages'  && this.contactMessages.length === 0)  this.loadContactMessages();
   }
 
   // ── Users ────────────────────────────────────────────────────────
@@ -346,6 +354,46 @@ export class AdminComponent implements OnInit {
   resetDriversFilter() {
     this.driverStatusFilter = '';
     this.loadDrivers(0);
+  }
+
+  // ── Contact Messages ──────────────────────────────────────────────
+
+  loadContactMessages(page = 0) {
+    this.adminService.getContactMessages(page, this.contactPagination.pageSize).subscribe({
+      next: (res) => {
+        const p: PaginatedResponse<ContactMessage> = res.data;
+        this.contactMessages = p.content ?? [];
+        this.contactPagination = { currentPage: p.currentPage, totalPages: p.totalPages, totalElements: p.totalElements, pageSize: p.pageSize };
+      },
+      error: () => this.toastr.error('Failed to load contact messages.'),
+    });
+  }
+
+  get contactPageNumbers(): number[] {
+    const { currentPage, totalPages } = this.contactPagination;
+    const pages: number[] = [];
+    for (let i = Math.max(0, currentPage - 2); i <= Math.min(totalPages - 1, currentPage + 2); i++) {
+      pages.push(i);
+    }
+    return pages;
+  }
+
+  contactPagingStart(): number { return this.contactPagination.currentPage * this.contactPagination.pageSize + 1; }
+  contactPagingEnd(): number { return Math.min((this.contactPagination.currentPage + 1) * this.contactPagination.pageSize, this.contactPagination.totalElements); }
+
+  openContactMessage(msg: ContactMessage) {
+    this.selectedContactMessage = msg;
+    this.showContactModal = true;
+
+    if (!msg.read) {
+      this.adminService.markContactMessageRead(msg.id).subscribe({
+        next: () => {
+          msg.read = true;
+          this.contactMessageCount = Math.max(0, this.contactMessageCount - 1);
+        },
+        error: () => {},
+      });
+    }
   }
 
   // ── Activity Log ──────────────────────────────────────────────────

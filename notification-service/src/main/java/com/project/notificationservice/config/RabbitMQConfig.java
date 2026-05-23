@@ -1,6 +1,7 @@
 package com.project.notificationservice.config;
 
 import com.project.notificationservice.event.ActivityLoggedEvent;
+import com.project.notificationservice.event.ContactMessageEvent;
 import com.project.notificationservice.event.DriverRegisteredEvent;
 import com.project.notificationservice.event.OrderPlacedEvent;
 import com.project.notificationservice.event.OwnerStatusEvent;
@@ -33,6 +34,8 @@ public class RabbitMQConfig {
     public static final String DRIVER_RKEY           = "driver.registered";
     public static final String ACTIVITY_QUEUE        = "activity.logged.queue";
     public static final String ACTIVITY_RKEY         = "activity.logged";
+    public static final String CONTACT_QUEUE         = "contact.message.queue";
+    public static final String CONTACT_RKEY          = "contact.message";
 
     @Bean public TopicExchange foodiehubExchange() { return new TopicExchange(EXCHANGE); }
 
@@ -41,6 +44,7 @@ public class RabbitMQConfig {
     @Bean public Queue orderPlacedQueue()        { return new Queue(ORDER_PLACED_QUEUE, true); }
     @Bean public Queue driverRegisteredQueue()   { return new Queue(DRIVER_QUEUE, true); }
     @Bean public Queue activityLoggedQueue()     { return new Queue(ACTIVITY_QUEUE, true); }
+    @Bean public Queue contactMessageQueue()     { return new Queue(CONTACT_QUEUE, true); }
 
     @Bean
     public Binding partnerRegisteredBinding(Queue partnerRegisteredQueue, TopicExchange foodiehubExchange) {
@@ -62,6 +66,10 @@ public class RabbitMQConfig {
     public Binding activityLoggedBinding(Queue activityLoggedQueue, TopicExchange foodiehubExchange) {
         return BindingBuilder.bind(activityLoggedQueue).to(foodiehubExchange).with(ACTIVITY_RKEY);
     }
+    @Bean
+    public Binding contactMessageBinding(Queue contactMessageQueue, TopicExchange foodiehubExchange) {
+        return BindingBuilder.bind(contactMessageQueue).to(foodiehubExchange).with(CONTACT_RKEY);
+    }
 
     @Bean
     public Jackson2JsonMessageConverter messageConverter() {
@@ -75,6 +83,7 @@ public class RabbitMQConfig {
         idClassMapping.put("com.project.orderservice.messaging.OrderPlacedEvent",     OrderPlacedEvent.class);
         idClassMapping.put("com.project.foodieHub.messaging.DriverRegisteredEvent",   DriverRegisteredEvent.class);
         idClassMapping.put("com.project.foodieHub.messaging.ActivityLoggedEvent",     ActivityLoggedEvent.class);
+        idClassMapping.put("com.project.foodieHub.messaging.ContactMessageEvent",     ContactMessageEvent.class);
         typeMapper.setIdClassMapping(idClassMapping);
 
         converter.setClassMapper(typeMapper);

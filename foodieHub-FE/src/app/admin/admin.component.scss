@@ -559,6 +559,37 @@ table {
   &:hover { background: #000; }
 }
 
+// ── Contact Messages: unread indicator ───────────────────────────
+.unread-row {
+  background: #fffdf0;
+}
+
+.unread-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f9b303;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+// ── Contact Message read-only fields ─────────────────────────────
+.read-field {
+  background: #f9f9f9;
+  border: 1.5px solid #eee;
+  border-radius: 6px;
+  padding: 9px 12px;
+  font-size: .9rem;
+  color: $text;
+  line-height: 1.5;
+}
+
+.read-field-msg {
+  white-space: pre-wrap;
+  min-height: 80px;
+}
+
 // ── Activity Log badges ───────────────────────────────────────────
 .log-badge {
   display: inline-flex;

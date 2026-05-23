@@ -31,6 +31,11 @@ spring:
             predicates:
               - Path=/api/v1/contact
 
+          - id: user-service-admin-contact-messages
+            uri: http://localhost:8081
+            predicates:
+              - Path=/api/v1/admin/contact-messages, /api/v1/admin/contact-messages/**
+
           - id: food-service-slides-public
             uri: http://localhost:8082
             predicates:

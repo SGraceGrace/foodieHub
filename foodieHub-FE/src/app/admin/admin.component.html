@@ -1,7 +1,8 @@
 <app-admin-header
   (navigateTab)="goTab($any($event))"
   (pendingOwnerCountChange)="pendingOwnerCount = $event"
-  (pendingDriverCountChange)="pendingDriverCount = $event">
+  (pendingDriverCountChange)="pendingDriverCount = $event"
+  (contactMessageCountChange)="contactMessageCount = $event">
 </app-admin-header>
 
 <div class="dashboard">
@@ -35,6 +36,10 @@
     </button>
     <button class="nav-btn" [class.active]="activeTab === 'support'" (click)="goTab('support')">
       <span>💬</span> Support Tickets
+    </button>
+    <button class="nav-btn" [class.active]="activeTab === 'contact-messages'" (click)="goTab('contact-messages')">
+      <span>📩</span> Contact Messages
+      <span class="pending-badge" *ngIf="contactMessageCount > 0">{{ contactMessageCount }}</span>
     </button>
     <button class="nav-btn" [class.active]="activeTab === 'reports'" (click)="goTab('reports')">
       <span>📈</span> Reports
@@ -439,6 +444,58 @@
       </div>
     </div>
 
+    <!-- CONTACT MESSAGES TAB -->
+    <div [hidden]="activeTab !== 'contact-messages'">
+      <div class="page-title">Contact Messages</div>
+      <div class="table-box">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Subject</th>
+              <th>Received</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let msg of contactMessages" [class.unread-row]="!msg.read">
+              <td>
+                {{ msg.id }}
+                <span class="unread-dot" *ngIf="!msg.read" title="Unread"></span>
+              </td>
+              <td><strong *ngIf="!msg.read">{{ msg.name }}</strong><span *ngIf="msg.read">{{ msg.name }}</span></td>
+              <td>{{ msg.email }}</td>
+              <td><strong *ngIf="!msg.read">{{ msg.subject }}</strong><span *ngIf="msg.read">{{ msg.subject }}</span></td>
+              <td style="white-space:nowrap">{{ msg.createdDate | date:'dd MMM yyyy, HH:mm' }}</td>
+              <td>
+                <button class="action-btn approve" (click)="openContactMessage(msg)">View</button>
+              </td>
+            </tr>
+            <tr *ngIf="contactMessages.length === 0">
+              <td colspan="6" class="empty-cell">No contact messages yet</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="table-footer" *ngIf="contactPagination.totalElements > 0">
+          <div class="pagination-info">
+            Showing {{ contactPagingStart() }}–{{ contactPagingEnd() }} of {{ contactPagination.totalElements }} messages
+          </div>
+          <div class="pagination" *ngIf="contactPagination.totalPages > 1">
+            <button class="page-btn" [disabled]="contactPagination.currentPage === 0"
+              (click)="loadContactMessages(contactPagination.currentPage - 1)">&#8249;</button>
+            <button class="page-btn" *ngFor="let p of contactPageNumbers"
+              [class.active]="p === contactPagination.currentPage"
+              (click)="loadContactMessages(p)">{{ p + 1 }}</button>
+            <button class="page-btn" [disabled]="contactPagination.currentPage === contactPagination.totalPages - 1"
+              (click)="loadContactMessages(contactPagination.currentPage + 1)">&#8250;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- REPORTS TAB -->
     <div [hidden]="activeTab !== 'reports'">
       <div class="page-title">Reports & Analytics</div>
@@ -681,6 +738,38 @@
     <div class="form-actions" style="margin-top:1.5rem">
       <button class="btn-primary" (click)="saveEdit()">Save Changes</button>
       <button class="btn-outline" (click)="showEditModal = false">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- View Contact Message Modal -->
+<div class="modal" [class.show]="showContactModal">
+  <div class="modal-content" *ngIf="selectedContactMessage">
+    <button class="modal-close" (click)="showContactModal = false">✕</button>
+    <div class="modal-title">📩 Contact Message</div>
+
+    <div class="form-group">
+      <label>From</label>
+      <div class="read-field">{{ selectedContactMessage.name }} &lt;{{ selectedContactMessage.email }}&gt;</div>
+    </div>
+    <div class="form-group">
+      <label>Subject</label>
+      <div class="read-field">{{ selectedContactMessage.subject }}</div>
+    </div>
+    <div class="form-group">
+      <label>Message</label>
+      <div class="read-field read-field-msg">{{ selectedContactMessage.message }}</div>
+    </div>
+    <div class="form-group">
+      <label>Received</label>
+      <div class="read-field">{{ selectedContactMessage.createdDate | date:'dd MMM yyyy, HH:mm' }}</div>
+    </div>
+
+    <div class="form-actions" style="margin-top:1.5rem">
+      <a class="btn-primary" [href]="'mailto:' + selectedContactMessage.email + '?subject=Re: ' + selectedContactMessage.subject">
+        Reply via Email
+      </a>
+      <button class="btn-outline" (click)="showContactModal = false">Close</button>
     </div>
   </div>
 </div>

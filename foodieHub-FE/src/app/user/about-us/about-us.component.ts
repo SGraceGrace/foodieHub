@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
 @Component({
@@ -8,4 +8,10 @@ import { RouterModule } from '@angular/router';
   templateUrl: './about-us.component.html',
   styleUrl: './about-us.component.scss',
 })
-export class AboutUsComponent {}
+export class AboutUsComponent {
+  @ViewChild('joinSection') joinSection!: ElementRef;
+
+  scrollToJoin(): void {
+    this.joinSection?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}

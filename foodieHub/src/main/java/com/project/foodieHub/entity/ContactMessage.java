@@ -28,4 +28,7 @@ public class ContactMessage extends BaseEntity {
     @Column(name = "message", nullable = false, length = 2000)
     @NotBlank
     private String message;
+
+    @Column(name = "is_read", nullable = false)
+    private boolean read = false;
 }
