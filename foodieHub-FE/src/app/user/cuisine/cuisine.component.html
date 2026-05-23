@@ -3,8 +3,8 @@
   <div class="page-header-inner">
     <div>
       <h1>{{ selectedCuisine === 'All' ? 'All Restaurants' : selectedCuisine + ' Restaurants' }}</h1>
-      <p class="page-subtitle" *ngIf="!loading">
-        {{ totalElements }} restaurant{{ totalElements !== 1 ? 's' : '' }} found
+      <p class="page-subtitle" *ngIf="totalElements > 0">
+        {{ showingCount }} of {{ totalElements }} restaurants
       </p>
     </div>
     <button class="back-btn" routerLink="/home">← Back to Home</button>
@@ -30,12 +30,12 @@
 <!-- ── Content ───────────────────────────────────────────────────── -->
 <div class="content-wrap">
 
-  <!-- Loading -->
-  <div class="loading-grid" *ngIf="loading">
-    <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10,11,12]"></div>
+  <!-- Initial loading skeletons -->
+  <div class="rest-grid" *ngIf="loading && restaurants.length === 0">
+    <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10]"></div>
   </div>
 
-  <!-- Empty -->
+  <!-- Empty state -->
   <div class="empty-state" *ngIf="!loading && restaurants.length === 0">
     <div class="empty-icon">🍽️</div>
     <h3>No restaurants found</h3>
@@ -43,8 +43,8 @@
     <button class="btn-reset" (click)="selectCuisine()">Show All Restaurants</button>
   </div>
 
-  <!-- Grid -->
-  <div class="rest-grid" *ngIf="!loading && restaurants.length > 0">
+  <!-- Restaurant grid -->
+  <div class="rest-grid" *ngIf="restaurants.length > 0">
     <div class="rest-card" *ngFor="let r of restaurants"
          [routerLink]="['/restaurants', r.id]">
 
@@ -79,16 +79,18 @@
     </div>
   </div>
 
-  <!-- Pagination -->
-  <div class="pagination" *ngIf="!loading && totalPages > 1">
-    <button class="page-btn" (click)="prevPage()" [disabled]="currentPage === 0">← Prev</button>
-
-    <div class="page-info">
-      <span class="page-current">Page {{ currentPage + 1 }} of {{ totalPages }}</span>
-      <span class="page-showing">Showing {{ showingFrom }}–{{ showingTo }} of {{ totalElements }}</span>
-    </div>
-
-    <button class="page-btn" (click)="nextPage()" [disabled]="currentPage === totalPages - 1">Next →</button>
+  <!-- Bottom loader — shows while fetching next page -->
+  <div class="bottom-loader" *ngIf="loading && restaurants.length > 0">
+    <div class="spinner"></div>
+    <span>Loading more...</span>
   </div>
+
+  <!-- End of results -->
+  <div class="end-msg" *ngIf="!loading && !hasMore && restaurants.length > 0">
+    You've seen all {{ totalElements }} restaurants
+  </div>
+
+  <!-- Scroll sentinel — IntersectionObserver watches this -->
+  <div #sentinel class="scroll-sentinel"></div>
 
 </div>

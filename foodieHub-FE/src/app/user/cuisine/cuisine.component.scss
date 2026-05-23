@@ -220,14 +220,6 @@ $font-sans:  'DM Sans', sans-serif;
 .meta-dot { color: #ccc; }
 
 // ── Loading Skeletons ─────────────────────────────────────────────
-.loading-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 20px;
-
-  @media (max-width: 1100px) { grid-template-columns: repeat(2, 1fr); }
-  @media (max-width: 480px)  { grid-template-columns: 1fr; }
-}
 
 .skeleton-card {
   height: 260px;
@@ -268,54 +260,37 @@ $font-sans:  'DM Sans', sans-serif;
   &:hover { background: $gold-dark; }
 }
 
-// ── Pagination ────────────────────────────────────────────────────
-.pagination {
+// ── Bottom loader & end message ───────────────────────────────────
+.bottom-loader {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1.5rem;
-  margin-top: 2.5rem;
-  flex-wrap: wrap;
-}
-
-.page-btn {
-  padding: 9px 22px;
-  border: 1.5px solid $border;
-  border-radius: 8px;
-  background: white;
-  font-size: .88rem;
-  font-weight: 700;
-  cursor: pointer;
-  color: $text-dark;
-  font-family: $font-sans;
-  transition: all .2s;
-
-  &:hover:not(:disabled) {
-    border-color: $gold;
-    background: $gold-light;
-    color: $text-dark;
-  }
-
-  &:disabled {
-    opacity: .4;
-    cursor: not-allowed;
-  }
-}
-
-.page-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-}
-
-.page-current {
-  font-size: .9rem;
-  font-weight: 700;
-  color: $text-dark;
-}
-
-.page-showing {
-  font-size: .78rem;
+  gap: 10px;
+  padding: 2rem 0;
   color: $text-light;
+  font-size: .88rem;
+}
+
+.spinner {
+  width: 22px; height: 22px;
+  border: 3px solid $border;
+  border-top-color: $gold;
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.end-msg {
+  text-align: center;
+  padding: 2rem 0 1rem;
+  font-size: .85rem;
+  color: $text-light;
+}
+
+// ── Scroll sentinel ───────────────────────────────────────────────
+.scroll-sentinel {
+  height: 1px;
 }

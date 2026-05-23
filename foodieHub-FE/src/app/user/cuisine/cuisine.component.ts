@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HomeService } from '../../home/home.service';
@@ -12,18 +12,21 @@ import { CUISINE_EMOJI, getCuisineEmoji, getCuisineBg } from '../../core/constan
   templateUrl: './cuisine.component.html',
   styleUrl: './cuisine.component.scss',
 })
-export class CuisineComponent implements OnInit {
+export class CuisineComponent implements OnInit, AfterViewInit, OnDestroy {
+
+  @ViewChild('sentinel') sentinel!: ElementRef;
 
   cuisines: string[] = [];
   restaurants: Restaurant[] = [];
   selectedCuisine = 'All';
   loading = false;
 
-  // pagination
-  currentPage = 0;
-  totalPages   = 0;
+  currentPage   = 0;
+  totalPages    = 0;
   totalElements = 0;
   readonly pageSize = 10;
+
+  private observer!: IntersectionObserver;
 
   constructor(private homeService: HomeService) {}
 
@@ -32,33 +35,39 @@ export class CuisineComponent implements OnInit {
     this.load();
   }
 
+  ngAfterViewInit() {
+    this.observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && !this.loading && this.hasMore) {
+        this.currentPage++;
+        this.load(true);
+      }
+    }, { threshold: 0.1 });
+    this.observer.observe(this.sentinel.nativeElement);
+  }
+
+  ngOnDestroy() {
+    this.observer?.disconnect();
+  }
+
   selectCuisine(c?: string) {
     this.selectedCuisine = c ?? 'All';
     this.currentPage = 0;
+    this.restaurants = [];
     this.load();
   }
 
-  prevPage() {
-    if (this.currentPage > 0) this.goToPage(this.currentPage - 1);
+  get hasMore(): boolean {
+    return this.currentPage < this.totalPages - 1;
   }
 
-  nextPage() {
-    if (this.currentPage < this.totalPages - 1) this.goToPage(this.currentPage + 1);
-  }
-
-  goToPage(page: number) {
-    this.currentPage = page;
-    this.load();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  private load() {
+  private load(append = false) {
     this.loading = true;
     const cuisine = this.selectedCuisine === 'All' ? undefined : this.selectedCuisine;
     this.homeService.getRestaurants(cuisine, undefined, undefined, this.currentPage, this.pageSize).subscribe({
       next: (res) => {
         const p = res.data;
-        this.restaurants   = p?.content      ?? [];
+        const incoming = p?.content ?? [];
+        this.restaurants   = append ? [...this.restaurants, ...incoming] : incoming;
         this.currentPage   = p?.currentPage  ?? 0;
         this.totalPages    = p?.totalPages   ?? 0;
         this.totalElements = p?.totalElements ?? 0;
@@ -69,10 +78,10 @@ export class CuisineComponent implements OnInit {
   }
 
   // helpers
-  getEmoji(r: Restaurant): string        { return getCuisineEmoji(r.cuisine?.[0]); }
-  getBg(r: Restaurant): string           { return getCuisineBg(r.cuisine?.[0]); }
-  getCuisineEmoji(c: string): string     { return getCuisineEmoji(c); }
-  getCuisineBg(c: string): string        { return getCuisineBg(c); }
+  getEmoji(r: Restaurant): string    { return getCuisineEmoji(r.cuisine?.[0]); }
+  getBg(r: Restaurant): string       { return getCuisineBg(r.cuisine?.[0]); }
+  getCuisineEmoji(c: string): string { return getCuisineEmoji(c); }
+  getCuisineBg(c: string): string    { return getCuisineBg(c); }
 
   getDistanceLabel(r: Restaurant): string {
     if (r.distanceKm == null) return '';
@@ -81,10 +90,5 @@ export class CuisineComponent implements OnInit {
       : `${r.distanceKm.toFixed(1)}km`;
   }
 
-  get showingFrom(): number {
-    return this.totalElements === 0 ? 0 : this.currentPage * this.pageSize + 1;
-  }
-  get showingTo(): number {
-    return Math.min((this.currentPage + 1) * this.pageSize, this.totalElements);
-  }
+  get showingCount(): number { return this.restaurants.length; }
 }
