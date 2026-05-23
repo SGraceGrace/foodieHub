@@ -12,6 +12,7 @@ public class PartnerRegisterRequestDTO {
     private String password;
     private String phone;
     private String restaurantName;
+    private String restaurantAddress;
     private String fssaiNumber;
     private String gstNumber;
     private LocationDTO restaurantLocation;

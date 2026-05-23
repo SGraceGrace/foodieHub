@@ -12,6 +12,7 @@ export interface PartnerRegisterRequest {
   password: string;
   phone: string;
   restaurantName: string;
+  restaurantAddress?: string;
   fssaiNumber: string;
   gstNumber?: string;
   restaurantLocation: { city: string; state: string; country: string; lat: number; lng: number };

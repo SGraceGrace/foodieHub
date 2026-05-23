@@ -73,13 +73,13 @@
   </div>
   <div class="cuisine-grid">
     <div class="cuisine-card" [class.cuisine-card--active]="selectedCuisine === 'All'" (click)="selectCuisine()">
-      <div class="cuisine-card-emoji" style="background:linear-gradient(135deg,#f5f5f5,#eeeeee)">🍽️</div>
+      <div class="cuisine-card-emoji" [style.background]="selectedCuisine === 'All' ? 'linear-gradient(135deg,#f5f5f5,#eeeeee)' : null">🍽️</div>
       <span class="cuisine-card-label">All</span>
     </div>
     <div class="cuisine-card" *ngFor="let c of cuisineFilters"
          [class.cuisine-card--active]="selectedCuisine === c"
          (click)="selectCuisine(c)">
-      <div class="cuisine-card-emoji" [style.background]="getCuisineBg(c)">{{ getCuisineEmoji(c) }}</div>
+      <div class="cuisine-card-emoji" [style.background]="selectedCuisine === c ? getCuisineBg(c) : null">{{ getCuisineEmoji(c) }}</div>
       <span class="cuisine-card-label">{{ c }}</span>
     </div>
   </div>
@@ -94,7 +94,6 @@
   <div class="food-grid">
     <div class="food-card" *ngFor="let dish of popularDishes">
       <div class="food-card-img" [style.background]="dish.bg">
-        <div class="food-badge" *ngIf="dish.badge">{{ dish.badge }}</div>
         {{ dish.emoji }}
       </div>
       <div class="food-card-body">
@@ -103,7 +102,7 @@
           <span class="stars">
             <ng-container *ngFor="let full of starsArray(dish.rating)">{{ full ? '★' : '☆' }}</ng-container>
           </span>
-          {{ dish.rating }} ({{ dish.reviews }})
+          {{ dish.rating }}
         </div>
         <div class="food-footer">
           <span class="food-price">₹{{ dish.price }}</span>

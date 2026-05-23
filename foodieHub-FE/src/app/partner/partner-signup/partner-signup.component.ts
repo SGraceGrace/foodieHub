@@ -65,7 +65,8 @@ export class PartnerSignupComponent {
         Validators.pattern('^(?=.*[A-Z])(?=.*[0-9]).{8,}$'),
       ]],
       // Step 2 — restaurant details
-      restaurantName: ['', Validators.required],
+      restaurantName:    ['', Validators.required],
+      restaurantAddress: [''],
       imageUrl:       [''],
       fssaiNumber:    ['', [Validators.required, Validators.pattern('^[0-9]{14}$')]],
       gstNumber:      [''],
@@ -93,6 +94,9 @@ export class PartnerSignupComponent {
 
   onLocationPicked(loc: PickedLocation) {
     this.restaurantLocation = loc;
+    if (loc.displayName) {
+      this.form.get('restaurantAddress')?.setValue(loc.displayName);
+    }
     this.locationError = false;
     this.showLocationPicker = false;
   }
@@ -125,6 +129,7 @@ export class PartnerSignupComponent {
       firstName: v.firstName, lastName: v.lastName,
       email: v.email, password: v.password, phone: v.phone,
       restaurantName: v.restaurantName,
+      restaurantAddress: v.restaurantAddress || undefined,
       fssaiNumber: v.fssaiNumber, gstNumber: v.gstNumber,
       imageUrl: this.imagePreviewUrl ?? '',
       minOrder: v.minOrder, deliveryTime: v.deliveryTime, priceRange: v.priceRange,

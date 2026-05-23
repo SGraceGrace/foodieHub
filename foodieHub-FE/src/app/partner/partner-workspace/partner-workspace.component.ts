@@ -475,6 +475,10 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
 
   onDetailsLocationPicked(loc: PickedLocation) {
     this.detailsLocation = loc;
+    // Auto-fill address field with the detailed Nominatim address string
+    if (loc.displayName) {
+      this.detailsDraft.address = loc.displayName;
+    }
     this.detailsLocationError = false;
     this.showDetailsLocationPicker = false;
   }
@@ -502,6 +506,7 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
       .split(',').map(c => c.trim()).filter(Boolean);
     this.partnerService.updateRestaurantDetails(this.restaurant.id, {
       name:         this.detailsDraft.name.trim()        || undefined,
+      address:      this.detailsDraft.address.trim()     || undefined,
       cuisine:      cuisineList.length ? cuisineList     : undefined,
       deliveryTime: this.detailsDraft.deliveryTime       ?? undefined,
       minOrder:     this.detailsDraft.minOrder           ?? undefined,

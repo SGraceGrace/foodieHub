@@ -176,6 +176,7 @@ public class PartnerServiceImpl implements PartnerService {
             var body = new java.util.HashMap<String, Object>();
             body.put("name", dto.getRestaurantName());
             body.put("ownerId", String.valueOf(ownerId));
+            if (dto.getRestaurantAddress() != null) body.put("address", dto.getRestaurantAddress());
             body.put("fssaiNumber", dto.getFssaiNumber() != null ? dto.getFssaiNumber() : "");
             body.put("gstNumber", dto.getGstNumber() != null ? dto.getGstNumber() : "");
             if (dto.getRestaurantLocation() != null) {

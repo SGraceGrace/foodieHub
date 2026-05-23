@@ -94,6 +94,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     public Restaurant create(RestaurantCreateRequestDTO request) {
         Restaurant restaurant = new Restaurant();
         restaurant.setName(request.getName());
+        restaurant.setAddress(request.getAddress());
         restaurant.setOwnerId(request.getOwnerId());
         restaurant.setFssaiNumber(request.getFssaiNumber());
         restaurant.setGstNumber(request.getGstNumber());
@@ -168,6 +169,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         Restaurant r = restaurantRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Restaurant not found"));
         if (req.getName()         != null) r.setName(req.getName());
+        if (req.getAddress()      != null) r.setAddress(req.getAddress());
         if (req.getCuisine()      != null) r.setCuisine(req.getCuisine());
         if (req.getDeliveryTime() != null) r.setDeliveryTime(req.getDeliveryTime());
         if (req.getMinOrder()     != null) r.setMinOrder(req.getMinOrder());

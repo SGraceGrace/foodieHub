@@ -20,6 +20,7 @@ public class Restaurant {
     private String gstNumber;
 
     private String name;
+    private String address;
     private List<String> cuisine;
     private double rating;
     private int deliveryTime;

@@ -8,7 +8,7 @@ import { DeliveryAddressService } from '../core/shared/delivery-address.service'
 
 interface FoodCard {
   emoji: string; name: string; price: number;
-  rating: number; reviews: number; badge?: string; bg: string;
+  rating: number; bg: string;
 }
 
 @Component({
@@ -112,20 +112,20 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private buildPopularDishes(restaurants: Restaurant[]) {
     const dishes: FoodCard[] = [];
-    for (const r of restaurants) {
-      const firstItem = r.menu?.[0]?.items?.[0];
-      if (!firstItem) continue;
+    outer: for (const r of restaurants) {
       const cuisine = r.cuisine?.[0];
-      dishes.push({
-        emoji: getCuisineEmoji(cuisine),
-        name: firstItem.name,
-        price: firstItem.price,
-        rating: r.rating ?? 0,
-        reviews: Math.floor(Math.random() * 300 + 100),
-        badge: dishes.length === 0 ? 'Bestseller' : undefined,
-        bg: getCuisineBg(cuisine),
-      });
-      if (dishes.length === 4) break;
+      for (const category of r.menu ?? []) {
+        for (const item of category.items ?? []) {
+          dishes.push({
+            emoji: getCuisineEmoji(cuisine),
+            name: item.name,
+            price: item.price,
+            rating: r.rating ?? 0,
+            bg: getCuisineBg(cuisine),
+          });
+          if (dishes.length === 4) break outer;
+        }
+      }
     }
     this.popularDishes = dishes;
   }
