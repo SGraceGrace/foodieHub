@@ -8,7 +8,7 @@ import { DeliveryAddressService } from '../core/shared/delivery-address.service'
 
 interface FoodCard {
   emoji: string; name: string; price: number;
-  rating: number; bg: string;
+  rating: number; bg: string; imageUrl?: string;
 }
 
 @Component({
@@ -92,7 +92,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   selectCuisine(cuisine?: string) {
     this.selectedCuisine = cuisine ?? 'All';
-    this.homeService.getRestaurants(cuisine, this.userLat, this.userLng).subscribe({
+    this.homeService.getRestaurants(cuisine).subscribe({
       next: (res) => {
         this.restaurants = res.data?.content ?? [];
         this.buildPopularDishes(this.restaurants);
@@ -102,7 +102,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   loadRestaurants(cuisine?: string) {
     this.selectedCuisine = cuisine ?? 'All';
-    this.homeService.getRestaurants(cuisine, this.userLat, this.userLng).subscribe({
+    this.homeService.getRestaurants(cuisine).subscribe({
       next: (res) => {
         this.restaurants = res.data?.content ?? [];
         if (!cuisine) this.buildPopularDishes(this.restaurants);
@@ -122,8 +122,9 @@ export class HomeComponent implements OnInit, OnDestroy {
             price: item.price,
             rating: r.rating ?? 0,
             bg: getCuisineBg(cuisine),
+            imageUrl: item.imageUrl ?? r.imageUrl,
           });
-          if (dishes.length === 4) break outer;
+          if (dishes.length === 10) break outer;
         }
       }
     }

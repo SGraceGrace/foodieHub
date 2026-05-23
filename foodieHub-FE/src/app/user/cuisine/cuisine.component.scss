@@ -1,0 +1,321 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+$gold:       #f9b303;
+$gold-dark:  #e0a000;
+$gold-light: #fff8e1;
+$text:       #4e4e4e;
+$text-dark:  #2a2a2a;
+$text-light: #888;
+$bg-warm:    #fffaf2;
+$border:     #e8e8e8;
+$shadow:     0 2px 10px rgba(0,0,0,.08);
+$shadow-lg:  0 8px 30px rgba(0,0,0,.12);
+$font-serif: 'Libre Baskerville', Georgia, serif;
+$font-sans:  'DM Sans', sans-serif;
+
+* { font-family: $font-sans; box-sizing: border-box; }
+
+// ── Page Header ───────────────────────────────────────────────────
+.page-header {
+  background: white;
+  border-bottom: 1px solid $border;
+  padding: 1.5rem 2.5rem;
+
+  @media (max-width: 768px) { padding: 1.2rem 1rem; }
+}
+
+.page-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  h1 {
+    font-family: $font-serif;
+    font-size: 1.8rem;
+    color: $text-dark;
+    margin: 0 0 4px;
+
+    @media (max-width: 768px) { font-size: 1.4rem; }
+  }
+}
+
+.page-subtitle {
+  font-size: .88rem;
+  color: $text-light;
+  margin: 0;
+}
+
+.back-btn {
+  padding: 8px 18px;
+  border: 1px solid $border;
+  border-radius: 8px;
+  background: white;
+  color: $text;
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .2s;
+  font-family: $font-sans;
+
+  &:hover { background: $bg-warm; border-color: $gold; color: $text-dark; }
+
+  @media (max-width: 480px) { display: none; }
+}
+
+// ── Cuisine Filter Strip ──────────────────────────────────────────
+.filter-strip {
+  background: white;
+  border-bottom: 1px solid $border;
+  padding: 1rem 2.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,.05);
+
+  @media (max-width: 768px) { padding: .8rem 1rem; }
+}
+
+.cuisine-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.cuisine-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  flex-shrink: 0;
+  user-select: none;
+
+  .cuisine-card-emoji {
+    width: 64px; height: 64px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.4rem;
+    transition: all .2s;
+    line-height: 1;
+    background: #f5f5f5;
+  }
+
+  .cuisine-card-label {
+    font-size: .78rem;
+    font-weight: 600;
+    color: $text;
+    text-align: center;
+    transition: color .2s;
+  }
+
+  &:hover .cuisine-card-emoji {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,.10);
+  }
+
+  &--active {
+    .cuisine-card-emoji { transform: translateY(-3px); box-shadow: 0 6px 16px rgba(0,0,0,.10); }
+    .cuisine-card-label { color: $gold; font-weight: 700; }
+  }
+}
+
+// ── Content Wrapper ───────────────────────────────────────────────
+.content-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 2.5rem 3rem;
+
+  @media (max-width: 768px) { padding: 1.5rem 1rem 2.5rem; }
+}
+
+// ── Restaurant Grid ───────────────────────────────────────────────
+.rest-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+
+  @media (max-width: 1100px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 480px)  { grid-template-columns: 1fr; }
+}
+
+.rest-card {
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: $shadow;
+  cursor: pointer;
+  transition: all .3s;
+
+  &:hover { transform: translateY(-4px); box-shadow: $shadow-lg; }
+}
+
+.rest-img {
+  position: relative;
+  height: 160px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+
+.rest-cover {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+
+.rest-emoji { font-size: 56px; line-height: 1; }
+
+.rest-badge-status {
+  position: absolute; top: 10px; left: 10px;
+  padding: 3px 9px; border-radius: 20px;
+  font-size: 11px; font-weight: 700;
+  background: #4caf50; color: white;
+  &.closed { background: #e53935; }
+}
+
+.rest-badge-dist {
+  position: absolute; top: 10px; right: 10px;
+  padding: 3px 9px; border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+  background: rgba(0,0,0,.45); color: white;
+  backdrop-filter: blur(4px);
+}
+
+.rest-body { padding: 13px; }
+
+.rest-body-top {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 6px;
+  margin-bottom: 5px;
+
+  h3 { font-size: .95rem; color: $text-dark; font-weight: 700; margin: 0; flex: 1; }
+}
+
+.rest-rating {
+  font-size: .8rem; font-weight: 700;
+  color: $text-dark; white-space: nowrap;
+  background: $gold-light; padding: 2px 8px; border-radius: 20px;
+}
+
+.rtags { display: flex; gap: 5px; flex-wrap: wrap; }
+.rtag {
+  font-size: 11px; padding: 3px 9px;
+  background: $bg-warm; border-radius: 20px; color: $text-light;
+}
+
+.rest-meta {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .78rem; color: $text-light;
+  margin-top: 7px; flex-wrap: wrap;
+}
+
+.meta-dot { color: #ccc; }
+
+// ── Loading Skeletons ─────────────────────────────────────────────
+.loading-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 20px;
+
+  @media (max-width: 1100px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 480px)  { grid-template-columns: 1fr; }
+}
+
+.skeleton-card {
+  height: 260px;
+  border-radius: 14px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+// ── Empty State ───────────────────────────────────────────────────
+.empty-state {
+  text-align: center;
+  padding: 4rem 1rem;
+
+  .empty-icon { font-size: 4rem; margin-bottom: 1rem; }
+
+  h3 { font-family: $font-serif; font-size: 1.4rem; color: $text-dark; margin: 0 0 8px; }
+  p  { color: $text-light; margin: 0 0 1.5rem; }
+}
+
+.btn-reset {
+  padding: 10px 24px;
+  background: $gold;
+  border: none;
+  border-radius: 8px;
+  font-size: .9rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: $text-dark;
+  font-family: $font-sans;
+  transition: background .2s;
+
+  &:hover { background: $gold-dark; }
+}
+
+// ── Pagination ────────────────────────────────────────────────────
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2.5rem;
+  flex-wrap: wrap;
+}
+
+.page-btn {
+  padding: 9px 22px;
+  border: 1.5px solid $border;
+  border-radius: 8px;
+  background: white;
+  font-size: .88rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: $text-dark;
+  font-family: $font-sans;
+  transition: all .2s;
+
+  &:hover:not(:disabled) {
+    border-color: $gold;
+    background: $gold-light;
+    color: $text-dark;
+  }
+
+  &:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+  }
+}
+
+.page-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.page-current {
+  font-size: .9rem;
+  font-weight: 700;
+  color: $text-dark;
+}
+
+.page-showing {
+  font-size: .78rem;
+  color: $text-light;
+}

@@ -93,8 +93,9 @@
   </div>
   <div class="food-grid">
     <div class="food-card" *ngFor="let dish of popularDishes">
-      <div class="food-card-img" [style.background]="dish.bg">
-        {{ dish.emoji }}
+      <div class="food-card-img" [style.background]="dish.imageUrl ? 'none' : dish.bg">
+        <img *ngIf="dish.imageUrl" [src]="dish.imageUrl" [alt]="dish.name" class="food-card-cover" />
+        <span *ngIf="!dish.imageUrl">{{ dish.emoji }}</span>
       </div>
       <div class="food-card-body">
         <h3>{{ dish.name }}</h3>
