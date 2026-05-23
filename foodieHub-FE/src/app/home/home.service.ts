@@ -23,4 +23,8 @@ export class HomeService {
     if (lat != null)        params = params.set('radiusKm', '10');
     return this.http.get<ApiResponse<PaginatedResponse<Restaurant>>>(`${this.base}/api/v1/restaurants`, { params });
   }
+
+  getCuisines(): Observable<ApiResponse<string[]>> {
+    return this.http.get<ApiResponse<string[]>>(`${this.base}/api/v1/restaurants/cuisines`);
+  }
 }

@@ -33,22 +33,28 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     @Override
     public PaginatedResponse<Restaurant> getAll(String cuisine, Double lat, Double lng, Double radiusKm, Pageable pageable) {
+        boolean hasCuisine  = cuisine != null && !cuisine.isBlank();
         boolean hasLocation = lat != null && lng != null;
-        double radius = (radiusKm != null) ? radiusKm : 10.0;
+        double  radius      = (radiusKm != null) ? radiusKm : 10.0;
 
-        List<Restaurant> all;
-        if (cuisine != null && !cuisine.isBlank()) {
-            all = restaurantRepo.findByStatusAndCuisineContainingIgnoreCase(RestaurantStatus.ACTIVE, cuisine, pageable).getContent();
-        } else {
-            all = restaurantRepo.findByStatus(RestaurantStatus.ACTIVE, pageable).getContent();
-        }
-
+        // No location provided — return cuisine-filtered (or all) active restaurants
         if (!hasLocation) {
+            if (hasCuisine) {
+                return PaginatedResponse.of(
+                    restaurantRepo.findByStatusAndCuisineContainingIgnoreCase(RestaurantStatus.ACTIVE, cuisine, pageable));
+            }
             return PaginatedResponse.of(restaurantRepo.findByStatus(RestaurantStatus.ACTIVE, pageable));
         }
 
-        List<Restaurant> nearby = all.stream()
-            .filter(r -> r.getLocation() != null && r.getLocation().getLat() != null && r.getLocation().getLng() != null)
+        // Location provided — fetch candidates then filter by proximity
+        List<Restaurant> candidates = hasCuisine
+            ? restaurantRepo.findByStatusAndCuisineContainingIgnoreCase(RestaurantStatus.ACTIVE, cuisine, pageable).getContent()
+            : restaurantRepo.findByStatus(RestaurantStatus.ACTIVE, pageable).getContent();
+
+        List<Restaurant> nearby = candidates.stream()
+            .filter(r -> r.getLocation() != null
+                      && r.getLocation().getLat() != null
+                      && r.getLocation().getLng() != null)
             .filter(r -> haversineKm(lat, lng, r.getLocation().getLat(), r.getLocation().getLng()) <= radius)
             .sorted((a, b) -> Double.compare(
                 haversineKm(lat, lng, a.getLocation().getLat(), a.getLocation().getLng()),
