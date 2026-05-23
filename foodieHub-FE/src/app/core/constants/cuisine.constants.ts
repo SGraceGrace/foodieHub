@@ -9,7 +9,7 @@ export const CUISINE_EMOJI: Record<string, string> = {
   // Asian cuisines
   Chinese: '🥢',      Japanese: '🍣',          Korean: '🥘',
   Thai: '🍜',         Vietnamese: '🍜',         Tibetan: '🥟',
-  Asian: '🥡',        Sushi: '🍣',             Dim Sum: '🥟',
+  Asian: '🥡',        Sushi: '🍣',             'Dim Sum': '🥟',
   Noodles: '🍜',      Ramen: '🍜',
 
   // Western
