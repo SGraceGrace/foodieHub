@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { HomeService } from './home.service';
 import { Slide, Restaurant } from '../model/restaurant.model';
-import { getCuisineEmoji, getCuisineBg } from '../core/constants/cuisine.constants';
+import { CUISINE_EMOJI, getCuisineEmoji, getCuisineBg } from '../core/constants/cuisine.constants';
 import { DeliveryAddressService } from '../core/shared/delivery-address.service';
 
 interface FoodCard {
@@ -42,7 +42,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadSlides();
-    this.loadCuisines();
+    this.cuisineFilters = Object.keys(CUISINE_EMOJI).filter(k => k !== 'default');
     this.deliveryAddressService.selected$.subscribe(addr => {
       this.userLat = addr?.location?.lat ?? undefined;
       this.userLng = addr?.location?.lng ?? undefined;
@@ -55,12 +55,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.clearTimer();
-  }
-
-  private loadCuisines() {
-    this.homeService.getCuisines().subscribe({
-      next: (res) => { this.cuisineFilters = res.data ?? []; },
-    });
   }
 
   private loadSlides() {
