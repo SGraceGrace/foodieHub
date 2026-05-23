@@ -128,6 +128,59 @@ $font-sans:  'DM Sans', sans-serif;
   }
 }
 
+// ── Sort Bar ──────────────────────────────────────────────────────
+.sort-bar {
+  background: white;
+  border-bottom: 1px solid $border;
+  padding: .7rem 2.5rem;
+
+  @media (max-width: 768px) { padding: .6rem 1rem; }
+}
+
+.sort-bar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.sort-label {
+  font-size: .82rem;
+  font-weight: 600;
+  color: $text-light;
+  white-space: nowrap;
+}
+
+.sort-options {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sort-chip {
+  padding: 5px 14px;
+  border: 1.5px solid $border;
+  border-radius: 20px;
+  background: white;
+  font-size: .8rem;
+  font-weight: 600;
+  color: $text;
+  cursor: pointer;
+  font-family: $font-sans;
+  transition: all .2s;
+  white-space: nowrap;
+
+  &:hover { border-color: $gold; color: $text-dark; }
+
+  &--active {
+    background: $gold;
+    border-color: $gold;
+    color: $text-dark;
+  }
+}
+
 // ── Content Wrapper ───────────────────────────────────────────────
 .content-wrap {
   max-width: 1200px;

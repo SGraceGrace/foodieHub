@@ -19,11 +19,20 @@ export class CuisineComponent implements OnInit, AfterViewInit, OnDestroy {
   cuisines: string[] = [];
   restaurants: Restaurant[] = [];
   selectedCuisine = 'All';
+  selectedSort = 'relevance';
   loading = false;
 
-  currentPage   = 0;
-  totalPages    = 0;
-  totalElements = 0;
+  readonly sortOptions = [
+    { value: 'relevance',    label: 'Relevance'          },
+    { value: 'deliveryTime', label: 'Delivery Time'      },
+    { value: 'priceLow',     label: 'Price: Low to High' },
+    { value: 'priceHigh',    label: 'Price: High to Low' },
+    { value: 'rating',       label: 'Rating'             },
+  ];
+
+  currentPage    = 0;
+  totalPages     = 0;
+  totalElements  = 0;
   readonly pageSize = 10;
 
   private observer!: IntersectionObserver;
@@ -56,20 +65,27 @@ export class CuisineComponent implements OnInit, AfterViewInit, OnDestroy {
     this.load();
   }
 
+  selectSort(sort: string) {
+    this.selectedSort = sort;
+    // TODO: wire sorting logic when BE sort param is ready
+  }
+
   get hasMore(): boolean {
     return this.currentPage < this.totalPages - 1;
   }
+
+  get showingCount(): number { return this.restaurants.length; }
 
   private load(append = false) {
     this.loading = true;
     const cuisine = this.selectedCuisine === 'All' ? undefined : this.selectedCuisine;
     this.homeService.getRestaurants(cuisine, undefined, undefined, this.currentPage, this.pageSize).subscribe({
       next: (res) => {
-        const p = res.data;
+        const p        = res.data;
         const incoming = p?.content ?? [];
         this.restaurants   = append ? [...this.restaurants, ...incoming] : incoming;
-        this.currentPage   = p?.currentPage  ?? 0;
-        this.totalPages    = p?.totalPages   ?? 0;
+        this.currentPage   = p?.currentPage   ?? 0;
+        this.totalPages    = p?.totalPages    ?? 0;
         this.totalElements = p?.totalElements ?? 0;
         this.loading = false;
       },
@@ -89,6 +105,4 @@ export class CuisineComponent implements OnInit, AfterViewInit, OnDestroy {
       ? `${Math.round(r.distanceKm * 1000)}m`
       : `${r.distanceKm.toFixed(1)}km`;
   }
-
-  get showingCount(): number { return this.restaurants.length; }
 }
