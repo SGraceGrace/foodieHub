@@ -15,6 +15,11 @@ export class TokenService {
 
   userInfo$ = this.userInfoSubject.asObservable();
 
+  /** Synchronous snapshot of the current user — use userInfo$ for reactive bindings. */
+  get userInfo(): UserDetails | null {
+    return this.userInfoSubject.value;
+  }
+
   setTokens(accessToken: string, refreshToken: string): void {
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);

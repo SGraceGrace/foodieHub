@@ -50,6 +50,157 @@ $font-sans:  'DM Sans', sans-serif;
   &:hover { background: $gold-dark; }
 }
 
+// ── Notification Bell ─────────────────────────────────────────────
+.notif-bell-wrap {
+  position: relative;
+}
+
+.notif-bell-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.3rem;
+  position: relative;
+  padding: 4px 6px;
+  border-radius: 8px;
+  transition: background .15s;
+  &:hover { background: #f5f5f5; }
+}
+
+.notif-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: #e53935;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  line-height: 1;
+  font-family: $font-sans;
+}
+
+.notif-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 320px;
+  max-height: 480px;
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0,0,0,.12);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.notif-panel-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid $border;
+  background: #fafaf8;
+}
+
+.notif-panel-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: $text-dark;
+}
+
+.notif-panel-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $text-light;
+  font-size: 0.9rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  &:hover { background: $border; }
+}
+
+.notif-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: $text-light;
+  font-size: 0.85rem;
+}
+
+.notif-list {
+  overflow-y: auto;
+  max-height: 400px;
+}
+
+.notif-item {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid $border;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  transition: background .12s;
+  &:last-child { border-bottom: none; }
+  &:hover { background: #fafaf8; }
+
+  &--unread {
+    background: #fffde7;
+    border-left: 3px solid $gold;
+    &:hover { background: #fff8d6; }
+  }
+}
+
+.notif-item-hdr {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notif-item-type { font-size: 0.78rem; font-weight: 700; color: $text-dark; }
+.notif-item-time { font-size: 0.72rem; color: $text-light; }
+
+.notif-item-customer {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: $text-dark;
+}
+
+.notif-item-items {
+  font-size: 0.78rem;
+  color: $text-light;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notif-item-amount {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: $text-dark;
+}
+
+.notif-item-address {
+  font-size: 0.75rem;
+  color: $text-light;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Click-outside overlay
+.notif-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+}
+
 // ── Loading full page ─────────────────────────────────────────────
 .loading-fullpage {
   display: flex;
@@ -177,6 +328,23 @@ $font-sans:  'DM Sans', sans-serif;
   margin-top: auto;
   color: rgba(255,255,255,0.3);
   &:hover { background: rgba(255,0,0,.1); color: #ff6b6b; }
+}
+
+// Badge on sidebar nav buttons
+.nav-badge {
+  margin-left: auto;
+  background: #e53935;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  line-height: 1;
 }
 
 // ── Main ──────────────────────────────────────────────────────────
@@ -1676,4 +1844,185 @@ $font-sans:  'DM Sans', sans-serif;
   .empty-icon { font-size: 3.5rem; margin-bottom: 1rem; }
   p { font-size: 0.9rem; line-height: 1.6; }
   .empty-sub { font-size: 0.8rem; margin-top: .4rem; }
+}
+
+// ── Live Orders ───────────────────────────────────────────────────
+.order-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.live-order-card {
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.07);
+  border-left: 4px solid $border;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: .85rem;
+  padding: 1.1rem 1.25rem;
+  transition: box-shadow .15s;
+
+  &:hover { box-shadow: 0 4px 16px rgba(0,0,0,.11); }
+
+  // Status-based left border colors
+  &.lo-new       { border-left-color: #e53935; }   // PLACED   — red (urgent)
+  &.lo-confirmed { border-left-color: $gold;    }   // CONFIRMED — gold
+  &.lo-preparing { border-left-color: #fb8c00; }   // PREPARING — orange
+  &.lo-ready     { border-left-color: $success; }   // READY    — green
+}
+
+// Card header row
+.lo-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .5rem;
+}
+
+.lo-hdr-left {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+.lo-order-id {
+  font-family: $font-sans;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: $text-dark;
+  letter-spacing: .3px;
+}
+
+.lo-time {
+  font-size: 0.72rem;
+  color: $text-light;
+}
+
+// Status badge
+.lo-status-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  border-radius: 20px;
+  padding: 3px 10px;
+  white-space: nowrap;
+
+  &.lo-status-placed    { background: #fdecea; color: #c62828; }
+  &.lo-status-confirmed { background: rgba(249,179,3,.15); color: $gold-dark; }
+  &.lo-status-preparing { background: #fff3e0; color: #e65100; }
+  &.lo-status-ready     { background: #e8f5e9; color: #2e7d32; }
+  &.lo-status-delivered { background: #e3f2fd; color: #1565c0; }
+  &.lo-status-cancelled { background: #f5f5f5; color: $text-light; }
+}
+
+// Customer info
+.lo-customer {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lo-customer-name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: $text-dark;
+}
+
+.lo-address {
+  font-size: 0.78rem;
+  color: $text-light;
+  line-height: 1.4;
+}
+
+// Items list
+.lo-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.lo-item-tag {
+  display: inline-block;
+  background: $bg;
+  border: 1px solid $border;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  color: $text-dark;
+  font-weight: 500;
+}
+
+// Total
+.lo-total {
+  font-size: 0.85rem;
+  color: $text;
+
+  strong {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: $text-dark;
+  }
+}
+
+// Action buttons row
+.lo-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: .1rem;
+}
+
+.lo-btn {
+  flex: 1;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: $font-sans;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+
+  &:disabled { opacity: 0.55; cursor: not-allowed; }
+}
+
+.lo-btn-primary {
+  background: $gold;
+  color: white;
+
+  &:hover:not(:disabled) { background: $gold-dark; }
+}
+
+.lo-btn-cancel {
+  flex: 0 0 auto;
+  background: none;
+  border: 1px solid #ffcdd2;
+  color: #c62828;
+
+  &:hover:not(:disabled) { background: #fdecea; border-color: #ef9a9a; }
+}
+
+// Mobile responsiveness
+@media (max-width: 768px) {
+  .order-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .live-order-card {
+    padding: .9rem 1rem;
+  }
+
+  .lo-actions {
+    flex-direction: column;
+  }
+
+  .lo-btn-cancel {
+    flex: 1;
+  }
 }

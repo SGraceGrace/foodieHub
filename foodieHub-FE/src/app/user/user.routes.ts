@@ -51,5 +51,10 @@ export const routes: Routes = [
     path: 'addresses',
     loadComponent: () => import('./addresses/addresses.component').then(module => module.AddressesComponent),
     canActivate: [authGuard]
+  },
+  {
+    path: 'order-confirm/:id',
+    loadComponent: () => import('./order-confirm/order-confirm.component').then(m => m.OrderConfirmComponent),
+    canActivate: [authGuard]
   }
 ];

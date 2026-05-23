@@ -6,4 +6,13 @@ spring:
     name: order-service
   data:
     mongodb:
-      uri: mongodb://localhost:27017/foodiehub_orders
+      uri: mongodb://localhost:27017/foodiehub_food
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+razorpay:
+  key-id: ${RAZORPAY_KEY_ID}
+  key-secret: ${RAZORPAY_KEY_SECRET}

@@ -299,7 +299,7 @@ $font-sans: 'Inter', 'Segoe UI', sans-serif;
   font-family: $font-sans;
   white-space: nowrap;
   transition: background .15s;
-  &:hover { background: darken($gold, 8%); }
+  &:hover { background: #d4930a; }
 }
 
 // ── Mobile ────────────────────────────────────────────────────────────

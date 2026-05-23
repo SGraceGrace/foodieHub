@@ -5,8 +5,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TokenService } from '../../core/shared/token.service';
 import { CloudinaryService } from '../../core/shared/cloudinary.service';
 import { PartnerService } from '../partner.service';
+import { OrderService } from '../../core/shared/order.service';
 import { UserDetails } from '../../model/user.model';
 import { Restaurant, DaySchedule, RestaurantStaff } from '../../model/restaurant.model';
+import { Order, RestaurantOrderNotification } from '../../model/order.model';
 import { LocationPickerComponent, PickedLocation } from '../../core/shared/components/location-picker/location-picker.component';
 
 type WorkspaceTab = 'overview' | 'orders' | 'menu' | 'analytics' | 'hours' | 'settings';
@@ -47,10 +49,33 @@ interface LocalMenuCategory {
 })
 export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
   private statusPollTimer: ReturnType<typeof setInterval> | null = null;
+  private sseController: AbortController | null = null;
+
   activeTab: WorkspaceTab = 'overview';
   user: UserDetails | null = null;
   restaurant: Restaurant | null = null;
   loading = false;
+
+  // ── Order notifications (bell) ────────────────────────────────────
+  notifications: RestaurantOrderNotification[] = [];
+  showNotifPanel = false;
+
+  get unreadCount(): number {
+    return this.notifications.filter(n => !n.read).length;
+  }
+
+  // ── Live Orders tab ───────────────────────────────────────────────
+  liveOrders: Order[] = [];
+  liveOrdersLoading = false;
+  updatingOrderId: string | null = null;
+
+  private static readonly LIVE_STATUSES = ['PLACED', 'CONFIRMED', 'PREPARING', 'READY'];
+
+  get liveOrderCount(): number {
+    return this.liveOrders.filter(o =>
+      ['PLACED', 'CONFIRMED', 'PREPARING'].includes(o.status ?? '')
+    ).length;
+  }
 
   // ── Operating hours ──────────────────────────────────────────────
   hours: DayHours[] = [
@@ -373,7 +398,8 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
     private router: Router,
     private tokenService: TokenService,
     private partnerService: PartnerService,
-    private cloudinary: CloudinaryService
+    private cloudinary: CloudinaryService,
+    private orderService: OrderService
   ) {}
 
   ngOnInit() {
@@ -391,6 +417,8 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
         this.initMenu();
         this.loading = false;
         this.startStatusPoll();
+        this.loadNotifications();
+        this.startSseStream();
       },
       error: () => {
         this.loading = false;
@@ -399,11 +427,120 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ── Notification bell ─────────────────────────────────────────────
+
+  loadNotifications() {
+    if (!this.restaurant) return;
+    this.orderService.getRestaurantNotifications(this.restaurant.id).subscribe({
+      next: res => {
+        this.notifications = res.data ?? [];
+      },
+      error: () => {}
+    });
+  }
+
+  startSseStream() {
+    if (!this.restaurant || this.sseController) return;
+    const token = this.tokenService.getAccessToken();
+    if (!token) return;
+
+    this.sseController = this.orderService.connectRestaurantSSE(
+      this.restaurant.id,
+      token,
+      (notif) => {
+        // Prepend so newest is first
+        this.notifications = [notif, ...this.notifications];
+        // Refresh live orders list so the new order appears immediately
+        this.loadLiveOrders();
+      }
+    );
+  }
+
+  toggleNotifPanel() {
+    this.showNotifPanel = !this.showNotifPanel;
+    if (!this.showNotifPanel) return;
+    // Mark all as read when panel is opened
+    if (this.unreadCount > 0 && this.restaurant) {
+      this.orderService.markAllRead(this.restaurant.id).subscribe();
+      this.notifications = this.notifications.map(n => ({ ...n, read: true }));
+    }
+  }
+
+  closeNotifPanel() { this.showNotifPanel = false; }
+
+  // ── Live Orders ───────────────────────────────────────────────────
+
+  loadLiveOrders() {
+    if (!this.restaurant) return;
+    this.liveOrdersLoading = true;
+    this.orderService.getRestaurantOrders(
+      this.restaurant.id,
+      PartnerWorkspaceComponent.LIVE_STATUSES
+    ).subscribe({
+      next: res => {
+        this.liveOrders      = res.data ?? [];
+        this.liveOrdersLoading = false;
+      },
+      error: () => { this.liveOrdersLoading = false; }
+    });
+  }
+
+  onStatusUpdate(order: Order, newStatus: string) {
+    this.updatingOrderId = order.id;
+    this.orderService.updateOrderStatus(order.id, newStatus).subscribe({
+      next: res => {
+        this.updatingOrderId = null;
+        if (newStatus === 'DELIVERED' || newStatus === 'CANCELLED') {
+          // Remove from live list once it leaves active statuses
+          this.liveOrders = this.liveOrders.filter(o => o.id !== order.id);
+        } else {
+          this.liveOrders = this.liveOrders.map(o =>
+            o.id === order.id ? { ...o, status: newStatus as any } : o
+          );
+        }
+      },
+      error: () => { this.updatingOrderId = null; }
+    });
+  }
+
+  nextStatus(status: string): string | null {
+    const flow: Record<string, string> = {
+      PLACED:    'CONFIRMED',
+      CONFIRMED: 'PREPARING',
+      PREPARING: 'READY',
+      READY:     'DELIVERED',
+    };
+    return flow[status] ?? null;
+  }
+
+  nextStatusLabel(status: string): string {
+    const labels: Record<string, string> = {
+      PLACED:    '✅ Accept Order',
+      CONFIRMED: '👨‍🍳 Start Preparing',
+      PREPARING: '📦 Mark Ready',
+      READY:     '✓ Mark Delivered',
+    };
+    return labels[status] ?? '';
+  }
+
+  statusLabel(status: string): string {
+    const labels: Record<string, string> = {
+      PLACED:    'New',
+      CONFIRMED: 'Accepted',
+      PREPARING: 'Preparing',
+      READY:     'Ready',
+      DELIVERED: 'Delivered',
+      CANCELLED: 'Cancelled',
+    };
+    return labels[status] ?? status;
+  }
+
   goTab(tab: WorkspaceTab) {
     this.activeTab = tab;
-    if (tab === 'menu') this.initMenu();
-    if (tab === 'hours') this.refreshHours();
+    if (tab === 'menu')    this.initMenu();
+    if (tab === 'hours')   this.refreshHours();
     if (tab === 'settings') this.loadStaff();
+    if (tab === 'orders')  this.loadLiveOrders();
   }
 
   // ── Settings: staff ───────────────────────────────────────────────
@@ -578,6 +715,7 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     if (this.statusPollTimer) clearInterval(this.statusPollTimer);
+    if (this.sseController) { this.sseController.abort(); this.sseController = null; }
   }
 
   goBack()  { this.router.navigateByUrl('/partner'); }

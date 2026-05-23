@@ -2,7 +2,9 @@ package com.project.notificationservice.listener;
 
 import com.project.notificationservice.config.RabbitMQConfig;
 import com.project.notificationservice.dto.NotificationDTO;
+import com.project.notificationservice.dto.RestaurantNotificationDTO;
 import com.project.notificationservice.entity.Notification;
+import com.project.notificationservice.entity.RestaurantNotification;
 import com.project.notificationservice.event.ActivityLoggedEvent;
 import com.project.notificationservice.event.ContactMessageEvent;
 import com.project.notificationservice.event.DriverRegisteredEvent;
@@ -10,6 +12,7 @@ import com.project.notificationservice.event.OrderPlacedEvent;
 import com.project.notificationservice.event.OwnerStatusEvent;
 import com.project.notificationservice.event.PartnerRegisteredEvent;
 import com.project.notificationservice.repo.NotificationRepo;
+import com.project.notificationservice.repo.RestaurantNotificationRepo;
 import com.project.notificationservice.service.SseEmitterService;
 import com.project.notificationservice.service.WebPushService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,7 @@ public class NotificationListener {
 
     private final JavaMailSender mailSender;
     private final NotificationRepo notificationRepo;
+    private final RestaurantNotificationRepo restaurantNotificationRepo;
     private final SseEmitterService sseEmitterService;
     private final WebPushService webPushService;
 
@@ -129,10 +133,32 @@ public class NotificationListener {
         }
     }
 
-    // ── Order placed → notify customer ────────────────────────────
+    // ── Order placed → notify restaurant (SSE) + customer (email) ───
 
     @RabbitListener(queues = RabbitMQConfig.ORDER_PLACED_QUEUE)
     public void onOrderPlaced(OrderPlacedEvent event) {
+
+        // 1. Save restaurant notification to MongoDB
+        RestaurantNotification rn = new RestaurantNotification();
+        rn.setRestaurantId(event.getRestaurantId());
+        rn.setType("NEW_ORDER");
+        rn.setOrderId(event.getOrderId());
+        rn.setCustomerName(event.getCustomerName());
+        rn.setDeliveryAddress(event.getDeliveryAddress());
+        rn.setItemNames(event.getItemNames());
+        rn.setTotalAmount(event.getTotalAmount());
+        rn.setRead(false);
+        RestaurantNotification saved = restaurantNotificationRepo.save(rn);
+        log.info("Saved restaurant notification for restaurantId={}", event.getRestaurantId());
+
+        // 2. Push live to restaurant via SSE
+        RestaurantNotificationDTO dto = new RestaurantNotificationDTO(
+                saved.getId(), saved.getRestaurantId(), saved.getType(),
+                saved.getOrderId(), saved.getCustomerName(), saved.getDeliveryAddress(),
+                saved.getItemNames(), saved.getTotalAmount(), saved.isRead(), saved.getCreatedAt());
+        sseEmitterService.pushToRestaurant(event.getRestaurantId(), dto);
+
+        // 3. Send order confirmation email to customer
         try {
             SimpleMailMessage msg = new SimpleMailMessage();
             msg.setTo(event.getCustomerEmail());

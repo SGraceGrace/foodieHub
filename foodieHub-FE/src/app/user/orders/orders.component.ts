@@ -5,34 +5,31 @@ import { ToastrService } from 'ngx-toastr';
 
 type Tab = 'ALL' | 'ACTIVE' | 'DELIVERED' | 'CANCELLED';
 
-const ACTIVE_STATUSES: OrderStatus[] = ['PLACED', 'CONFIRMED', 'PREPARING', 'ON_WAY'];
+const ACTIVE_STATUSES: OrderStatus[] = ['PLACED', 'CONFIRMED', 'PREPARING', 'READY'];
 
-const TRACK_STEPS = ['Placed', 'Confirmed', 'Prepared', 'On Way', 'Delivered'];
+const TRACK_STEPS = ['Placed', 'Confirmed', 'Prepared', 'Ready', 'Delivered'];
 
 const STATUS_ORDER: Record<OrderStatus, number> = {
-  PLACED: 0, CONFIRMED: 1, PREPARING: 2, ON_WAY: 3, DELIVERED: 4, CANCELLED: -1,
+  PLACED: 0, CONFIRMED: 1, PREPARING: 2, READY: 3, DELIVERED: 4, CANCELLED: -1,
 };
 
-// Mock data — replace with API call when Order Service is ready
+// Mock data — will be replaced with real API call
 const MOCK_ORDERS: Order[] = [
   {
     id: 'FH-2025-4821',
     restaurantName: 'Spice Garden',
-    restaurantEmoji: '🍛',
     items: [
       { name: 'Butter Chicken', qty: 2, price: 340 },
       { name: 'Naan', qty: 1, price: 50 },
       { name: 'Mango Lassi', qty: 1, price: 100 },
     ],
-    status: 'ON_WAY',
+    status: 'READY',
     totalAmount: 730,
     createdAt: 'Today, 2:30 PM',
-    eta: 'ETA 12 min',
   },
   {
     id: 'FH-2025-4790',
     restaurantName: 'Bella Italia',
-    restaurantEmoji: '🍕',
     items: [
       { name: 'Margherita Pizza', qty: 1, price: 349 },
       { name: 'Garlic Bread', qty: 2, price: 99 },
@@ -44,7 +41,6 @@ const MOCK_ORDERS: Order[] = [
   {
     id: 'FH-2025-4756',
     restaurantName: 'Burger Bros',
-    restaurantEmoji: '🍔',
     items: [
       { name: 'Classic Burger', qty: 2, price: 199 },
       { name: 'Fries', qty: 2, price: 99 },
@@ -57,7 +53,6 @@ const MOCK_ORDERS: Order[] = [
   {
     id: 'FH-2025-4700',
     restaurantName: 'Tokyo Bites',
-    restaurantEmoji: '🍣',
     items: [
       { name: 'Dragon Roll', qty: 1, price: 450 },
       { name: 'Miso Soup', qty: 2, price: 80 },
@@ -128,7 +123,7 @@ export class OrdersComponent implements OnInit {
       PLACED:    'sb-placed',
       CONFIRMED: 'sb-confirmed',
       PREPARING: 'sb-preparing',
-      ON_WAY:    'sb-onway',
+      READY:     'sb-onway',
       DELIVERED: 'sb-delivered',
       CANCELLED: 'sb-cancelled',
     };
@@ -140,7 +135,7 @@ export class OrdersComponent implements OnInit {
       PLACED:    '🕐 Placed',
       CONFIRMED: '✅ Confirmed',
       PREPARING: '👨‍🍳 Preparing',
-      ON_WAY:    '🛵 On the way',
+      READY:     '🛵 On the way',
       DELIVERED: '✓ Delivered',
       CANCELLED: '✕ Cancelled',
     };

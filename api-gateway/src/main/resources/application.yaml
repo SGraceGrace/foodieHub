@@ -116,6 +116,16 @@ spring:
             predicates:
               - Path=/api/orders/**
 
+          - id: order-service-payments
+            uri: http://localhost:8083
+            predicates:
+              - Path=/api/v1/payments/**
+
+          - id: notification-service-restaurant
+            uri: http://localhost:8084
+            predicates:
+              - Path=/api/v1/restaurant/notifications, /api/v1/restaurant/notifications/**
+
 
 server:
   port: 8080

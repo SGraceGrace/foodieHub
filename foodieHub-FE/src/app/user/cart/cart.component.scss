@@ -32,7 +32,7 @@ $font-sans: 'Inter', 'Segoe UI', sans-serif;
   text-decoration: none;
   font-family: $font-sans;
   transition: background .15s;
-  &:hover { background: darken($gold, 8%); }
+  &:hover { background: #d4930a; }
 }
 
 // ── Page shell ────────────────────────────────────────────────────────
@@ -152,7 +152,7 @@ $font-sans: 'Inter', 'Segoe UI', sans-serif;
   font-family: $font-sans;
   white-space: nowrap;
   transition: background .15s;
-  &:hover { background: darken($gold, 8%); }
+  &:hover { background: #d4930a; }
 }
 
 // ── Restaurant card ───────────────────────────────────────────────────
@@ -346,13 +346,20 @@ $font-sans: 'Inter', 'Segoe UI', sans-serif;
   font-family: $font-sans;
   transition: background .15s;
 
-  &:hover:not(:disabled) { background: darken($gold, 8%); }
+  &:hover:not(:disabled) { background: #d4930a; }
 
   &:disabled {
     background: #e0e0e0;
     color: $muted;
     cursor: not-allowed;
   }
+}
+
+.cart-payment-error {
+  margin-top: .6rem;
+  font-size: 0.82rem;
+  color: #c62828;
+  text-align: center;
 }
 
 // ── Mobile ────────────────────────────────────────────────────────────

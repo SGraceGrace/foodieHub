@@ -8,10 +8,46 @@
     </div>
   </div>
   <div class="header-right">
+    <!-- Notification Bell -->
+    <div class="notif-bell-wrap">
+      <button class="notif-bell-btn" (click)="toggleNotifPanel()" title="Order notifications">
+        🔔
+        <span class="notif-badge" *ngIf="unreadCount > 0">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+      </button>
+
+      <!-- Notification panel -->
+      <div class="notif-panel" *ngIf="showNotifPanel">
+        <div class="notif-panel-hdr">
+          <span class="notif-panel-title">New Orders</span>
+          <button class="notif-panel-close" (click)="closeNotifPanel()">✕</button>
+        </div>
+
+        <div class="notif-empty" *ngIf="notifications.length === 0">
+          No orders yet today 🍽️
+        </div>
+
+        <div class="notif-list" *ngIf="notifications.length > 0">
+          <div class="notif-item" *ngFor="let n of notifications" [class.notif-item--unread]="!n.read">
+            <div class="notif-item-hdr">
+              <span class="notif-item-type">📦 New Order</span>
+              <span class="notif-item-time">{{ n.createdAt | date:'h:mm a' }}</span>
+            </div>
+            <div class="notif-item-customer">{{ n.customerName }}</div>
+            <div class="notif-item-items">{{ n.itemNames.join(', ') }}</div>
+            <div class="notif-item-amount">₹{{ n.totalAmount }}</div>
+            <div class="notif-item-address">📍 {{ n.deliveryAddress }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <span class="owner-name">{{ ownerName }}</span>
     <div class="user-icon" (click)="logout()" title="Logout">{{ ownerInitials }}</div>
   </div>
 </header>
+
+<!-- Click-outside overlay for notif panel -->
+<div class="notif-overlay" *ngIf="showNotifPanel" (click)="closeNotifPanel()"></div>
 
 <!-- ── Loading ────────────────────────────────────────────────── -->
 <div class="loading-fullpage" *ngIf="loading">
@@ -39,6 +75,7 @@
     </button>
     <button class="nav-btn" [class.active]="activeTab==='orders'" (click)="goTab('orders')">
       <span>📦</span> Live Orders
+      <span class="nav-badge" *ngIf="liveOrderCount > 0">{{ liveOrderCount }}</span>
     </button>
     <button class="nav-btn" [class.active]="activeTab==='menu'" (click)="goTab('menu')">
       <span>🍽️</span> Menu
@@ -202,12 +239,80 @@
 
     <!-- ── Live Orders ──────────────────────────────────────── -->
     <div *ngIf="activeTab === 'orders'">
-      <div class="page-title">Live Orders</div>
-      <div class="section-box">
+      <div class="tab-header">
+        <div class="page-title" style="margin:0">Live Orders</div>
+        <button class="btn-secondary btn-sm" (click)="loadLiveOrders()" [disabled]="liveOrdersLoading">
+          {{ liveOrdersLoading ? 'Loading…' : '↻ Refresh' }}
+        </button>
+      </div>
+
+      <!-- Loading -->
+      <div class="section-box" *ngIf="liveOrdersLoading && liveOrders.length === 0">
+        <p class="empty-sub" style="text-align:center;padding:2rem">Loading orders…</p>
+      </div>
+
+      <!-- Empty -->
+      <div class="section-box" *ngIf="!liveOrdersLoading && liveOrders.length === 0">
         <div class="empty-state">
-          <div class="empty-icon">🚧</div>
-          <p>Order management is coming soon.</p>
-          <p class="empty-sub">You'll accept, prepare, and mark orders ready from here.</p>
+          <div class="empty-icon">🍽️</div>
+          <p>No active orders right now.</p>
+          <p class="empty-sub">New orders will appear here instantly when customers place them.</p>
+        </div>
+      </div>
+
+      <!-- Order cards -->
+      <div class="order-cards" *ngIf="liveOrders.length > 0">
+        <div class="live-order-card" *ngFor="let order of liveOrders"
+             [class.lo-new]="order.status === 'PLACED'"
+             [class.lo-confirmed]="order.status === 'CONFIRMED'"
+             [class.lo-preparing]="order.status === 'PREPARING'"
+             [class.lo-ready]="order.status === 'READY'">
+
+          <!-- Card header -->
+          <div class="lo-hdr">
+            <div class="lo-hdr-left">
+              <span class="lo-order-id">#{{ order.id | slice:0:8 }}…</span>
+              <span class="lo-time">{{ order.createdAt | date:'h:mm a' }}</span>
+            </div>
+            <span class="lo-status-badge lo-status-{{ order.status.toLowerCase() }}">
+              {{ statusLabel(order.status) }}
+            </span>
+          </div>
+
+          <!-- Customer -->
+          <div class="lo-customer">
+            <span class="lo-customer-name">👤 {{ order.customerName }}</span>
+            <span class="lo-address">📍 {{ order.deliveryAddress }}</span>
+          </div>
+
+          <!-- Items -->
+          <div class="lo-items">
+            <span class="lo-item-tag" *ngFor="let item of order.items">
+              {{ item.qty }}× {{ item.name }}
+            </span>
+          </div>
+
+          <!-- Bill -->
+          <div class="lo-total">Total: <strong>₹{{ order.totalAmount }}</strong></div>
+
+          <!-- Actions -->
+          <div class="lo-actions">
+            <!-- Advance status button -->
+            <button class="lo-btn lo-btn-primary"
+                    *ngIf="nextStatus(order.status) as ns"
+                    [disabled]="updatingOrderId === order.id"
+                    (click)="onStatusUpdate(order, ns)">
+              {{ updatingOrderId === order.id ? 'Updating…' : nextStatusLabel(order.status) }}
+            </button>
+            <!-- Cancel button (only for PLACED / CONFIRMED) -->
+            <button class="lo-btn lo-btn-cancel"
+                    *ngIf="order.status === 'PLACED' || order.status === 'CONFIRMED'"
+                    [disabled]="updatingOrderId === order.id"
+                    (click)="onStatusUpdate(order, 'CANCELLED')">
+              ✕ Cancel
+            </button>
+          </div>
+
         </div>
       </div>
     </div>

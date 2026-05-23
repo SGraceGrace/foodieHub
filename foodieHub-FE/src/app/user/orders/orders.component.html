@@ -27,7 +27,7 @@
     <div class="oc-hdr">
       <div>
         <div class="oc-id">Order #{{ order.id }}</div>
-        <div class="oc-rest">{{ order.restaurantEmoji }} {{ order.restaurantName }}</div>
+        <div class="oc-rest">🍽️ {{ order.restaurantName }}</div>
       </div>
       <span class="status-badge" [ngClass]="statusBadgeClass(order.status)">
         {{ statusLabel(order.status) }}

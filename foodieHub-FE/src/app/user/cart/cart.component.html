@@ -118,13 +118,21 @@
         </div>
       </div>
 
-      <!-- Place Order CTA -->
+      <!-- Pay via Razorpay CTA -->
       <button
         class="cart-order-btn"
-        [disabled]="!deliveryAddress"
+        [disabled]="!deliveryAddress || !!placingOrder"
         (click)="onPlaceOrder(rc)">
-        {{ deliveryAddress ? 'Place Order · ₹' + grandTotal(rc) : 'Add address to place order' }}
+        <ng-container *ngIf="placingOrder === rc.restaurantId; else normalLabel">
+          ⏳ Processing payment…
+        </ng-container>
+        <ng-template #normalLabel>
+          {{ deliveryAddress ? '💳 Pay ₹' + grandTotal(rc) : 'Add address to place order' }}
+        </ng-template>
       </button>
+
+      <!-- Payment error -->
+      <p *ngIf="paymentError" class="cart-payment-error">⚠️ {{ paymentError }}</p>
     </div>
 
   </div>
