@@ -202,6 +202,10 @@ export class PartnerDashboardComponent implements OnInit {
 
   onRestaurantLocationPicked(loc: PickedLocation) {
     this.restaurantLocation = loc;
+    // Auto-fill the address field with the full Nominatim display name
+    if (loc.displayName) {
+      this.newRestaurant.address = loc.displayName;
+    }
     this.showRestaurantLocationPicker = false;
   }
 
@@ -226,6 +230,7 @@ export class PartnerDashboardComponent implements OnInit {
       name: name.trim(),
       fssaiNumber: fssaiNumber.trim(),
       gstNumber: this.newRestaurant.gstNumber.trim() || undefined,
+      address: this.newRestaurant.address.trim() || undefined,
       ownerId: this.user.id,
       imageUrl: this.restaurantImageUrl || undefined,
       location: this.restaurantLocation ? {

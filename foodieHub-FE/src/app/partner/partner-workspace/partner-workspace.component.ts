@@ -460,7 +460,15 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
     this.detailsImageUrl = this.restaurant.imageUrl ?? '';
     const loc = this.restaurant.location;
     this.detailsLocation = loc
-      ? { lat: loc.lat, lng: loc.lng, city: loc.city, state: loc.state, country: loc.country, displayName: `${loc.city}, ${loc.state}, ${loc.country}` }
+      ? {
+          lat: loc.lat,
+          lng: loc.lng,
+          city: loc.city,
+          state: loc.state,
+          country: loc.country,
+          // Prefer the stored full address string; fall back to city/state/country only if missing
+          displayName: this.restaurant.address || `${loc.city}, ${loc.state}, ${loc.country}`,
+        }
       : null;
     this.detailsSaveMsg = '';
     this.editingDetails = true;

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { HomeService } from '../home/home.service';
-import { CartService, Cart } from '../core/shared/cart.service';
+import { CartService, RestaurantCart } from '../core/shared/cart.service';
 import { Restaurant, MenuCategory, MenuItem } from '../model/restaurant.model';
 import { getCuisineEmoji, getCuisineBg } from '../core/constants/cuisine.constants';
 
@@ -20,9 +20,7 @@ export class RestaurantDetailComponent implements OnInit, OnDestroy {
   error = false;
   activeCategory: string | null = null;
 
-  cart: Cart | null = null;
-  showClearCartDialog = false;
-  pendingItem: MenuItem | null = null;
+  restaurantCart: RestaurantCart | null = null;
 
   private cartSub!: Subscription;
 
@@ -46,7 +44,11 @@ export class RestaurantDetailComponent implements OnInit, OnDestroy {
       }
     });
 
-    this.cartSub = this.cartService.cart$.subscribe(c => (this.cart = c));
+    this.cartSub = this.cartService.cart$.subscribe(() => {
+      this.restaurantCart = this.restaurant
+        ? this.cartService.getRestaurantCart(this.restaurant.id)
+        : null;
+    });
   }
 
   ngOnDestroy() {
@@ -69,6 +71,16 @@ export class RestaurantDetailComponent implements OnInit, OnDestroy {
     return this.cartService.getQty(this.restaurant!.id, item.name);
   }
 
+  // Items count for THIS restaurant only (for the floating bar)
+  get thisRestaurantItemCount(): number {
+    return this.restaurantCart?.items.reduce((s, i) => s + i.qty, 0) ?? 0;
+  }
+
+  // Amount for THIS restaurant only (for the floating bar)
+  get thisRestaurantAmount(): number {
+    return this.restaurantCart?.items.reduce((s, i) => s + i.price * i.qty, 0) ?? 0;
+  }
+
   onAdd(item: MenuItem) {
     if (!this.restaurant) return;
     const cartItem = {
@@ -79,37 +91,12 @@ export class RestaurantDetailComponent implements OnInit, OnDestroy {
       description: item.description,
       imageUrl: item.imageUrl,
     };
-    const added = this.cartService.addItem(this.restaurant.id, this.restaurant.name, cartItem);
-    if (!added) {
-      // Different restaurant — show confirm dialog
-      this.pendingItem = item;
-      this.showClearCartDialog = true;
-    }
+    this.cartService.addItem(this.restaurant.id, this.restaurant.name, cartItem).subscribe();
   }
 
   onRemove(item: MenuItem) {
     if (!this.restaurant) return;
-    this.cartService.removeItem(this.restaurant.id, item.name);
-  }
-
-  confirmClearCart() {
-    if (!this.restaurant || !this.pendingItem) return;
-    const cartItem = {
-      name: this.pendingItem.name,
-      price: this.pendingItem.price,
-      qty: 1,
-      isVeg: this.pendingItem.isVeg,
-      description: this.pendingItem.description,
-      imageUrl: this.pendingItem.imageUrl,
-    };
-    this.cartService.clearAndAdd(this.restaurant.id, this.restaurant.name, cartItem);
-    this.showClearCartDialog = false;
-    this.pendingItem = null;
-  }
-
-  cancelClearCart() {
-    this.showClearCartDialog = false;
-    this.pendingItem = null;
+    this.cartService.removeItem(this.restaurant.id, item.name).subscribe();
   }
 
   getEmoji(): string { return getCuisineEmoji(this.restaurant?.cuisine?.[0]); }

@@ -106,9 +106,12 @@
           <!-- Location -->
           <div class="input-field location-field" (click)="showLocationPicker = true">
             <span>📍</span>
-            <span class="location-text" [class.placeholder]="!restaurantLocation">
+            <span class="location-text" [class.placeholder]="!restaurantLocation"
+                  [title]="restaurantLocation?.displayName || ''">
               {{ restaurantLocation
-                  ? restaurantLocation.city + ', ' + restaurantLocation.state + ', ' + restaurantLocation.country
+                  ? (restaurantLocation.displayName.length > 65
+                      ? (restaurantLocation.displayName | slice:0:65) + '…'
+                      : restaurantLocation.displayName)
                   : 'Pin Restaurant Location' }}
             </span>
           </div>

@@ -111,34 +111,20 @@
     Menu not available yet.
   </div>
 
-  <!-- ── Floating Cart Bar ──────────────────────────────────────────── -->
-  <div class="rd-cart-bar" *ngIf="cart && cart.restaurantId === restaurant.id">
+  <!-- ── Floating Cart Bar (shows when this restaurant has items) ──── -->
+  <div class="rd-cart-bar" *ngIf="restaurantCart && thisRestaurantItemCount > 0">
     <div class="rd-cart-bar-inner">
       <div class="rd-cart-bar-info">
-        <span class="rd-cart-bar-count">{{ cartService.totalItems }} item{{ cartService.totalItems !== 1 ? 's' : '' }}</span>
-        <span class="rd-cart-bar-name">{{ cart.restaurantName }}</span>
+        <span class="rd-cart-bar-count">
+          {{ thisRestaurantItemCount }} item{{ thisRestaurantItemCount !== 1 ? 's' : '' }}
+        </span>
+        <span class="rd-cart-bar-name">{{ restaurantCart.restaurantName }}</span>
       </div>
       <div class="rd-cart-bar-right">
-        <span class="rd-cart-bar-total">₹{{ cartService.totalAmount }}</span>
+        <span class="rd-cart-bar-total">₹{{ thisRestaurantAmount }}</span>
         <button class="rd-cart-bar-btn" routerLink="/user/cart">View Cart →</button>
       </div>
     </div>
   </div>
 
 </ng-container>
-
-<!-- ── Clear-cart confirm dialog ─────────────────────────────────────── -->
-<div class="rd-dialog-overlay" *ngIf="showClearCartDialog" (click)="cancelClearCart()">
-  <div class="rd-dialog" (click)="$event.stopPropagation()">
-    <div class="rd-dialog-icon">🛒</div>
-    <h3 class="rd-dialog-title">Start a new cart?</h3>
-    <p class="rd-dialog-body">
-      Your cart has items from <strong>{{ cart?.restaurantName }}</strong>.
-      Adding this item will clear your current cart.
-    </p>
-    <div class="rd-dialog-actions">
-      <button class="rd-dialog-cancel" (click)="cancelClearCart()">Keep current cart</button>
-      <button class="rd-dialog-confirm" (click)="confirmClearCart()">Yes, start new</button>
-    </div>
-  </div>
-</div>

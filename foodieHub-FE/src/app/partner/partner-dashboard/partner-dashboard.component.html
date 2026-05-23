@@ -65,12 +65,15 @@
         <div class="form-group form-group--full">
           <label class="form-label">Restaurant Location <span style="color:#e53935">*</span></label>
           <div class="location-pick-row">
-            <span class="location-pick-val" *ngIf="restaurantLat">
-              📍 {{ restaurantLat | number:'1.4-4' }}, {{ restaurantLng | number:'1.4-4' }}
+            <span class="location-pick-val" *ngIf="restaurantLocation"
+                  [title]="restaurantLocation.displayName">
+              📍 {{ restaurantLocation.displayName.length > 65
+                    ? (restaurantLocation.displayName | slice:0:65) + '…'
+                    : restaurantLocation.displayName }}
             </span>
-            <span class="location-pick-val muted" *ngIf="!restaurantLat">Required — pin on map</span>
+            <span class="location-pick-val muted" *ngIf="!restaurantLocation">Required — pin on map</span>
             <button type="button" class="btn-pick-location" (click)="showRestaurantLocationPicker = true">
-              {{ restaurantLat ? 'Change Location' : 'Pick on Map' }}
+              {{ restaurantLocation ? 'Change Location' : 'Pick on Map' }}
             </button>
           </div>
           <span class="field-err" *ngIf="createError === 'location'">Please pin the restaurant location on the map.</span>

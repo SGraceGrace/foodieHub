@@ -2,12 +2,12 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { Subscription } from 'rxjs';
-import { CartService, Cart, CartItem } from '../../core/shared/cart.service';
+import { CartService, Cart, CartItem, RestaurantCart } from '../../core/shared/cart.service';
 import { DeliveryAddressService } from '../../core/shared/delivery-address.service';
 import { UserAddress } from '../../model/address.model';
 
-const DELIVERY_FEE = 30;
-const GST_RATE = 0.05;
+const DELIVERY_FEE        = 30;
+const GST_RATE            = 0.05;
 const FREE_DELIVERY_ABOVE = 500;
 
 @Component({
@@ -33,56 +33,56 @@ export class CartComponent implements OnInit, OnDestroy {
     this.subs.add(this.deliveryAddressService.selected$.subscribe(a => (this.deliveryAddress = a)));
   }
 
-  ngOnDestroy() {
-    this.subs.unsubscribe();
+  ngOnDestroy() { this.subs.unsubscribe(); }
+
+  // ── Item controls ─────────────────────────────────────────────────
+  add(rc: RestaurantCart, item: CartItem) {
+    this.cartService.addItem(rc.restaurantId, rc.restaurantName, { ...item, qty: 1 }).subscribe();
   }
 
-  // ── Qty controls ──────────────────────────────────────────────────
-  add(item: CartItem) {
-    if (!this.cart) return;
-    this.cartService.addItem(this.cart.restaurantId, this.cart.restaurantName, { ...item, qty: 1 });
+  remove(rc: RestaurantCart, item: CartItem) {
+    this.cartService.removeItem(rc.restaurantId, item.name).subscribe();
   }
 
-  remove(item: CartItem) {
-    if (!this.cart) return;
-    this.cartService.removeItem(this.cart.restaurantId, item.name);
+  clearRestaurant(rc: RestaurantCart) {
+    this.cartService.clearRestaurant(rc.restaurantId).subscribe();
   }
 
   clearCart() {
-    this.cartService.clearCart();
+    this.cartService.clearCart().subscribe();
   }
 
-  // ── Bill calculations ─────────────────────────────────────────────
-  get subtotal(): number {
-    return this.cartService.totalAmount;
+  // ── Per-restaurant bill ───────────────────────────────────────────
+  subtotal(rc: RestaurantCart): number {
+    return rc.items.reduce((s, i) => s + i.price * i.qty, 0);
   }
 
-  get deliveryFee(): number {
-    return this.subtotal >= FREE_DELIVERY_ABOVE ? 0 : DELIVERY_FEE;
+  deliveryFee(rc: RestaurantCart): number {
+    return this.subtotal(rc) >= FREE_DELIVERY_ABOVE ? 0 : DELIVERY_FEE;
   }
 
-  get freeDeliveryThreshold(): number {
-    return FREE_DELIVERY_ABOVE;
+  gst(rc: RestaurantCart): number {
+    return Math.round(this.subtotal(rc) * GST_RATE);
   }
 
-  get gst(): number {
-    return Math.round(this.subtotal * GST_RATE);
+  grandTotal(rc: RestaurantCart): number {
+    return this.subtotal(rc) + this.deliveryFee(rc) + this.gst(rc);
   }
 
-  get grandTotal(): number {
-    return this.subtotal + this.deliveryFee + this.gst;
+  itemCount(rc: RestaurantCart): number {
+    return rc.items.reduce((s, i) => s + i.qty, 0);
   }
 
-  get amountToFreeDelivery(): number {
-    return FREE_DELIVERY_ABOVE - this.subtotal;
+  amountToFreeDelivery(rc: RestaurantCart): number {
+    return FREE_DELIVERY_ABOVE - this.subtotal(rc);
   }
 
-  get canPlaceOrder(): boolean {
-    return !!this.cart && this.cart.items.length > 0 && !!this.deliveryAddress;
+  get hasItems(): boolean {
+    return !!this.cart && this.cart.restaurants.length > 0;
   }
 
-  onPlaceOrder() {
-    // TODO: wire to order service API
-    alert('Order flow coming soon!');
+  onPlaceOrder(rc: RestaurantCart) {
+    // TODO: wire to order service API — pass restaurantId + items + address
+    alert(`Order flow coming soon!\n${rc.restaurantName} · ₹${this.grandTotal(rc)}`);
   }
 }

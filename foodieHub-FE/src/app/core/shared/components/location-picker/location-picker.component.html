@@ -19,20 +19,42 @@
       <div class="lp-suggestion-item"
            *ngFor="let s of suggestions"
            (click)="selectSuggestion(s)">
-        📍 {{ s.display_name }}
+        <span class="lp-sug-icon">📍</span>
+        <div class="lp-sug-text">
+          <div class="lp-sug-primary">{{ getSuggestionPrimary(s) }}</div>
+          <div class="lp-sug-secondary" *ngIf="getSuggestionSecondary(s)">
+            {{ getSuggestionSecondary(s) }}
+          </div>
+        </div>
       </div>
     </div>
+  </div>
+
+  <!-- Map layer toggle -->
+  <div class="lp-layer-toggle">
+    <button class="lp-layer-btn"
+            [class.active]="activeLayer === 'street'"
+            (click)="switchLayer('street')">
+      🗺️ Map
+    </button>
+    <button class="lp-layer-btn"
+            [class.active]="activeLayer === 'satellite'"
+            (click)="switchLayer('satellite')">
+      🛰️ Satellite
+    </button>
   </div>
 
   <!-- Map -->
   <div id="location-map" class="lp-map"></div>
 
-  <p class="lp-hint">Click on map or drag the pin to fine-tune your location</p>
+  <p class="lp-hint">Click on the map or drag the pin to fine-tune the location</p>
 
   <!-- Selected -->
   <div class="lp-selected" *ngIf="picked">
     <span class="lp-selected-icon">✅</span>
-    <span class="lp-selected-name">{{ picked.displayName | slice:0:80 }}</span>
+    <span class="lp-selected-name">
+      {{ picked.displayName.length > 80 ? (picked.displayName | slice:0:80) + '…' : picked.displayName }}
+    </span>
   </div>
 
   <!-- Actions -->
