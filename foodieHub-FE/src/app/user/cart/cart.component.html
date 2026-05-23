@@ -1,1 +1,135 @@
-<p>cart works!</p>
+<!-- ── Empty Cart ──────────────────────────────────────────────────── -->
+<div class="cart-empty" *ngIf="!cart || cart.items.length === 0">
+  <div class="cart-empty-icon">🛒</div>
+  <h2 class="cart-empty-title">Your cart is empty</h2>
+  <p class="cart-empty-sub">Add items from a restaurant to get started</p>
+  <a class="cart-empty-btn" routerLink="/home">Browse Restaurants</a>
+</div>
+
+<!-- ── Cart ───────────────────────────────────────────────────────── -->
+<div class="cart-page" *ngIf="cart && cart.items.length > 0">
+
+  <!-- Page header -->
+  <div class="cart-page-hdr">
+    <button class="cart-back-btn" routerLink="/home">← Back</button>
+    <h1 class="cart-page-title">Your Cart</h1>
+  </div>
+
+  <div class="cart-layout">
+
+    <!-- ── Left: Items ──────────────────────────────────────────── -->
+    <div class="cart-left">
+
+      <!-- Restaurant info -->
+      <div class="cart-rest-bar">
+        <span class="cart-rest-icon">🍽️</span>
+        <div class="cart-rest-info">
+          <span class="cart-rest-name">{{ cart.restaurantName }}</span>
+          <span class="cart-rest-count">{{ cartService.totalItems }} item{{ cartService.totalItems !== 1 ? 's' : '' }}</span>
+        </div>
+        <button class="cart-clear-btn" (click)="clearCart()">Clear</button>
+      </div>
+
+      <!-- Free delivery nudge -->
+      <div class="cart-nudge" *ngIf="subtotal < freeDeliveryThreshold">
+        🎉 Add <strong>₹{{ amountToFreeDelivery }}</strong> more for free delivery!
+      </div>
+      <div class="cart-nudge cart-nudge--success" *ngIf="subtotal >= freeDeliveryThreshold">
+        🎉 You've unlocked <strong>free delivery!</strong>
+      </div>
+
+      <!-- Item list -->
+      <div class="cart-items">
+        <div class="cart-item" *ngFor="let item of cart.items">
+          <span class="cart-item-dot">{{ item.isVeg ? '🟢' : '🔴' }}</span>
+
+          <div class="cart-item-info">
+            <div class="cart-item-name">{{ item.name }}</div>
+            <div class="cart-item-desc" *ngIf="item.description">{{ item.description }}</div>
+            <div class="cart-item-unit">₹{{ item.price }} each</div>
+          </div>
+
+          <div class="cart-item-right">
+            <div class="cart-qty-ctrl">
+              <button class="cart-qty-btn" (click)="remove(item)">−</button>
+              <span class="cart-qty-val">{{ item.qty }}</span>
+              <button class="cart-qty-btn" (click)="add(item)">+</button>
+            </div>
+            <div class="cart-item-total">₹{{ item.price * item.qty }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Add more -->
+      <a class="cart-add-more" [routerLink]="['/restaurants', cart.restaurantId]">
+        + Add more items
+      </a>
+
+    </div>
+
+    <!-- ── Right: Bill + Address + CTA ─────────────────────────── -->
+    <div class="cart-right">
+
+      <!-- Delivery Address -->
+      <div class="cart-section">
+        <h3 class="cart-section-title">📍 Delivery Address</h3>
+
+        <div class="cart-address-card" *ngIf="deliveryAddress">
+          <div class="cart-address-label">{{ deliveryAddress.label | titlecase }}</div>
+          <div class="cart-address-text">{{ deliveryAddress.addressText }}</div>
+          <div class="cart-address-landmark" *ngIf="deliveryAddress.landmark">
+            near {{ deliveryAddress.landmark }}
+          </div>
+          <a class="cart-address-change" routerLink="/user/addresses">Change</a>
+        </div>
+
+        <div class="cart-no-address" *ngIf="!deliveryAddress">
+          <p>No delivery address selected.</p>
+          <a class="cart-add-address-btn" routerLink="/user/addresses">+ Add Address</a>
+        </div>
+      </div>
+
+      <!-- Bill Summary -->
+      <div class="cart-section">
+        <h3 class="cart-section-title">🧾 Bill Summary</h3>
+
+        <div class="cart-bill">
+          <div class="cart-bill-row">
+            <span>Item total</span>
+            <span>₹{{ subtotal }}</span>
+          </div>
+          <div class="cart-bill-row">
+            <span>Delivery fee
+              <span class="cart-bill-note" *ngIf="deliveryFee === 0">(Free!)</span>
+            </span>
+            <span [class.free]="deliveryFee === 0">
+              {{ deliveryFee === 0 ? '₹0' : '₹' + deliveryFee }}
+            </span>
+          </div>
+          <div class="cart-bill-row">
+            <span>GST (5%)</span>
+            <span>₹{{ gst }}</span>
+          </div>
+          <div class="cart-bill-divider"></div>
+          <div class="cart-bill-row cart-bill-total">
+            <span>To pay</span>
+            <span>₹{{ grandTotal }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Place Order -->
+      <button
+        class="cart-order-btn"
+        [disabled]="!canPlaceOrder"
+        (click)="onPlaceOrder()">
+        {{ !deliveryAddress ? 'Add address to continue' : 'Place Order · ₹' + grandTotal }}
+      </button>
+
+      <p class="cart-order-note" *ngIf="!deliveryAddress">
+        Please add a delivery address before placing your order.
+      </p>
+
+    </div>
+  </div>
+</div>

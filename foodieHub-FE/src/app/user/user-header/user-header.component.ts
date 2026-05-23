@@ -1,9 +1,11 @@
-import { Component, ElementRef, HostListener, OnInit } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterLink, RouterModule } from '@angular/router';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
 import { SharedServiceService } from '../../core/shared/shared-service.service';
 import { TokenService } from '../../core/shared/token.service';
+import { CartService } from '../../core/shared/cart.service';
 import { UserService } from '../user.service';
 import { ToastrService } from 'ngx-toastr';
 import { DeliveryAddressService } from '../../core/shared/delivery-address.service';
@@ -15,17 +17,20 @@ import { DeliveryAddressService } from '../../core/shared/delivery-address.servi
   templateUrl: './user-header.component.html',
   styleUrl: './user-header.component.scss',
 })
-export class UserHeaderComponent implements OnInit {
+export class UserHeaderComponent implements OnInit, OnDestroy {
   searchControl = new FormControl('');
   searchFocused = false;
   menuOpen = false;
   initials = '';
   cartCount = 0;
 
+  private subs = new Subscription();
+
   constructor(
     private router: Router,
     private sharedService: SharedServiceService,
     private tokenService: TokenService,
+    private cartService: CartService,
     private userService: UserService,
     private toaster: ToastrService,
     private elRef: ElementRef,
@@ -33,14 +38,23 @@ export class UserHeaderComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.tokenService.userInfo$.subscribe(user => {
-      if (user) {
-        this.initials = (user.firstName?.[0] ?? '') + (user.lastName?.[0] ?? '');
-        this.initials = this.initials.toUpperCase();
-      } else {
-        this.initials = 'U';
-      }
-    });
+    this.subs.add(
+      this.tokenService.userInfo$.subscribe(user => {
+        if (user) {
+          this.initials = (user.firstName?.[0] ?? '') + (user.lastName?.[0] ?? '');
+          this.initials = this.initials.toUpperCase();
+        } else {
+          this.initials = 'U';
+        }
+      })
+    );
+
+    this.subs.add(
+      this.cartService.cart$.subscribe(() => {
+        this.cartCount = this.cartService.totalItems;
+      })
+    );
+
     if (!this.deliveryAddressService.get()) {
       this.userService.getAddresses().subscribe({
         next: (res) => {
@@ -51,6 +65,10 @@ export class UserHeaderComponent implements OnInit {
         },
       });
     }
+  }
+
+  ngOnDestroy() {
+    this.subs.unsubscribe();
   }
 
   @HostListener('document:click', ['$event'])
