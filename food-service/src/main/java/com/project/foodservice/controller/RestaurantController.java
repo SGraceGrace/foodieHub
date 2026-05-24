@@ -115,7 +115,7 @@ public class RestaurantController {
                     HttpStatus.OK.value(), null));
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(new BaseAPIResponse("ERROR", null, HttpStatus.CONFLICT.value(), e.getMessage()));
+                    .body(new BaseAPIResponse("ERROR", null, HttpStatus.CONFLICT.value(), List.of(e.getMessage())));
         }
     }
 }
