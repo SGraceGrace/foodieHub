@@ -10,4 +10,7 @@ public interface RestaurantNotificationRepo extends MongoRepository<RestaurantNo
     List<RestaurantNotification> findByRestaurantIdOrderByCreatedAtDesc(String restaurantId);
 
     long countByRestaurantIdAndReadFalse(String restaurantId);
+
+    /** Hard delete all notifications for a restaurant — used by "Clear all" button. */
+    void deleteByRestaurantId(String restaurantId);
 }

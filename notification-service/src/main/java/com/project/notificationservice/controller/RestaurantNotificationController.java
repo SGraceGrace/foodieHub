@@ -66,4 +66,16 @@ public class RestaurantNotificationController {
         restaurantNotificationRepo.saveAll(unread);
         return ResponseEntity.ok(new BaseAPIResponse("OK", null, HttpStatus.OK.value(), null));
     }
+
+    /**
+     * Hard-delete all notifications for a restaurant.
+     * DELETE /api/v1/restaurant/notifications/{restaurantId}
+     * Called by the "Clear all" button — notifications are transient alerts;
+     * order data lives in the orders collection.
+     */
+    @DeleteMapping("/{restaurantId}")
+    public ResponseEntity<BaseAPIResponse> clearAll(@PathVariable String restaurantId) {
+        restaurantNotificationRepo.deleteByRestaurantId(restaurantId);
+        return ResponseEntity.ok(new BaseAPIResponse("OK", null, HttpStatus.OK.value(), null));
+    }
 }

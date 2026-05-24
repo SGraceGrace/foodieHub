@@ -108,6 +108,13 @@ export class OrderService {
     );
   }
 
+  /** Hard-delete all notifications for a restaurant — called by "Clear all" button. */
+  clearRestaurantNotifications(restaurantId: string): Observable<ApiResponse<null>> {
+    return this.http.delete<ApiResponse<null>>(
+      `${this.notifBase}/api/v1/restaurant/notifications/${restaurantId}`
+    );
+  }
+
   /**
    * Opens an authenticated SSE stream for restaurant order notifications.
    * Uses fetch() instead of EventSource so we can send the Authorization header.

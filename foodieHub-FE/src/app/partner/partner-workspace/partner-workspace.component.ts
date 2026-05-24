@@ -515,9 +515,9 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
 
   clearNotifications() {
     this.notifications = [];
-    // Also mark all as read on the backend so the badge stays at 0
+    // Hard-delete from DB — notifications are transient alerts, order data lives in orders collection
     if (this.restaurant) {
-      this.orderService.markAllRead(this.restaurant.id).subscribe();
+      this.orderService.clearRestaurantNotifications(this.restaurant.id).subscribe();
     }
   }
 
