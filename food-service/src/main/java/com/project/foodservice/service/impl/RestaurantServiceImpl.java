@@ -224,6 +224,22 @@ public class RestaurantServiceImpl implements RestaurantService {
         return restaurantRepo.save(r);
     }
 
+    @Override
+    public Restaurant addRating(String restaurantId, double newRating) {
+        Restaurant r = restaurantRepo.findById(restaurantId)
+                .orElseThrow(() -> new RuntimeException("Restaurant not found"));
+        int oldCount    = r.getRatingCount();
+        double oldRating = r.getRating();
+        // Weighted average: keeps existing rating meaningful as more reviews come in
+        double updated = oldCount == 0
+                ? newRating
+                : (oldRating * oldCount + newRating) / (oldCount + 1);
+        // Round to 1 decimal place (e.g. 4.2666 → 4.3)
+        r.setRating(Math.round(updated * 10.0) / 10.0);
+        r.setRatingCount(oldCount + 1);
+        return restaurantRepo.save(r);
+    }
+
     public static boolean computeIsOpen(Restaurant r) {
         List<DaySchedule> hours = r.getOperatingHours();
         if (hours == null || hours.isEmpty()) return r.isOpen();

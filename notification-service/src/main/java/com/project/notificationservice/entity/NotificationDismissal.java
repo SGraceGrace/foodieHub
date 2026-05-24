@@ -5,7 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-@Document(collection = "notification_dismissals")
+@Document(collection = "admin_notification_dismissals")
 @CompoundIndex(def = "{'adminEmail': 1, 'notificationId': 1}", unique = true)
 @Data
 public class NotificationDismissal {

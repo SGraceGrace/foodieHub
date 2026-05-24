@@ -64,6 +64,36 @@ export class OrderService {
     );
   }
 
+  /** Mark order as rated — called after successfully submitting a rating to food-service. */
+  markOrderRated(orderId: string): Observable<ApiResponse<Order>> {
+    return this.http.patch<ApiResponse<Order>>(`${this.base}/api/orders/${orderId}/rated`, {});
+  }
+
+  // ── Customer notification APIs ────────────────────────────────────
+  // These mirror the admin (GET /notifications, DELETE /notifications)
+  // and restaurant (GET /notifications/{id}, PUT /read-all) patterns.
+
+  /** Fetch stored notification history — called once on UserHeaderComponent init. */
+  getCustomerNotifications(): Observable<ApiResponse<CustomerOrderUpdate[]>> {
+    return this.http.get<ApiResponse<CustomerOrderUpdate[]>>(
+      `${this.notifBase}/api/v1/customer/notifications`
+    );
+  }
+
+  /** Mark all customer notifications as read — called when the bell panel opens. */
+  markAllCustomerNotificationsRead(): Observable<ApiResponse<null>> {
+    return this.http.put<ApiResponse<null>>(
+      `${this.notifBase}/api/v1/customer/notifications/read-all`, {}
+    );
+  }
+
+  /** Delete all customer notifications — called by "Clear all" button. */
+  clearCustomerNotifications(): Observable<ApiResponse<null>> {
+    return this.http.delete<ApiResponse<null>>(
+      `${this.notifBase}/api/v1/customer/notifications`
+    );
+  }
+
   // ── Restaurant notification APIs ─────────────────────────────────
 
   getRestaurantNotifications(restaurantId: string): Observable<ApiResponse<RestaurantOrderNotification[]>> {

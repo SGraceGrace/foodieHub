@@ -71,14 +71,52 @@
         <button class="oc-btn gold" (click)="trackOrder(order)">📍 Track Order</button>
         <button class="oc-btn outline">📞 Call Restaurant</button>
       </ng-container>
+
       <ng-container *ngIf="order.status === 'DELIVERED'">
         <button class="oc-btn gold" (click)="reorder(order)">Reorder</button>
-        <button class="oc-btn outline" (click)="rateOrder(order)">✍ Rate Order</button>
+        <button
+          *ngIf="!order.rated && ratingTarget?.id !== order.id"
+          class="oc-btn outline"
+          (click)="openRating(order)"
+        >✍ Rate Order</button>
+        <span class="rated-badge" *ngIf="order.rated">⭐ Rated</span>
       </ng-container>
+
       <ng-container *ngIf="order.status === 'CANCELLED'">
         <button class="oc-btn outline" (click)="reorder(order)">Reorder</button>
       </ng-container>
     </div>
+
+    <!-- ── Inline Rating Widget ──────────────────────────────── -->
+    <div class="rating-panel" *ngIf="ratingTarget?.id === order.id">
+      <p class="rating-prompt">How was your experience at <strong>{{ order.restaurantName }}</strong>?</p>
+
+      <div class="star-row">
+        <button
+          class="star-btn"
+          *ngFor="let s of stars"
+          (mouseenter)="hoverRating(s)"
+          (mouseleave)="hoverRating(0)"
+          (click)="selectStar(s)"
+          [class.lit]="s <= activeStar()"
+          [attr.aria-label]="'Rate ' + s + ' star'"
+        >★</button>
+      </div>
+
+      <p class="star-hint" *ngIf="activeStar() > 0">
+        {{ ['', '😞 Poor', '😐 Fair', '🙂 Good', '😊 Great', '🤩 Excellent'][activeStar()] }}
+      </p>
+
+      <div class="rating-actions">
+        <button
+          class="oc-btn gold"
+          [disabled]="selectedStar === 0 || submitting"
+          (click)="submitRating()"
+        >{{ submitting ? 'Submitting…' : 'Submit Rating' }}</button>
+        <button class="oc-btn outline" (click)="cancelRating()">Cancel</button>
+      </div>
+    </div>
+
   </div>
 
 </div>

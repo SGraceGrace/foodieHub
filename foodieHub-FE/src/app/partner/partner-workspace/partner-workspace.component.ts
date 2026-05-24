@@ -513,6 +513,14 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
 
   closeNotifPanel() { this.showNotifPanel = false; }
 
+  clearNotifications() {
+    this.notifications = [];
+    // Also mark all as read on the backend so the badge stays at 0
+    if (this.restaurant) {
+      this.orderService.markAllRead(this.restaurant.id).subscribe();
+    }
+  }
+
   /** Clicking a notification card closes the panel and jumps to Live Orders tab */
   onNotifItemClick() {
     this.closeNotifPanel();

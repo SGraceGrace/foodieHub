@@ -22,6 +22,7 @@ export interface Order {
   status: OrderStatus;
   paymentId?: string;
   paymentStatus?: string;   // 'PAID' | undefined (COD orders have no paymentStatus)
+  rated?: boolean;
   createdAt: string;
   updatedAt?: string;
   eta?: string;
@@ -40,11 +41,19 @@ export interface RestaurantOrderNotification {
   createdAt: string;
 }
 
-/** Pushed over SSE when the restaurant partner changes an order's status. */
+/**
+ * Unified customer notification shape — used in both:
+ *  - SSE stream (real-time push when order status changes)
+ *  - REST GET /api/v1/customer/notifications (history loaded on page init)
+ *
+ * Having one interface means the bell component needs no conversion logic.
+ */
 export interface CustomerOrderUpdate {
+  id?: string;          // MongoDB document id (set after DB save; missing only on legacy events)
   orderId: string;
   restaurantName: string;
   newStatus: OrderStatus;
   message: string;      // human-readable, e.g. "👨‍🍳 Spice Garden is preparing your food!"
   updatedAt: string;
+  read?: boolean;       // false for new SSE pushes; DB value for history loads
 }

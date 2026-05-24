@@ -23,6 +23,7 @@ public class Restaurant {
     private String address;
     private List<String> cuisine;
     private double rating;
+    private int ratingCount;
     private int deliveryTime;
     private boolean isOpen;
     private String imageUrl;

@@ -61,6 +61,11 @@
       <div class="notif-panel" *ngIf="showNotifPanel">
         <div class="notif-panel-hdr">
           <span class="notif-panel-title">Order Updates</span>
+          <button class="notif-clear-btn"
+                  *ngIf="notifications.length > 0"
+                  (click)="clearNotifications()">
+            Clear all
+          </button>
           <button class="notif-panel-close" (click)="closeNotifPanel()">✕</button>
         </div>
 

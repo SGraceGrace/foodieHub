@@ -32,6 +32,11 @@
       <div class="notif-panel" *ngIf="showNotifPanel">
         <div class="notif-panel-hdr">
           <span class="notif-panel-title">New Orders</span>
+          <button class="notif-clear-btn"
+                  *ngIf="notifications.length > 0"
+                  (click)="clearNotifications()">
+            Clear all
+          </button>
           <button class="notif-panel-close" (click)="closeNotifPanel()">✕</button>
         </div>
 
@@ -61,10 +66,12 @@
     <span class="owner-name">{{ ownerName }}</span>
     <div class="user-icon" (click)="logout()" title="Logout">{{ ownerInitials }}</div>
   </div>
+  <!-- Click-outside overlay for notif panel — must be inside <header> so it
+       shares the header's stacking context (z-index:100). If placed outside,
+       the overlay's root z-index:9998 exceeds the header's z-index:100 and
+       blocks all clicks inside the panel. -->
+  <div class="notif-overlay" *ngIf="showNotifPanel" (click)="closeNotifPanel()"></div>
 </header>
-
-<!-- Click-outside overlay for notif panel -->
-<div class="notif-overlay" *ngIf="showNotifPanel" (click)="closeNotifPanel()"></div>
 
 <!-- ── Loading ────────────────────────────────────────────────── -->
 <div class="loading-fullpage" *ngIf="loading">

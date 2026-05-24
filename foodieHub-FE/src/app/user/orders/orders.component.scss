@@ -210,4 +210,77 @@ button { cursor: pointer; }
 
   &.gold    { background: $gold; border: none; color: $text-dark; &:hover { background: $gold-dark; } }
   &.outline { background: white; border: 1.5px solid $border; color: $text; &:hover { border-color: $gold; color: $gold; } }
+  &[disabled] { opacity: .5; cursor: not-allowed; pointer-events: none; }
+}
+
+// ── "Already rated" badge ─────────────────────────────────────────
+.rated-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  background: $gold-light;
+  color: #7a5400;
+  font-size: .78rem;
+  font-weight: 700;
+}
+
+// ── Inline Rating Widget ──────────────────────────────────────────
+.rating-panel {
+  margin-top: 14px;
+  padding: 1rem 1.2rem;
+  background: $bg-warm;
+  border-radius: 10px;
+  border: 1.5px solid #ffe082;
+  animation: fadeUp .2s ease;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.rating-prompt {
+  font-size: .88rem;
+  color: $text-dark;
+  margin-bottom: .8rem;
+  line-height: 1.4;
+}
+
+.star-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: .5rem;
+}
+
+.star-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  line-height: 1;
+  color: #ddd;
+  padding: 0;
+  transition: color .12s, transform .1s;
+
+  &.lit { color: $gold; }
+  &:hover { transform: scale(1.15); }
+}
+
+.star-hint {
+  font-size: .82rem;
+  color: $text-light;
+  min-height: 1.2em;
+  margin-bottom: .8rem;
+}
+
+.rating-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+// ── Responsive ────────────────────────────────────────────────────
+@media (max-width: 600px) {
+  .star-btn { font-size: 1.7rem; }
 }

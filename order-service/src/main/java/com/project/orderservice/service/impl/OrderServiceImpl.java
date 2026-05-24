@@ -188,4 +188,12 @@ public class OrderServiceImpl implements OrderService {
 
         return saved;
     }
+
+    @Override
+    public Order markRated(String orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+        order.setRated(true);
+        return orderRepository.save(order);
+    }
 }

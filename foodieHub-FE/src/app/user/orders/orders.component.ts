@@ -4,6 +4,8 @@ import { CustomerOrderUpdate, Order, OrderStatus } from '../../model/order.model
 import { ToastrService } from 'ngx-toastr';
 import { OrderService } from '../../core/shared/order.service';
 import { TokenService } from '../../core/shared/token.service';
+import { HomeService } from '../../home/home.service';
+import { forkJoin } from 'rxjs';
 
 // The header component handles the global SSE connection for push notifications
 // and the bell badge. The orders page opens its OWN SSE connection solely to
@@ -39,13 +41,21 @@ export class OrdersComponent implements OnInit, OnDestroy {
   ];
 
   trackSteps = TRACK_STEPS;
+  stars = [1, 2, 3, 4, 5];
+
+  // ── Rating widget state ───────────────────────────────────────────
+  ratingTarget: Order | null = null;   // which order's rating panel is open
+  selectedStar = 0;                    // confirmed star value (0 = none selected)
+  hoverStar    = 0;                    // star under cursor
+  submitting   = false;
 
   private sseController: AbortController | null = null;
 
   constructor(
     private toastr: ToastrService,
     private orderService: OrderService,
-    private tokenService: TokenService
+    private tokenService: TokenService,
+    private homeService: HomeService
   ) {}
 
   ngOnInit() {
@@ -58,7 +68,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     this.sseController = null;
   }
 
-  // ── Real-time tracker update via SSE ─────────────────────────────
+  // ── Real-time tracker update via SSE ─────────────────────────────────────────
   // Header component handles the bell badge, toast, and browser push.
   // This SSE connection only patches the status in the order list/tracker.
 
@@ -73,7 +83,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ── Order loading ─────────────────────────────────────────────────
+  // ── Order loading ─────────────────────────────────────────────────────────────
 
   loadOrders(): void {
     this.loading = true;
@@ -148,7 +158,65 @@ export class OrdersComponent implements OnInit, OnDestroy {
     this.toastr.success(`Added items from ${order.restaurantName} to cart!`);
   }
 
-  rateOrder(order: Order) {
-    this.toastr.info('Rating feature coming soon!');
+  // ── Rating widget ─────────────────────────────────────────────────────────────
+
+  openRating(order: Order): void {
+    this.ratingTarget = order;
+    this.selectedStar = 0;
+    this.hoverStar    = 0;
+  }
+
+  cancelRating(): void {
+    this.ratingTarget = null;
+    this.selectedStar = 0;
+    this.hoverStar    = 0;
+  }
+
+  selectStar(n: number): void {
+    this.selectedStar = n;
+  }
+
+  hoverRating(n: number): void {
+    this.hoverStar = n;
+  }
+
+  /** Active star value — hovered star takes priority while hovering, else selected. */
+  activeStar(): number {
+    return this.hoverStar || this.selectedStar;
+  }
+
+  submitRating(): void {
+    if (!this.ratingTarget || this.selectedStar === 0 || this.submitting) return;
+    const order = this.ratingTarget;
+    this.submitting = true;
+
+    // 1. Submit rating to food-service  2. Mark order as rated in order-service
+    forkJoin([
+      this.homeService.rateRestaurant(order.restaurantId!, this.selectedStar),
+      this.orderService.markOrderRated(order.id),
+    ]).subscribe({
+      next: () => {
+        // Patch the order in the local list so the button disappears immediately
+        this.allOrders = this.allOrders.map(o =>
+          o.id === order.id ? { ...o, rated: true } : o
+        );
+        this.applyTab(this.activeTab);
+        this.toastr.success(
+          `Thanks for rating ${order.restaurantName}! ${this.starLabel(this.selectedStar)}`,
+          'Rating submitted'
+        );
+        this.cancelRating();
+        this.submitting = false;
+      },
+      error: () => {
+        this.toastr.error('Could not submit rating. Please try again.');
+        this.submitting = false;
+      },
+    });
+  }
+
+  private starLabel(n: number): string {
+    const labels = ['', '😞 Poor', '😐 Fair', '🙂 Good', '😊 Great', '🤩 Excellent'];
+    return labels[n] ?? '';
   }
 }

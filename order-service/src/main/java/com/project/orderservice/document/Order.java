@@ -33,6 +33,9 @@ public class Order {
     /** PLACED → CONFIRMED → PREPARING → READY → DELIVERED | CANCELLED */
     private String status = "PLACED";
 
+    /** True after the customer has submitted a star rating. Prevents duplicate ratings. */
+    private boolean rated = false;
+
     /** Razorpay payment ID — null means COD / not yet paid */
     private String paymentId;
 

@@ -20,4 +20,7 @@ public interface RestaurantService {
     Restaurant updateHours(String id, java.util.List<com.project.foodservice.document.DaySchedule> hours);
     Restaurant updateMenu(String id, java.util.List<com.project.foodservice.document.MenuCategory> menu);
     Restaurant updateDetails(String id, RestaurantUpdateRequestDTO request);
+
+    /** Adds a star rating using weighted average, increments ratingCount. */
+    Restaurant addRating(String restaurantId, double rating);
 }

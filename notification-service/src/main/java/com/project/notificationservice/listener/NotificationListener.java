@@ -13,6 +13,8 @@ import com.project.notificationservice.event.OrderPlacedEvent;
 import com.project.notificationservice.event.OrderStatusUpdatedEvent;
 import com.project.notificationservice.event.OwnerStatusEvent;
 import com.project.notificationservice.event.PartnerRegisteredEvent;
+import com.project.notificationservice.entity.CustomerNotification;
+import com.project.notificationservice.repo.CustomerNotificationRepo;
 import com.project.notificationservice.repo.NotificationRepo;
 import com.project.notificationservice.repo.RestaurantNotificationRepo;
 import com.project.notificationservice.service.SseEmitterService;
@@ -33,6 +35,7 @@ public class NotificationListener {
     private final JavaMailSender mailSender;
     private final NotificationRepo notificationRepo;
     private final RestaurantNotificationRepo restaurantNotificationRepo;
+    private final CustomerNotificationRepo customerNotificationRepo;
     private final SseEmitterService sseEmitterService;
     private final WebPushService webPushService;
 
@@ -173,19 +176,33 @@ public class NotificationListener {
         }
     }
 
-    // ── Order status changed → notify customer via SSE ────────────
+    // ── Order status changed → persist + notify customer ─────────
 
     @RabbitListener(queues = RabbitMQConfig.ORDER_STATUS_UPDATED_QUEUE)
     public void onOrderStatusUpdated(OrderStatusUpdatedEvent event) {
         String msg = statusMessage(event.getNewStatus(), event.getRestaurantName());
 
+        // 0. Persist to customer_notifications (same pattern as restaurant & admin)
+        CustomerNotification cn = new CustomerNotification();
+        cn.setUserId(event.getUserId());
+        cn.setOrderId(event.getOrderId());
+        cn.setRestaurantName(event.getRestaurantName());
+        cn.setNewStatus(event.getNewStatus());
+        cn.setMessage(msg);
+        CustomerNotification saved = customerNotificationRepo.save(cn);
+        log.info("Saved customer notification for userId={} orderId={} status={}",
+                event.getUserId(), event.getOrderId(), event.getNewStatus());
+
         // 1. SSE — patches the order tracker in real-time if the tab is open
+        //    Include the DB id so Angular can sync without duplicates
         CustomerOrderUpdateDTO dto = new CustomerOrderUpdateDTO(
+                saved.getId(),
                 event.getOrderId(),
                 event.getRestaurantName(),
                 event.getNewStatus(),
                 msg,
-                event.getUpdatedAt());
+                event.getUpdatedAt(),
+                false);
         sseEmitterService.pushToCustomer(event.getUserId(), dto);
 
         // 2. Web Push — OS-level notification via VAPID, works even when tab is closed
@@ -205,7 +222,7 @@ public class NotificationListener {
             case "CONFIRMED"  -> "✅ " + restaurantName + " accepted your order!";
             case "PREPARING"  -> "👨‍🍳 " + restaurantName + " is preparing your food!";
             case "READY"      -> "🛵 Your order is ready and on its way!";
-            case "DELIVERED"  -> "🎉 Order delivered! Enjoy your meal.";
+            case "DELIVERED"  -> "🎉 Delivered! Tap to rate " + restaurantName + " ⭐";
             case "CANCELLED"  -> "❌ Your order was cancelled by the restaurant.";
             default           -> "Order status updated: " + status;
         };

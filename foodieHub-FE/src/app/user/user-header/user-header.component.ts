@@ -28,7 +28,9 @@ export class UserHeaderComponent implements OnInit, OnDestroy {
   cartCount = 0;
 
   // ── Order status notifications ────────────────────────────────────
-  notifications: (CustomerOrderUpdate & { read: boolean })[] = [];
+  // Loaded from DB on init (persists across page refreshes).
+  // New items prepended via SSE as they arrive in real-time.
+  notifications: CustomerOrderUpdate[] = [];
   showNotifPanel = false;
   notifPermission: NotificationPermission = 'default';
 
@@ -55,7 +57,6 @@ export class UserHeaderComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     // Keep notifPermission in sync with the PushNotificationService observable
-    // (it updates when requestAndSubscribe resolves inside the service)
     this.subs.add(
       this.pushService.permission$.subscribe(p => {
         this.ngZone.run(() => { this.notifPermission = p; });
@@ -67,11 +68,13 @@ export class UserHeaderComponent implements OnInit, OnDestroy {
         if (user) {
           this.initials = (user.firstName?.[0] ?? '') + (user.lastName?.[0] ?? '');
           this.initials = this.initials.toUpperCase();
+          // Load stored history from DB first, then start SSE for new items
+          this.loadNotifications();
           this.connectSSE();
-          // Register SW + re-subscribe if permission was already granted before
           this.pushService.init('customer');
         } else {
           this.initials = 'U';
+          this.notifications = [];
           this.sseController?.abort();
           this.sseController = null;
         }
@@ -102,7 +105,23 @@ export class UserHeaderComponent implements OnInit, OnDestroy {
     this.sseController = null;
   }
 
+  // ── Load notification history from DB ─────────────────────────────
+  // Same pattern as admin (GET /api/v1/admin/notifications) and
+  // restaurant (GET /api/v1/restaurant/notifications/{id}).
+
+  private loadNotifications(): void {
+    this.orderService.getCustomerNotifications().subscribe({
+      next: res => {
+        this.ngZone.run(() => {
+          this.notifications = res.data ?? [];
+        });
+      },
+      error: () => { /* non-critical — bell just starts empty */ }
+    });
+  }
+
   // ── SSE connection ────────────────────────────────────────────────
+  // Prepends new real-time events to the already-loaded DB history.
 
   private connectSSE(): void {
     if (this.sseController) return;   // already connected
@@ -111,7 +130,7 @@ export class UserHeaderComponent implements OnInit, OnDestroy {
 
     this.sseController = this.orderService.connectCustomerSSE(token, (update) => {
       this.ngZone.run(() => {
-        // Update bell badge
+        // Prepend new notification (SSE always carries a fresh DB-saved record with id)
         this.notifications = [{ ...update, read: false }, ...this.notifications].slice(0, 20);
         // In-app toast (Web Push from service worker handles the OS notification)
         this.toaster.info(update.message, update.restaurantName, { timeOut: 6000 });
@@ -123,9 +142,11 @@ export class UserHeaderComponent implements OnInit, OnDestroy {
 
   toggleNotifPanel(): void {
     this.showNotifPanel = !this.showNotifPanel;
-    if (this.showNotifPanel) {
-      // Mark all as read when panel opens
+    if (this.showNotifPanel && this.unreadCount > 0) {
+      // Mark all as read in-memory immediately so badge clears
       this.notifications = this.notifications.map(n => ({ ...n, read: true }));
+      // Persist to DB (same as restaurant's markAllRead)
+      this.orderService.markAllCustomerNotificationsRead().subscribe();
     }
   }
 
@@ -133,12 +154,17 @@ export class UserHeaderComponent implements OnInit, OnDestroy {
     this.showNotifPanel = false;
   }
 
+  // ── Clear all ─────────────────────────────────────────────────────
+  // Deletes from DB + clears in-memory (same as admin's clearAll).
+
+  clearNotifications(): void {
+    this.notifications = [];
+    this.orderService.clearCustomerNotifications().subscribe();
+  }
+
   // ── Browser push notification ─────────────────────────────────────
 
   enableBrowserNotifications(): void {
-    // requestAndSubscribe: shows browser permission prompt → registers SW
-    // → subscribes to Web Push → saves endpoint to backend
-    // permission$ observable updates notifPermission automatically via ngOnInit subscription
     this.pushService.requestAndSubscribe('customer');
   }
 

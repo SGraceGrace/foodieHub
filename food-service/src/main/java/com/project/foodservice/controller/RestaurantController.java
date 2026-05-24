@@ -3,6 +3,7 @@ package com.project.foodservice.controller;
 import com.project.foodservice.document.DaySchedule;
 import com.project.foodservice.document.MenuCategory;
 import com.project.foodservice.dto.BaseAPIResponse;
+import com.project.foodservice.dto.RatingRequest;
 import com.project.foodservice.dto.RestaurantCreateRequestDTO;
 import com.project.foodservice.dto.RestaurantUpdateRequestDTO;
 import com.project.foodservice.service.RestaurantService;
@@ -86,6 +87,19 @@ public class RestaurantController {
             @RequestBody List<MenuCategory> menu) {
         return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
                 restaurantService.updateMenu(id, menu),
+                HttpStatus.OK.value(), null));
+    }
+
+    /**
+     * POST /api/v1/restaurants/{id}/rating
+     * Customer submits a 1–5 star rating; weighted average is applied server-side.
+     */
+    @PostMapping("/{id}/rating")
+    public ResponseEntity<BaseAPIResponse> addRating(
+            @PathVariable String id,
+            @RequestBody RatingRequest req) {
+        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+                restaurantService.addRating(id, req.rating()),
                 HttpStatus.OK.value(), null));
     }
 }

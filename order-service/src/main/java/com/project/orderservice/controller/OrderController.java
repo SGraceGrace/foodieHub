@@ -107,4 +107,15 @@ public class OrderController {
         Order order = orderService.updateStatus(id, req.getStatus());
         return ResponseEntity.ok(new BaseAPIResponse("STATUS_UPDATED", order, 200, null));
     }
+
+    /**
+     * PATCH /api/orders/{id}/rated — Customer marks an order as rated.
+     * Called immediately after successfully submitting a star rating to food-service.
+     * Sets rated=true so the UI hides the rating button and prevents duplicates.
+     */
+    @PatchMapping("/{id}/rated")
+    public ResponseEntity<BaseAPIResponse> markRated(@PathVariable String id) {
+        Order order = orderService.markRated(id);
+        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", order, 200, null));
+    }
 }

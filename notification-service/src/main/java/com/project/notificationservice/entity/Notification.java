@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDateTime;
 
-@Document(collection = "notifications")
+@Document(collection = "admin_notifications")
 @Data
 public class Notification {
 

@@ -34,4 +34,12 @@ export class HomeService {
   getRestaurantById(id: string): Observable<ApiResponse<Restaurant>> {
     return this.http.get<ApiResponse<Restaurant>>(`${this.base}/api/v1/restaurants/${id}`);
   }
+
+  /** Submit a 1–5 star rating for a restaurant. Weighted average applied server-side. */
+  rateRestaurant(restaurantId: string, rating: number): Observable<ApiResponse<Restaurant>> {
+    return this.http.post<ApiResponse<Restaurant>>(
+      `${this.base}/api/v1/restaurants/${restaurantId}/rating`,
+      { rating }
+    );
+  }
 }

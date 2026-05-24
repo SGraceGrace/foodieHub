@@ -28,4 +28,7 @@ public interface OrderService {
 
     /** Update order status (called by restaurant partner). */
     Order updateStatus(String orderId, String newStatus);
+
+    /** Mark order as rated — prevents the customer from rating twice. */
+    Order markRated(String orderId);
 }
