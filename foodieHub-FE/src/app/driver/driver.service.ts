@@ -98,7 +98,7 @@ export class DriverService {
     const url = `${this.base}/notifications/stream`;
 
     fetch(url, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: token },
       signal: controller.signal,
     }).then(async (res) => {
       const reader = res.body!.getReader();
