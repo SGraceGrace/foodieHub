@@ -51,6 +51,7 @@ public class CartServiceImpl implements CartService {
             existingItem.get().setQty(existingItem.get().getQty() + 1);
         } else {
             CartItem item = new CartItem();
+            item.setMenuItemId(req.getMenuItemId());   // null for pre-migration items
             item.setName(req.getName());
             item.setPrice(req.getPrice());
             item.setQty(1);

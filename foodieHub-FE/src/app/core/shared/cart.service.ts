@@ -6,6 +6,8 @@ import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../model/apiResponse.model';
 
 export interface CartItem {
+  /** Links to food-service menu_items — null for items added before the migration. */
+  menuItemId?: string;
   name: string;
   price: number;
   qty: number;
@@ -84,6 +86,7 @@ export class CartService {
     const body = {
       restaurantId,
       restaurantName,
+      menuItemId: item.menuItemId ?? null,   // carries menu_items ID for order-count tracking
       name: item.name,
       price: item.price,
       isVeg: item.isVeg,

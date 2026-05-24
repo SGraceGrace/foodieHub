@@ -64,6 +64,7 @@ public class OrderServiceImpl implements OrderService {
         // 3. Map cart items → order items & compute bill
         List<OrderItem> orderItems = rc.getItems().stream().map(ci -> {
             OrderItem oi = new OrderItem();
+            oi.setMenuItemId(ci.getMenuItemId());   // carries menuItemId for food-service analytics
             oi.setName(ci.getName());
             oi.setPrice(ci.getPrice());
             oi.setQty(ci.getQty());
@@ -105,9 +106,15 @@ public class OrderServiceImpl implements OrderService {
             cartRepository.save(cart);
         }
 
-        // 6. Publish order.placed event → RabbitMQ → notification-service
+        // 6. Publish order.placed event → RabbitMQ → notification-service + food-service
+        // itemNames: human-readable list used by notification-service for the confirmation email
         List<String> itemNames = orderItems.stream()
                 .map(i -> i.getName() + " x" + i.getQty())
+                .collect(Collectors.toList());
+
+        // items: full list with menuItemId used by food-service to increment order counts
+        List<OrderItemEvent> itemEvents = orderItems.stream()
+                .map(i -> new OrderItemEvent(i.getMenuItemId(), i.getName(), i.getQty(), i.getPrice()))
                 .collect(Collectors.toList());
 
         OrderPlacedEvent event = OrderPlacedEvent.builder()
@@ -118,6 +125,7 @@ public class OrderServiceImpl implements OrderService {
                 .restaurantId(saved.getRestaurantId())
                 .restaurantName(saved.getRestaurantName())
                 .totalAmount(total)
+                .items(itemEvents)
                 .itemNames(itemNames)
                 .deliveryAddress(req.getDeliveryAddress())
                 .placedAt(saved.getCreatedAt())

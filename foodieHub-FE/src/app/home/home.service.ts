@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiResponse } from '../model/apiResponse.model';
-import { PaginatedResponse, Slide, Restaurant } from '../model/restaurant.model';
+import { MenuCategory, PaginatedResponse, Slide, Restaurant } from '../model/restaurant.model';
 
 @Injectable({ providedIn: 'root' })
 export class HomeService {
@@ -33,6 +33,17 @@ export class HomeService {
 
   getRestaurantById(id: string): Observable<ApiResponse<Restaurant>> {
     return this.http.get<ApiResponse<Restaurant>>(`${this.base}/api/v1/restaurants/${id}`);
+  }
+
+  /**
+   * Load the full menu for a restaurant from the menu_items collection (grouped by category).
+   * Each MenuItem in the response includes an `id` field — pass it as menuItemId when adding to cart.
+   * Called separately from getRestaurantById so menu and restaurant info load independently.
+   */
+  getMenuByRestaurant(restaurantId: string): Observable<ApiResponse<MenuCategory[]>> {
+    return this.http.get<ApiResponse<MenuCategory[]>>(
+      `${this.base}/api/v1/restaurants/${restaurantId}/menu`
+    );
   }
 
   /**

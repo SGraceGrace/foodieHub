@@ -201,14 +201,6 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
-    public Restaurant updateMenu(String id, List<MenuCategory> incoming) {
-        Restaurant r = restaurantRepo.findById(id)
-                .orElseThrow(() -> new RuntimeException("Restaurant not found"));
-        r.setMenu(incoming);
-        return restaurantRepo.save(r);
-    }
-
-    @Override
     public Restaurant updateDetails(String id, RestaurantUpdateRequestDTO req) {
         Restaurant r = restaurantRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Restaurant not found"));

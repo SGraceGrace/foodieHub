@@ -14,6 +14,9 @@ public class AddToCartRequest {
     @NotBlank(message = "restaurantName is required")
     private String restaurantName;
 
+    /** ID from food-service menu_items collection — null for legacy items added before migration. */
+    private String menuItemId;
+
     @NotBlank(message = "item name is required")
     private String name;
 

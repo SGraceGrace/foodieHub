@@ -1,15 +1,18 @@
-package com.project.orderservice.messaging;
+package com.project.foodservice.messaging;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Mirror of com.project.orderservice.messaging.OrderPlacedEvent.
+ * food-service needs its own copy because there is no shared-library module in this POC.
+ * Must stay in sync with the order-service version — same field names, same types.
+ */
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderPlacedEvent {
@@ -21,10 +24,10 @@ public class OrderPlacedEvent {
     private String restaurantName;
     private double totalAmount;
 
-    /** Full item list with menuItemId — consumed by food-service to update order counts. */
+    /** Full item list with menuItemId — used to increment order counts in menu_items. */
     private List<OrderItemEvent> items;
 
-    /** Kept for backward compat — notification-service uses this for the order confirmation email. */
+    /** Kept for backward compat (notification-service email). */
     private List<String> itemNames;
 
     private String deliveryAddress;

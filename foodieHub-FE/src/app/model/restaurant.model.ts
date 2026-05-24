@@ -12,6 +12,8 @@ export interface MenuExtra {
 }
 
 export interface MenuItem {
+  /** Populated from menu_items collection — sent back as menuItemId when adding to cart. */
+  id?: string;
   name: string;
   price: number;
   gstPercent?: number;

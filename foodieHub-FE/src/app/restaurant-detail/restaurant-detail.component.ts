@@ -16,6 +16,8 @@ import { getCuisineEmoji, getCuisineBg } from '../core/constants/cuisine.constan
 })
 export class RestaurantDetailComponent implements OnInit, OnDestroy {
   restaurant: Restaurant | null = null;
+  menu: MenuCategory[] = [];         // loaded separately from menu_items collection
+  menuLoading = true;
   loading = true;
   error = false;
   activeCategory: string | null = null;
@@ -32,15 +34,29 @@ export class RestaurantDetailComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id')!;
+
+    // Load restaurant info
     this.homeService.getRestaurantById(id).subscribe({
       next: (res) => {
         this.restaurant = res.data ?? null;
-        this.activeCategory = this.restaurant?.menu?.[0]?.category ?? null;
         this.loading = false;
       },
       error: () => {
         this.error = true;
         this.loading = false;
+      }
+    });
+
+    // Load menu separately from menu_items collection
+    // Items in the response have `id` set — this is menuItemId used when adding to cart
+    this.homeService.getMenuByRestaurant(id).subscribe({
+      next: (res) => {
+        this.menu = res.data ?? [];
+        this.activeCategory = this.menu[0]?.category ?? null;
+        this.menuLoading = false;
+      },
+      error: () => {
+        this.menuLoading = false;
       }
     });
 
@@ -56,11 +72,11 @@ export class RestaurantDetailComponent implements OnInit, OnDestroy {
   }
 
   get categories(): MenuCategory[] {
-    return this.restaurant?.menu ?? [];
+    return this.menu;
   }
 
   activeItems(): MenuItem[] {
-    return this.categories.find(c => c.category === this.activeCategory)?.items ?? [];
+    return this.menu.find(c => c.category === this.activeCategory)?.items ?? [];
   }
 
   setCategory(cat: string) {
@@ -71,27 +87,25 @@ export class RestaurantDetailComponent implements OnInit, OnDestroy {
     return this.cartService.getQty(this.restaurant!.id, item.name);
   }
 
-  // Items count for THIS restaurant only (for the floating bar)
   get thisRestaurantItemCount(): number {
     return this.restaurantCart?.items.reduce((s, i) => s + i.qty, 0) ?? 0;
   }
 
-  // Amount for THIS restaurant only (for the floating bar)
   get thisRestaurantAmount(): number {
     return this.restaurantCart?.items.reduce((s, i) => s + i.price * i.qty, 0) ?? 0;
   }
 
   onAdd(item: MenuItem) {
     if (!this.restaurant) return;
-    const cartItem = {
+    this.cartService.addItem(this.restaurant.id, this.restaurant.name, {
+      menuItemId: item.id,      // item.id comes from menu_items collection — used for order-count tracking
       name: item.name,
       price: item.price,
       qty: 1,
       isVeg: item.isVeg,
       description: item.description,
       imageUrl: item.imageUrl,
-    };
-    this.cartService.addItem(this.restaurant.id, this.restaurant.name, cartItem).subscribe();
+    }).subscribe();
   }
 
   onRemove(item: MenuItem) {

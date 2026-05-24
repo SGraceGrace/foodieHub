@@ -6,6 +6,7 @@ import com.project.foodservice.dto.BaseAPIResponse;
 import com.project.foodservice.dto.RatingRequest;
 import com.project.foodservice.dto.RestaurantCreateRequestDTO;
 import com.project.foodservice.dto.RestaurantUpdateRequestDTO;
+import com.project.foodservice.service.MenuItemService;
 import com.project.foodservice.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +23,7 @@ import java.util.List;
 public class RestaurantController {
 
     private final RestaurantService restaurantService;
+    private final MenuItemService menuItemService;
 
     @GetMapping
     public ResponseEntity<BaseAPIResponse> getAll(
@@ -81,12 +83,18 @@ public class RestaurantController {
                 HttpStatus.OK.value(), null));
     }
 
+    /**
+     * Partner — batch-save the full menu for a restaurant.
+     * Writes to the menu_items collection (replaces all existing items).
+     * Returns the newly saved menu grouped by category.
+     */
     @PutMapping("/{id}/menu")
     public ResponseEntity<BaseAPIResponse> updateMenu(
             @PathVariable String id,
             @RequestBody List<MenuCategory> menu) {
+        menuItemService.saveFullMenu(id, menu);
         return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
-                restaurantService.updateMenu(id, menu),
+                menuItemService.getMenu(id),
                 HttpStatus.OK.value(), null));
     }
 
