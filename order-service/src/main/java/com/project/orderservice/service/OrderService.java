@@ -31,4 +31,7 @@ public interface OrderService {
 
     /** Mark order as rated — prevents the customer from rating twice. */
     Order markRated(String orderId);
+
+    /** Overview stats for the restaurant partner workspace. */
+    com.project.orderservice.dto.RestaurantStatsDTO getRestaurantStats(String restaurantId);
 }

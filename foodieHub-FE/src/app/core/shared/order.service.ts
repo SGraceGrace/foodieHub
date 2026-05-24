@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { CustomerOrderUpdate, Order, RestaurantOrderNotification } from '../../model/order.model';
+import { CustomerOrderUpdate, Order, RestaurantOrderNotification, RestaurantStats } from '../../model/order.model';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../model/apiResponse.model';
 import { PaginatedResponse } from '../../model/restaurant.model';
@@ -112,6 +112,13 @@ export class OrderService {
   clearRestaurantNotifications(restaurantId: string): Observable<ApiResponse<null>> {
     return this.http.delete<ApiResponse<null>>(
       `${this.notifBase}/api/v1/restaurant/notifications/${restaurantId}`
+    );
+  }
+
+  /** Overview stats for the partner workspace (today's orders/revenue, pending, total). */
+  getRestaurantStats(restaurantId: string): Observable<ApiResponse<RestaurantStats>> {
+    return this.http.get<ApiResponse<RestaurantStats>>(
+      `${this.base}/api/orders/restaurant/${restaurantId}/stats`
     );
   }
 

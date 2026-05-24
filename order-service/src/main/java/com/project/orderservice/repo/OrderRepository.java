@@ -25,4 +25,16 @@ public interface OrderRepository extends MongoRepository<Order, String> {
     /** All orders for a restaurant — paginated, with createdAt date range filter */
     Page<Order> findByRestaurantIdAndCreatedAtBetweenOrderByCreatedAtDesc(
             String restaurantId, LocalDateTime from, LocalDateTime to, Pageable pageable);
+
+    // ── Stats queries ─────────────────────────────────────────────────
+
+    /** Today's orders (non-paginated — used only for stats, typically < 100) */
+    List<Order> findByRestaurantIdAndCreatedAtBetween(
+            String restaurantId, LocalDateTime from, LocalDateTime to);
+
+    /** Total order count for a restaurant (all time) */
+    long countByRestaurantId(String restaurantId);
+
+    /** Count by status — used for pending orders badge */
+    long countByRestaurantIdAndStatusIn(String restaurantId, List<String> statuses);
 }

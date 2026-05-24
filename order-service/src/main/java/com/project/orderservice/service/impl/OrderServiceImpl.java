@@ -22,7 +22,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.project.orderservice.dto.RestaurantStatsDTO;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -195,5 +199,27 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
         order.setRated(true);
         return orderRepository.save(order);
+    }
+
+    @Override
+    public RestaurantStatsDTO getRestaurantStats(String restaurantId) {
+        // Use IST so "today" matches what the partner sees on the clock
+        LocalDate todayIST = LocalDate.now(ZoneId.of("Asia/Kolkata"));
+        LocalDateTime startOfDay = todayIST.atStartOfDay();
+        LocalDateTime endOfDay   = todayIST.atTime(LocalTime.MAX);
+
+        List<Order> todayOrders = orderRepository
+                .findByRestaurantIdAndCreatedAtBetween(restaurantId, startOfDay, endOfDay);
+
+        long   todayCount   = todayOrders.size();
+        double todayRevenue = todayOrders.stream()
+                .mapToDouble(Order::getTotalAmount).sum();
+
+        long pendingOrders = orderRepository.countByRestaurantIdAndStatusIn(
+                restaurantId, List.of("PLACED", "CONFIRMED"));
+
+        long totalOrders = orderRepository.countByRestaurantId(restaurantId);
+
+        return new RestaurantStatsDTO(todayCount, todayRevenue, pendingOrders, totalOrders);
     }
 }

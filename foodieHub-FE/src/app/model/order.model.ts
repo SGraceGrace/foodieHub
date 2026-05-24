@@ -28,6 +28,14 @@ export interface Order {
   eta?: string;
 }
 
+/** Overview stats for the restaurant partner workspace. */
+export interface RestaurantStats {
+  todayOrders:   number;
+  todayRevenue:  number;
+  pendingOrders: number;
+  totalOrders:   number;
+}
+
 export interface RestaurantOrderNotification {
   id: string;
   restaurantId: string;

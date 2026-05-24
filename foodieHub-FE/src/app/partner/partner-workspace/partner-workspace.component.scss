@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=DM+Sans:wght@300;400;500;600&display=swap');
 
 $gold:       #f9b303;
 $gold-dark:  #e0a000;
@@ -13,7 +13,7 @@ $font-sans:  'DM Sans', sans-serif;
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: $font-sans; }
 
-// ── Header ────────────────────────────────────────────────────────
+// â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .header {
   display: flex;
   justify-content: space-between;
@@ -50,7 +50,7 @@ $font-sans:  'DM Sans', sans-serif;
   &:hover { background: $gold-dark; }
 }
 
-// ── Notification Bell ─────────────────────────────────────────────
+// â”€â”€ Notification Bell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .notif-bell-wrap {
   position: relative;
   display: flex;
@@ -258,7 +258,7 @@ $font-sans:  'DM Sans', sans-serif;
   z-index: 9998;
 }
 
-// ── Loading full page ─────────────────────────────────────────────
+// â”€â”€ Loading full page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .loading-fullpage {
   display: flex;
   justify-content: center;
@@ -269,14 +269,14 @@ $font-sans:  'DM Sans', sans-serif;
   background: $bg;
 }
 
-// ── Layout ────────────────────────────────────────────────────────
+// â”€â”€ Layout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .layout {
   display: grid;
   grid-template-columns: 230px 1fr;
   min-height: calc(100vh - 65px);
 }
 
-// ── Sidebar ───────────────────────────────────────────────────────
+// â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .sidebar {
   background: #1a1a1a;
   padding: 1.25rem 1rem;
@@ -404,7 +404,7 @@ $font-sans:  'DM Sans', sans-serif;
   line-height: 1;
 }
 
-// ── Main ──────────────────────────────────────────────────────────
+// â”€â”€ Main â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .main {
   padding: 2rem;
   background: $bg;
@@ -419,7 +419,7 @@ $font-sans:  'DM Sans', sans-serif;
   margin-bottom: 1.5rem;
 }
 
-// ── Stats grid ────────────────────────────────────────────────────
+// â”€â”€ Stats grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -438,7 +438,20 @@ $font-sans:  'DM Sans', sans-serif;
 .stat-value { font-family: $font-serif; font-size: 1.6rem; font-weight: 700; color: $text-dark; }
 .stat-note  { font-size: 0.7rem; color: $text-light; margin-top: 4px; }
 
-// ── Section box ───────────────────────────────────────────────────
+.stat-card--loading { opacity: .6; }
+
+.stat-pending-pill {
+  display: inline-block;
+  background: #fff3cd;
+  color: #7a5400;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid #ffe082;
+}
+
+// â”€â”€ Section box â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .section-box {
   background: white;
   border-radius: 10px;
@@ -454,7 +467,7 @@ $font-sans:  'DM Sans', sans-serif;
   margin-bottom: 1rem;
 }
 
-// ── Info rows ─────────────────────────────────────────────────────
+// â”€â”€ Info rows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .info-row {
   display: flex;
   align-items: center;
@@ -469,10 +482,10 @@ $font-sans:  'DM Sans', sans-serif;
 .info-label { width: 130px; min-width: 130px; color: $text-light; font-size: 0.8rem; text-transform: uppercase; letter-spacing: .4px; }
 .info-val   { color: $text-dark; font-weight: 500; }
 
-// ── Settings ──────────────────────────────────────────────────────
+// â”€â”€ Settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .settings-box { max-width: 560px; }
 
-// ── Badges ────────────────────────────────────────────────────────
+// â”€â”€ Badges â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .badge {
   display: inline-block;
   padding: 3px 10px;
@@ -483,7 +496,7 @@ $font-sans:  'DM Sans', sans-serif;
 .badge-open   { background: #e8f5e9; color: $success; }
 .badge-closed { background: #f0f0f0; color: $text-light; }
 
-// ── Tab header ────────────────────────────────────────────────────
+// â”€â”€ Tab header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .tab-header {
   display: flex;
   justify-content: space-between;
@@ -491,7 +504,7 @@ $font-sans:  'DM Sans', sans-serif;
   margin-bottom: 1.5rem;
 }
 
-// ── Buttons ───────────────────────────────────────────────────────
+// â”€â”€ Buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .btn-primary {
   background: $gold;
   color: white;
@@ -507,7 +520,7 @@ $font-sans:  'DM Sans', sans-serif;
   &:disabled { opacity: 0.6; cursor: not-allowed; }
 }
 
-// ── Create form ───────────────────────────────────────────────────
+// â”€â”€ Create form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .create-form {
   background: white;
   border-radius: 10px;
@@ -562,7 +575,7 @@ $font-sans:  'DM Sans', sans-serif;
 .img-upload-status { font-size: 0.8rem; color: #888; margin-top: 4px; }
 .img-preview { display: block; margin-top: 8px; width: 120px; height: 80px; object-fit: cover; border-radius: 8px; border: 1px solid var(--border); }
 
-// ── Restaurant details edit ───────────────────────────────────────
+// â”€â”€ Restaurant details edit â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .details-image { margin-bottom: 1rem; }
 .details-img { width: 200px; height: 130px; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); display: block; }
 .details-edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -598,7 +611,7 @@ $font-sans:  'DM Sans', sans-serif;
   &:hover { background: #f5f5f5; }
 }
 
-// ── Settings ──────────────────────────────────────────────────────
+// â”€â”€ Settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .settings-section-hdr {
   display: flex; align-items: center; justify-content: space-between;
   margin-bottom: 1rem;
@@ -653,7 +666,7 @@ $font-sans:  'DM Sans', sans-serif;
 
 .staff-action-msg { font-size: 0.82rem; color: #2e7d32; margin-top: 10px; }
 
-// ── Multi-select restaurant search ────────────────────────────────
+// â”€â”€ Multi-select restaurant search â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .selected-tags {
   display: flex;
   flex-wrap: wrap;
@@ -754,7 +767,7 @@ $font-sans:  'DM Sans', sans-serif;
   &:hover { background: rgba(249,179,3,.12); }
 }
 
-// ── Create restaurant modal ───────────────────────────────────────
+// â”€â”€ Create restaurant modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -819,7 +832,7 @@ $font-sans:  'DM Sans', sans-serif;
   border-top: 1px solid $border;
 }
 
-// ── Password field ────────────────────────────────────────────────
+// â”€â”€ Password field â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .pw-wrap {
   position: relative;
   display: flex;
@@ -880,7 +893,7 @@ $font-sans:  'DM Sans', sans-serif;
   padding: .5rem 0;
 }
 
-// ── Staff filter bar ─────────────────────────────────────────────
+// â”€â”€ Staff filter bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .staff-filter-bar {
   display: flex;
   align-items: flex-end;
@@ -948,7 +961,7 @@ $font-sans:  'DM Sans', sans-serif;
   color: $text-light;
 }
 
-// ── Staff table ───────────────────────────────────────────────────
+// â”€â”€ Staff table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .staff-table {
   width: 100%;
   border-collapse: collapse;
@@ -996,7 +1009,7 @@ $font-sans:  'DM Sans', sans-serif;
   &:hover { opacity: 1; background: $bg; }
 }
 
-// ── Staff restaurants popup ───────────────────────────────────────
+// â”€â”€ Staff restaurants popup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .staff-restaurants-popup { width: 420px; }
 
 .modal-subtitle {
@@ -1046,7 +1059,7 @@ $font-sans:  'DM Sans', sans-serif;
   padding: 1.5rem 0;
 }
 
-// ── Archive action button ─────────────────────────────────────────
+// â”€â”€ Archive action button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .action-archive-btn {
   background: none;
   border: 1px solid #ffcdd2;
@@ -1063,7 +1076,7 @@ $font-sans:  'DM Sans', sans-serif;
   &:hover { background: #fdecea; border-color: #ef9a9a; }
 }
 
-// ── Activate action button ────────────────────────────────────────
+// â”€â”€ Activate action button â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .action-activate-btn {
   background: none;
   border: 1px solid #c3e6cb;
@@ -1080,7 +1093,7 @@ $font-sans:  'DM Sans', sans-serif;
   &:hover { background: #e8f5e9; border-color: #a5d6a7; }
 }
 
-// ── Archive confirmation popup ────────────────────────────────────
+// â”€â”€ Archive confirmation popup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .confirm-popup {
   width: 380px;
   text-align: center;
@@ -1143,7 +1156,7 @@ $font-sans:  'DM Sans', sans-serif;
   flex-shrink: 0;
 }
 
-// ── Toast ─────────────────────────────────────────────────────────
+// â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .toast {
   position: fixed;
   top: 1.25rem;
@@ -1183,7 +1196,7 @@ $font-sans:  'DM Sans', sans-serif;
   to   { opacity: 1; transform: translateX(0); }
 }
 
-// ── Menu Management ───────────────────────────────────────────────
+// â”€â”€ Menu Management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .menu-title-row {
   display: flex;
   align-items: center;
@@ -1240,7 +1253,7 @@ $font-sans:  'DM Sans', sans-serif;
 .menu-stat strong { color: $text-dark; }
 .menu-stat-sep { color: $text-light; }
 
-// ── Category card ─────────────────────────────────────────────────
+// â”€â”€ Category card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .menu-cat-card {
   background: white;
   border-radius: 10px;
@@ -1330,7 +1343,7 @@ $font-sans:  'DM Sans', sans-serif;
   &:hover { background: $bg; color: $text-dark; }
 }
 
-// ── Category body ─────────────────────────────────────────────────
+// â”€â”€ Category body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .cat-body { padding: 1rem 1.25rem; }
 
 .cat-empty {
@@ -1340,7 +1353,7 @@ $font-sans:  'DM Sans', sans-serif;
   padding: .5rem 0 1rem;
 }
 
-// ── Item rows ─────────────────────────────────────────────────────
+// â”€â”€ Item rows â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .items-list {
   margin-bottom: .75rem;
 }
@@ -1487,7 +1500,7 @@ $font-sans:  'DM Sans', sans-serif;
   &:hover { background: rgba(249,179,3,.06); }
 }
 
-// ── Item modal ────────────────────────────────────────────────────
+// â”€â”€ Item modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .item-modal { width: 640px; }
 
 .item-form-body {
@@ -1504,7 +1517,7 @@ $font-sans:  'DM Sans', sans-serif;
 
 .item-col-full { grid-column: 1 / -1; }
 
-// ── GST slab selector ─────────────────────────────────────────────
+// â”€â”€ GST slab selector â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .gst-options {
   display: flex;
   gap: 6px;
@@ -1527,7 +1540,7 @@ $font-sans:  'DM Sans', sans-serif;
   &--active    { background: $gold; border-color: $gold; color: white; font-weight: 700; }
 }
 
-// ── GST preview ───────────────────────────────────────────────────
+// â”€â”€ GST preview â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .gst-preview {
   display: flex;
   align-items: center;
@@ -1543,7 +1556,7 @@ $font-sans:  'DM Sans', sans-serif;
 .gst-preview-op    { font-size: 0.8rem; color: $text-light; }
 .gst-preview-total { font-size: 0.88rem; font-weight: 700; color: $text-dark; }
 
-// ── Item toggles ──────────────────────────────────────────────────
+// â”€â”€ Item toggles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .item-toggles {
   display: flex;
   gap: 2rem;
@@ -1552,7 +1565,7 @@ $font-sans:  'DM Sans', sans-serif;
   border-bottom: 1px solid $border;
 }
 
-// ── Extras ────────────────────────────────────────────────────────
+// â”€â”€ Extras â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .extras-section {
   display: flex;
   flex-direction: column;
@@ -1627,7 +1640,7 @@ $font-sans:  'DM Sans', sans-serif;
   &:hover { border-color: $gold; color: $gold-dark; }
 }
 
-// ── Operating Hours ───────────────────────────────────────────────
+// â”€â”€ Operating Hours â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .hours-summary {
   display: flex;
   align-items: center;
@@ -1742,7 +1755,7 @@ $font-sans:  'DM Sans', sans-serif;
   color: $text-dark;
 }
 
-// ── Toggle switch ─────────────────────────────────────────────────
+// â”€â”€ Toggle switch â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .toggle-switch {
   display: flex;
   align-items: center;
@@ -1786,7 +1799,7 @@ $font-sans:  'DM Sans', sans-serif;
   &--on { color: $gold-dark; }
 }
 
-// ── Time fields ───────────────────────────────────────────────────
+// â”€â”€ Time fields â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .hours-times {
   display: flex;
   align-items: center;
@@ -1831,7 +1844,7 @@ $font-sans:  'DM Sans', sans-serif;
   margin-top: 16px;
 }
 
-// ── Apply to all ──────────────────────────────────────────────────
+// â”€â”€ Apply to all â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .apply-all-btn {
   background: none;
   border: 1px solid $border;
@@ -1849,7 +1862,7 @@ $font-sans:  'DM Sans', sans-serif;
 
 .apply-all-placeholder { width: 80px; }
 
-// ── Hours footer ──────────────────────────────────────────────────
+// â”€â”€ Hours footer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .hours-footer {
   display: flex;
   align-items: center;
@@ -1865,7 +1878,7 @@ $font-sans:  'DM Sans', sans-serif;
   font-weight: 500;
 }
 
-// ── Preview card ──────────────────────────────────────────────────
+// â”€â”€ Preview card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .hours-preview-card { max-width: 380px; }
 
 .hours-preview-sub {
@@ -1892,7 +1905,7 @@ $font-sans:  'DM Sans', sans-serif;
 .preview-times { color: $text;      font-weight: 400; }
 .preview-closed { color: $text-light; font-style: italic; }
 
-// ── Empty state ───────────────────────────────────────────────────
+// â”€â”€ Empty state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .empty-state {
   text-align: center;
   padding: 3rem 1rem;
@@ -1903,7 +1916,7 @@ $font-sans:  'DM Sans', sans-serif;
   .empty-sub { font-size: 0.8rem; margin-top: .4rem; }
 }
 
-// ── Live Orders ───────────────────────────────────────────────────
+// â”€â”€ Live Orders â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .order-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
@@ -1925,10 +1938,10 @@ $font-sans:  'DM Sans', sans-serif;
   &:hover { box-shadow: 0 4px 16px rgba(0,0,0,.11); }
 
   // Status-based left border colors
-  &.lo-new       { border-left-color: #e53935; }   // PLACED   — red (urgent)
-  &.lo-confirmed { border-left-color: $gold;    }   // CONFIRMED — gold
-  &.lo-preparing { border-left-color: #fb8c00; }   // PREPARING — orange
-  &.lo-ready     { border-left-color: $success; }   // READY    — green
+  &.lo-new       { border-left-color: #e53935; }   // PLACED   â€” red (urgent)
+  &.lo-confirmed { border-left-color: $gold;    }   // CONFIRMED â€” gold
+  &.lo-preparing { border-left-color: #fb8c00; }   // PREPARING â€” orange
+  &.lo-ready     { border-left-color: $success; }   // READY    â€” green
 }
 
 // Card header row
@@ -2084,9 +2097,9 @@ $font-sans:  'DM Sans', sans-serif;
   }
 }
 
-// ── All Orders Tab ────────────────────────────────────────────────
+// â”€â”€ All Orders Tab â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-// ── Filter bar ────────────────────────────────────────────────────
+// â”€â”€ Filter bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .ao-filter-bar {
   display: flex;
   align-items: center;
@@ -2206,13 +2219,13 @@ $font-sans:  'DM Sans', sans-serif;
 // ao-box adds overflow scrolling for the table on small screens.
 .ao-box {
   overflow-x: auto;
-  padding: 0;                 // override section-box padding — we control it per region
+  padding: 0;                 // override section-box padding â€” we control it per region
 
   // Restore inner padding for the table rows (not the container)
   table { margin: 0; }
 }
 
-// ── All Orders table ──────────────────────────────────────────────
+// â”€â”€ All Orders table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .ao-table {
   width: 100%;
   border-collapse: collapse;
@@ -2248,7 +2261,7 @@ $font-sans:  'DM Sans', sans-serif;
   }
 }
 
-// Order ID — monospace, muted
+// Order ID â€” monospace, muted
 .ao-id {
   font-family: monospace;
   font-size: 0.8rem;
@@ -2256,7 +2269,7 @@ $font-sans:  'DM Sans', sans-serif;
   white-space: nowrap;
 }
 
-// Items cell — wrap item chips
+// Items cell â€” wrap item chips
 .ao-items {
   display: flex;
   flex-wrap: wrap;
@@ -2277,14 +2290,14 @@ $font-sans:  'DM Sans', sans-serif;
   white-space: nowrap;
 }
 
-// Total amount — bold
+// Total amount â€” bold
 .ao-amount {
   font-weight: 700;
   color: $text-dark;
   white-space: nowrap;
 }
 
-// ── Payment badge ─────────────────────────────────────────────────
+// â”€â”€ Payment badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .ao-pay-badge {
   display: inline-block;
   font-size: 0.72rem;
@@ -2297,7 +2310,7 @@ $font-sans:  'DM Sans', sans-serif;
 .ao-pay-paid    { background: #e8f5e9; color: $success; }
 .ao-pay-pending { background: #f5f5f5; color: $text-light; }
 
-// ── Order status badge ────────────────────────────────────────────
+// â”€â”€ Order status badge â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .ao-status-badge {
   display: inline-block;
   font-size: 0.68rem;
@@ -2316,14 +2329,14 @@ $font-sans:  'DM Sans', sans-serif;
 .ao-status-delivered { background: #e3f2fd; color: #1565c0; }
 .ao-status-cancelled { background: #f5f5f5; color: $text-light; }
 
-// Date — smaller, muted
+// Date â€” smaller, muted
 .ao-date {
   font-size: 0.78rem;
   color: $text-light;
   white-space: nowrap;
 }
 
-// ── Pagination bar ────────────────────────────────────────────────
+// â”€â”€ Pagination bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .ao-pagination {
   display: flex;
   align-items: center;
@@ -2384,7 +2397,7 @@ $font-sans:  'DM Sans', sans-serif;
   }
 }
 
-// ── Mobile: All Orders table ──────────────────────────────────────
+// â”€â”€ Mobile: All Orders table â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 @media (max-width: 768px) {
   .ao-table {
     font-size: 0.78rem;
@@ -2399,3 +2412,4 @@ $font-sans:  'DM Sans', sans-serif;
     align-items: flex-start;
   }
 }
+

@@ -130,20 +130,23 @@
       <div class="page-title">{{ restaurant.name }}</div>
 
       <div class="stats-grid">
-        <div class="stat-card">
+        <div class="stat-card" [class.stat-card--loading]="statsLoading">
           <div class="stat-label">Today's Orders</div>
-          <div class="stat-value">—</div>
-          <div class="stat-note">Order Service coming soon</div>
+          <div class="stat-value">{{ statsLoading ? '…' : stats.todayOrders }}</div>
+          <div class="stat-note" *ngIf="stats.pendingOrders > 0">
+            <span class="stat-pending-pill">{{ stats.pendingOrders }} pending</span>
+          </div>
+          <div class="stat-note" *ngIf="stats.pendingOrders === 0 && !statsLoading">All caught up ✓</div>
         </div>
-        <div class="stat-card">
+        <div class="stat-card" [class.stat-card--loading]="statsLoading">
           <div class="stat-label">Today's Revenue</div>
-          <div class="stat-value">—</div>
-          <div class="stat-note">Order Service coming soon</div>
+          <div class="stat-value">{{ statsLoading ? '…' : ('₹' + (stats.todayRevenue | number:'1.0-0')) }}</div>
+          <div class="stat-note">{{ statsLoading ? '' : (stats.totalOrders + ' orders all time') }}</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Rating</div>
           <div class="stat-value">{{ restaurant.rating ? (restaurant.rating | number:'1.1-1') : '—' }}</div>
-          <div class="stat-note">Customer reviews</div>
+          <div class="stat-note">{{ restaurant.ratingCount ? (restaurant.ratingCount + ' reviews') : 'No reviews yet' }}</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Menu Items</div>

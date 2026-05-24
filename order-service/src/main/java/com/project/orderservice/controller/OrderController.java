@@ -109,6 +109,17 @@ public class OrderController {
     }
 
     /**
+     * GET /api/orders/restaurant/{restaurantId}/stats
+     * Overview stats for the partner workspace: today's orders/revenue, pending, total.
+     */
+    @GetMapping("/restaurant/{restaurantId}/stats")
+    public ResponseEntity<BaseAPIResponse> getRestaurantStats(
+            @PathVariable String restaurantId) {
+        return ResponseEntity.ok(new BaseAPIResponse(
+                "SUCCESS", orderService.getRestaurantStats(restaurantId), 200, null));
+    }
+
+    /**
      * PATCH /api/orders/{id}/rated — Customer marks an order as rated.
      * Called immediately after successfully submitting a star rating to food-service.
      * Sets rated=true so the UI hides the rating button and prevents duplicates.

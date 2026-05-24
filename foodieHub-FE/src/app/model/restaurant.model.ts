@@ -40,6 +40,7 @@ export interface Restaurant {
   name: string;
   cuisine?: string[];
   rating?: number;
+  ratingCount?: number;
   deliveryTime?: number;
   open?: boolean;
   imageUrl?: string;

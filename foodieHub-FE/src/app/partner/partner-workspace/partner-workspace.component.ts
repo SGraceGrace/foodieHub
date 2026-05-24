@@ -9,7 +9,7 @@ import { PartnerService } from '../partner.service';
 import { OrderService } from '../../core/shared/order.service';
 import { UserDetails } from '../../model/user.model';
 import { Restaurant, DaySchedule, RestaurantStaff } from '../../model/restaurant.model';
-import { Order, RestaurantOrderNotification } from '../../model/order.model';
+import { Order, RestaurantOrderNotification, RestaurantStats } from '../../model/order.model';
 import { LocationPickerComponent, PickedLocation } from '../../core/shared/components/location-picker/location-picker.component';
 
 type WorkspaceTab = 'overview' | 'orders' | 'all-orders' | 'menu' | 'analytics' | 'hours' | 'settings';
@@ -78,6 +78,10 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
       ['PLACED', 'CONFIRMED', 'PREPARING'].includes(o.status ?? '')
     ).length;
   }
+
+  // ── Overview stats ───────────────────────────────────────────────
+  stats: RestaurantStats = { todayOrders: 0, todayRevenue: 0, pendingOrders: 0, totalOrders: 0 };
+  statsLoading = false;
 
   // ── All Orders tab (paginated history) ───────────────────────────
   allOrdersHistory: Order[] = [];
@@ -461,12 +465,27 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
         this.startStatusPoll();
         this.loadNotifications();
         this.loadLiveOrders();   // populate badge immediately on load
+        this.loadStats();        // populate overview stats
         this.startSseStream();
       },
       error: () => {
         this.loading = false;
         this.router.navigateByUrl('/partner');
       }
+    });
+  }
+
+  // ── Overview stats ────────────────────────────────────────────────
+
+  loadStats() {
+    if (!this.restaurant) return;
+    this.statsLoading = true;
+    this.orderService.getRestaurantStats(this.restaurant.id).subscribe({
+      next: res => {
+        this.stats = res.data ?? this.stats;
+        this.statsLoading = false;
+      },
+      error: () => { this.statsLoading = false; }
     });
   }
 
