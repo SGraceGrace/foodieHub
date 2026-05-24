@@ -1,6 +1,5 @@
 package com.project.foodservice.messaging;
 
-import com.project.foodservice.config.RabbitMQConfig;
 import com.project.foodservice.service.MenuItemService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
