@@ -31,12 +31,10 @@ export function authInterceptor(
   const loginService = inject(LoginService);
   const router = inject(Router);
 
-  // Only truly public paths — no token needed.
-  // GET /api/v1/restaurants is public for browsing, but POST/PUT on restaurant
-  // sub-paths (menu save, rating) require auth. The gateway enforces this on the
-  // server side; we must NOT skip token injection for the whole restaurants prefix.
-  const publicUrls = ['/login', '/signup', '/api/v1/contact', '/api/v1/slides', '/partner/register', '/api/v1/refresh-token', 'api.cloudinary.com', 'nominatim.openstreetmap.org'];
-  if (publicUrls.some((u) => req.url.includes(u))) {
+  // Always public — skip token entirely (auth/static endpoints)
+  const alwaysPublic = ['/login', '/signup', '/api/v1/contact', '/api/v1/slides',
+    '/partner/register', '/api/v1/refresh-token', 'api.cloudinary.com', 'nominatim.openstreetmap.org'];
+  if (alwaysPublic.some((u) => req.url.includes(u))) {
     return next(req);
   }
 
@@ -47,6 +45,7 @@ export function authInterceptor(
       : '/login';
 
   if (accessToken && refreshToken) {
+    // Logged in — always attach token (gateway needs it for write ops + X-User-Id header)
     req = req.clone({
       setHeaders: {
         Authorization: accessToken,
@@ -54,6 +53,15 @@ export function authInterceptor(
       },
     });
   } else {
+    // Not logged in — allow GET browse requests through without a token so the
+    // home page and restaurant detail page work for unauthenticated visitors.
+    // Any write operation (POST/PUT/DELETE) will still hit the gateway, get 401,
+    // and the 401 handler below will redirect to login.
+    const isPublicGet = req.method === 'GET' &&
+      ['/api/v1/restaurants'].some((u) => req.url.includes(u));
+    if (isPublicGet) {
+      return next(req);
+    }
     router.navigateByUrl(loginRedirect);
     return throwError(() => new Error('No token'));
   }
