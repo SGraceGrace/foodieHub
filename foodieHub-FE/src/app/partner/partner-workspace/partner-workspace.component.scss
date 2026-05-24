@@ -53,6 +53,29 @@ $font-sans:  'DM Sans', sans-serif;
 // ── Notification Bell ─────────────────────────────────────────────
 .notif-bell-wrap {
   position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.notif-enable-btn {
+  background: #fff8e1;
+  border: 1px solid #ffc107;
+  color: #7a5400;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s;
+  &:hover { background: #fff3cd; }
+}
+
+.notif-denied-hint {
+  font-size: 1rem;
+  opacity: 0.45;
+  cursor: help;
 }
 
 .notif-bell-btn {
@@ -155,6 +178,10 @@ $font-sans:  'DM Sans', sans-serif;
     border-left: 3px solid $gold;
     &:hover { background: #fff8d6; }
   }
+
+  &--clickable {
+    cursor: pointer;
+  }
 }
 
 .notif-item-hdr {
@@ -192,6 +219,21 @@ $font-sans:  'DM Sans', sans-serif;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.notif-item-goto {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: $gold-dark;
+  opacity: 0;
+  transition: opacity .15s, transform .15s;
+  flex-shrink: 0;
+
+  .notif-item--clickable:hover & {
+    opacity: 1;
+    transform: translateX(2px);
+  }
 }
 
 // Click-outside overlay
@@ -2024,5 +2066,321 @@ $font-sans:  'DM Sans', sans-serif;
 
   .lo-btn-cancel {
     flex: 1;
+  }
+}
+
+// ── All Orders Tab ────────────────────────────────────────────────
+
+// ── Filter bar ────────────────────────────────────────────────────
+.ao-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.ao-filter-presets {
+  display: flex;
+  gap: 3px;
+  background: white;
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 3px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+.ao-filter-btn {
+  border: none;
+  background: none;
+  border-radius: 6px;
+  padding: 5px 14px;
+  font-size: 0.82rem;
+  font-family: $font-sans;
+  color: $text-light;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all .15s;
+  white-space: nowrap;
+
+  &:hover { color: $text-dark; }
+
+  &--active {
+    background: $gold;
+    color: white;
+    font-weight: 700;
+    box-shadow: 0 1px 4px rgba(249,179,3,.35);
+  }
+}
+
+.ao-date-range {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  background: white;
+  border: 1px solid $border;
+  border-radius: 8px;
+  padding: 6px 10px;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+.ao-date-input {
+  border: 1px solid $border;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 0.82rem;
+  font-family: $font-sans;
+  color: $text-dark;
+  background: $bg;
+  cursor: pointer;
+  transition: border-color .15s;
+  min-width: 130px;
+
+  &:focus { outline: none; border-color: $gold; background: white; }
+}
+
+.ao-date-sep {
+  font-size: 0.82rem;
+  color: $text-light;
+  flex-shrink: 0;
+}
+
+.ao-active-filter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ao-active-chip {
+  background: rgba(249,179,3,.12);
+  border: 1px solid rgba(249,179,3,.3);
+  color: $gold-dark;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 20px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+
+.ao-clear-btn {
+  background: none;
+  border: none;
+  font-size: 0.78rem;
+  color: $text-light;
+  cursor: pointer;
+  font-family: $font-sans;
+  padding: 3px 6px;
+  border-radius: 4px;
+  transition: all .15s;
+
+  &:hover { color: #c62828; background: #fdecea; }
+}
+
+.ao-count {
+  font-size: 0.82rem;
+  color: $text-light;
+  background: $bg;
+  border: 1px solid $border;
+  border-radius: 20px;
+  padding: 3px 12px;
+  font-weight: 500;
+}
+
+// The section-box already gives white background + shadow.
+// ao-box adds overflow scrolling for the table on small screens.
+.ao-box {
+  overflow-x: auto;
+  padding: 0;                 // override section-box padding — we control it per region
+
+  // Restore inner padding for the table rows (not the container)
+  table { margin: 0; }
+}
+
+// ── All Orders table ──────────────────────────────────────────────
+.ao-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+
+  thead {
+    background: #fafaf8;
+  }
+
+  th {
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: .45px;
+    color: $text-light;
+    font-weight: 700;
+    padding: .85rem 1rem;
+    border-bottom: 2px solid $border;
+    white-space: nowrap;
+  }
+
+  td {
+    padding: .85rem 1rem;
+    border-bottom: 1px solid $border;
+    color: $text-dark;
+    vertical-align: middle;
+  }
+
+  tbody tr {
+    transition: background .1s;
+    &:hover { background: #fafaf8; }
+    &:last-child td { border-bottom: none; }
+  }
+}
+
+// Order ID — monospace, muted
+.ao-id {
+  font-family: monospace;
+  font-size: 0.8rem;
+  color: $text-light;
+  white-space: nowrap;
+}
+
+// Items cell — wrap item chips
+.ao-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  min-width: 140px;
+  max-width: 260px;
+}
+
+.ao-item-tag {
+  display: inline-block;
+  background: $bg;
+  border: 1px solid $border;
+  border-radius: 20px;
+  padding: 2px 9px;
+  font-size: 0.72rem;
+  color: $text-dark;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+// Total amount — bold
+.ao-amount {
+  font-weight: 700;
+  color: $text-dark;
+  white-space: nowrap;
+}
+
+// ── Payment badge ─────────────────────────────────────────────────
+.ao-pay-badge {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 20px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+
+.ao-pay-paid    { background: #e8f5e9; color: $success; }
+.ao-pay-pending { background: #f5f5f5; color: $text-light; }
+
+// ── Order status badge ────────────────────────────────────────────
+.ao-status-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  border-radius: 20px;
+  padding: 3px 10px;
+  white-space: nowrap;
+}
+
+.ao-status-placed    { background: #fdecea; color: #c62828; }
+.ao-status-confirmed { background: rgba(249,179,3,.15); color: $gold-dark; }
+.ao-status-preparing { background: #fff3e0; color: #e65100; }
+.ao-status-ready     { background: #e8f5e9; color: #2e7d32; }
+.ao-status-delivered { background: #e3f2fd; color: #1565c0; }
+.ao-status-cancelled { background: #f5f5f5; color: $text-light; }
+
+// Date — smaller, muted
+.ao-date {
+  font-size: 0.78rem;
+  color: $text-light;
+  white-space: nowrap;
+}
+
+// ── Pagination bar ────────────────────────────────────────────────
+.ao-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .85rem 1rem;
+  border-top: 1px solid $border;
+  flex-wrap: wrap;
+  gap: .75rem;
+  background: #fafaf8;
+  border-radius: 0 0 10px 10px;
+}
+
+.ao-page-info {
+  font-size: 0.78rem;
+  color: $text-light;
+}
+
+.ao-page-btns {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ao-page-btn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid $border;
+  background: white;
+  border-radius: 6px;
+  font-size: 0.82rem;
+  font-family: $font-sans;
+  color: $text-dark;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all .15s;
+  line-height: 1;
+
+  &:hover:not(:disabled) {
+    border-color: $gold;
+    color: $gold-dark;
+    background: rgba(249,179,3,.06);
+  }
+
+  &:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+  }
+
+  &--active {
+    background: $gold;
+    border-color: $gold;
+    color: white;
+    font-weight: 700;
+    cursor: default;
+
+    &:hover { background: $gold; color: white; border-color: $gold; }
+  }
+}
+
+// ── Mobile: All Orders table ──────────────────────────────────────
+@media (max-width: 768px) {
+  .ao-table {
+    font-size: 0.78rem;
+
+    th, td { padding: .65rem .75rem; }
+  }
+
+  .ao-items { max-width: 160px; }
+
+  .ao-pagination {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

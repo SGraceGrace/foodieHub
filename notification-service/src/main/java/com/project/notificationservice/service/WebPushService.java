@@ -2,7 +2,9 @@ package com.project.notificationservice.service;
 
 import com.project.notificationservice.dto.PushSubscriptionRequest;
 import com.project.notificationservice.entity.AdminPushSubscription;
+import com.project.notificationservice.entity.CustomerPushSubscription;
 import com.project.notificationservice.repo.AdminPushSubscriptionRepo;
+import com.project.notificationservice.repo.CustomerPushSubscriptionRepo;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +31,7 @@ public class WebPushService {
     private String vapidPrivateKey;
 
     private final AdminPushSubscriptionRepo subscriptionRepo;
+    private final CustomerPushSubscriptionRepo customerSubscriptionRepo;
     private PushService pushService;
 
     @PostConstruct
@@ -89,6 +92,64 @@ public class WebPushService {
                 }
             } catch (Exception e) {
                 log.warn("Web push failed for {}: {}", sub.getAdminEmail(), e.getMessage());
+            }
+        }
+    }
+
+    // ── Customer push subscriptions ───────────────────────────────────
+
+    public void saveCustomerSubscription(String userId, PushSubscriptionRequest req) {
+        customerSubscriptionRepo.findByUserIdAndEndpoint(userId, req.endpoint()).ifPresentOrElse(
+            existing -> {
+                existing.setP256dh(req.keys().get("p256dh"));
+                existing.setAuth(req.keys().get("auth"));
+                customerSubscriptionRepo.save(existing);
+            },
+            () -> {
+                CustomerPushSubscription sub = new CustomerPushSubscription();
+                sub.setUserId(userId);
+                sub.setEndpoint(req.endpoint());
+                sub.setP256dh(req.keys().get("p256dh"));
+                sub.setAuth(req.keys().get("auth"));
+                sub.setCreatedAt(Instant.now());
+                customerSubscriptionRepo.save(sub);
+                log.info("Saved customer push subscription for userId={}", userId);
+            }
+        );
+    }
+
+    /**
+     * Sends a VAPID Web Push to all registered browser sessions for a customer.
+     * Called by NotificationListener when restaurant changes order status.
+     *
+     * @param newStatus included in the tag so every status transition is a distinct
+     *                  notification — without this, the browser silently replaces the
+     *                  previous notification (same tag = silent update, no popup/sound).
+     */
+    public void sendToCustomer(String userId, String title, String body,
+                               String orderId, String newStatus) {
+        List<CustomerPushSubscription> subs = customerSubscriptionRepo.findByUserId(userId);
+        if (subs.isEmpty()) return;
+
+        String safeTitle = title.replace("\\", "\\\\").replace("\"", "\\\"");
+        String safeBody  = body.replace("\\", "\\\\").replace("\"", "\\\"");
+        // Tag format: order-{orderId}-{status}
+        // Each status transition gets a unique tag → separate popup + sound for each one.
+        String tag     = "order-" + orderId + "-" + newStatus.toLowerCase();
+        String payload = "{\"title\":\"" + safeTitle + "\",\"body\":\"" + safeBody
+                + "\",\"url\":\"/user/orders\",\"tag\":\"" + tag + "\"}";
+
+        for (CustomerPushSubscription sub : subs) {
+            try {
+                Notification notification = new Notification(sub.getEndpoint(), sub.getP256dh(), sub.getAuth(), payload);
+                HttpResponse response = pushService.send(notification);
+                int status = response.getStatusLine().getStatusCode();
+                if (status == 410 || status == 404) {
+                    customerSubscriptionRepo.delete(sub);
+                    log.info("Removed expired customer push subscription for userId={}", userId);
+                }
+            } catch (Exception e) {
+                log.warn("Customer web push failed for userId={}: {}", userId, e.getMessage());
             }
         }
     }

@@ -8,6 +8,7 @@ import com.project.foodservice.dto.RestaurantUpdateRequestDTO;
 import com.project.foodservice.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,10 +28,11 @@ public class RestaurantController {
             @RequestParam(required = false) Double lat,
             @RequestParam(required = false) Double lng,
             @RequestParam(required = false) Double radiusKm,
+            @RequestParam(defaultValue = "relevance") String sort,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
-                restaurantService.getAll(cuisine, lat, lng, radiusKm, PageRequest.of(page, size)),
+                restaurantService.getAll(cuisine, lat, lng, radiusKm, sort, PageRequest.of(page, size)),
                 HttpStatus.OK.value(), null));
     }
 

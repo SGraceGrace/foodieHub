@@ -8,3 +8,4 @@
 <app-global-loader></app-global-loader>
 <router-outlet></router-outlet>
 <app-footer *ngIf="showFooter"></app-footer>
+<app-cart-float-bar *ngIf="(role$ | async) === 'END_USERS'"></app-cart-float-bar>

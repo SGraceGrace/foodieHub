@@ -10,8 +10,8 @@ import { Router } from '@angular/router';
 import {
   BehaviorSubject,
   catchError,
+  filter,
   Observable,
-  skip,
   switchMap,
   take,
   throwError,
@@ -56,7 +56,10 @@ export function authInterceptor(
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       console.log(error);
-      if (error.status === 401 && typeof refreshToken === 'string') {
+      // status 0 = browser blocked reading the response due to missing CORS headers on the 401.
+      // Treat it the same as a real 401 so the refresh-token flow still fires.
+      const isAuthFailure = error.status === 401 || error.status === 0;
+      if (isAuthFailure && typeof refreshToken === 'string') {
         return handle401(req, next, tokenService, loginService, router, refreshToken, loginRedirect);
       }
       return throwError(() => error);
@@ -95,11 +98,15 @@ function handle401(
       })
     );
   } else {
+    // Wait until a non-null token is emitted (i.e. refresh has completed).
+    // Using filter() instead of skip(1) avoids a race condition where the
+    // refresh completes before this subscription is created — in that case
+    // the BehaviorSubject already holds the new token and filter() lets it
+    // through immediately, whereas skip(1) would discard it and hang forever.
     return refreshSubject.pipe(
-      skip(1),
+      filter((token): token is string => token !== null),
       take(1),
       switchMap((token) => {
-        if (!token) return throwError(() => new Error('Session expired'));
         return next(request.clone({ setHeaders: { Authorization: token } }));
       })
     );

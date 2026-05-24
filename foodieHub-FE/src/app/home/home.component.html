@@ -107,7 +107,15 @@
         </div>
         <div class="food-footer">
           <span class="food-price">₹{{ dish.price }}</span>
-          <button class="add-btn">Add +</button>
+          <!-- qty controls once item is in cart -->
+          <div class="qty-ctrl" *ngIf="getQty(dish) > 0">
+            <button class="qty-btn" (click)="removeFromCart(dish); $event.stopPropagation()">−</button>
+            <span class="qty-num">{{ getQty(dish) }}</span>
+            <button class="qty-btn" (click)="addToCart(dish); $event.stopPropagation()">+</button>
+          </div>
+          <!-- add button when not yet in cart -->
+          <button class="add-btn" *ngIf="getQty(dish) === 0"
+                  (click)="addToCart(dish); $event.stopPropagation()">Add +</button>
         </div>
       </div>
     </div>

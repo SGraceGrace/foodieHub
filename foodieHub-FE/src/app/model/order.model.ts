@@ -20,6 +20,8 @@ export interface Order {
   totalAmount: number;
   deliveryAddress?: string;
   status: OrderStatus;
+  paymentId?: string;
+  paymentStatus?: string;   // 'PAID' | undefined (COD orders have no paymentStatus)
   createdAt: string;
   updatedAt?: string;
   eta?: string;
@@ -36,4 +38,13 @@ export interface RestaurantOrderNotification {
   totalAmount: number;
   read: boolean;
   createdAt: string;
+}
+
+/** Pushed over SSE when the restaurant partner changes an order's status. */
+export interface CustomerOrderUpdate {
+  orderId: string;
+  restaurantName: string;
+  newStatus: OrderStatus;
+  message: string;      // human-readable, e.g. "👨‍🍳 Spice Garden is preparing your food!"
+  updatedAt: string;
 }

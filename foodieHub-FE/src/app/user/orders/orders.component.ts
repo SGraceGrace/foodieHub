@@ -1,7 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Order, OrderStatus } from '../../model/order.model';
+import { CustomerOrderUpdate, Order, OrderStatus } from '../../model/order.model';
 import { ToastrService } from 'ngx-toastr';
+import { OrderService } from '../../core/shared/order.service';
+import { TokenService } from '../../core/shared/token.service';
+
+// The header component handles the global SSE connection for push notifications
+// and the bell badge. The orders page opens its OWN SSE connection solely to
+// patch the order tracker in real-time while the user is watching this page.
 
 type Tab = 'ALL' | 'ACTIVE' | 'DELIVERED' | 'CANCELLED';
 
@@ -13,56 +19,6 @@ const STATUS_ORDER: Record<OrderStatus, number> = {
   PLACED: 0, CONFIRMED: 1, PREPARING: 2, READY: 3, DELIVERED: 4, CANCELLED: -1,
 };
 
-// Mock data — will be replaced with real API call
-const MOCK_ORDERS: Order[] = [
-  {
-    id: 'FH-2025-4821',
-    restaurantName: 'Spice Garden',
-    items: [
-      { name: 'Butter Chicken', qty: 2, price: 340 },
-      { name: 'Naan', qty: 1, price: 50 },
-      { name: 'Mango Lassi', qty: 1, price: 100 },
-    ],
-    status: 'READY',
-    totalAmount: 730,
-    createdAt: 'Today, 2:30 PM',
-  },
-  {
-    id: 'FH-2025-4790',
-    restaurantName: 'Bella Italia',
-    items: [
-      { name: 'Margherita Pizza', qty: 1, price: 349 },
-      { name: 'Garlic Bread', qty: 2, price: 99 },
-    ],
-    status: 'DELIVERED',
-    totalAmount: 548,
-    createdAt: 'Yesterday, 7:45 PM',
-  },
-  {
-    id: 'FH-2025-4756',
-    restaurantName: 'Burger Bros',
-    items: [
-      { name: 'Classic Burger', qty: 2, price: 199 },
-      { name: 'Fries', qty: 2, price: 99 },
-      { name: 'Coke', qty: 2, price: 60 },
-    ],
-    status: 'DELIVERED',
-    totalAmount: 798,
-    createdAt: 'Dec 10, 1:20 PM',
-  },
-  {
-    id: 'FH-2025-4700',
-    restaurantName: 'Tokyo Bites',
-    items: [
-      { name: 'Dragon Roll', qty: 1, price: 450 },
-      { name: 'Miso Soup', qty: 2, price: 80 },
-    ],
-    status: 'CANCELLED',
-    totalAmount: 530,
-    createdAt: 'Dec 8, 6:10 PM',
-  },
-];
-
 @Component({
   selector: 'app-orders',
   standalone: true,
@@ -70,9 +26,10 @@ const MOCK_ORDERS: Order[] = [
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.scss',
 })
-export class OrdersComponent implements OnInit {
-  allOrders: Order[] = MOCK_ORDERS;
+export class OrdersComponent implements OnInit, OnDestroy {
+  allOrders: Order[] = [];
   filtered: Order[] = [];
+  loading = false;
   activeTab: Tab = 'ALL';
   tabs: { key: Tab; label: string }[] = [
     { key: 'ALL',       label: 'All Orders' },
@@ -83,10 +40,51 @@ export class OrdersComponent implements OnInit {
 
   trackSteps = TRACK_STEPS;
 
-  constructor(private toastr: ToastrService) {}
+  private sseController: AbortController | null = null;
+
+  constructor(
+    private toastr: ToastrService,
+    private orderService: OrderService,
+    private tokenService: TokenService
+  ) {}
 
   ngOnInit() {
-    this.applyTab('ALL');
+    this.loadOrders();
+    this.connectSSE();
+  }
+
+  ngOnDestroy() {
+    this.sseController?.abort();
+    this.sseController = null;
+  }
+
+  // ── Real-time tracker update via SSE ─────────────────────────────
+  // Header component handles the bell badge, toast, and browser push.
+  // This SSE connection only patches the status in the order list/tracker.
+
+  private connectSSE(): void {
+    const token = this.tokenService.getAccessToken();
+    if (!token) return;
+    this.sseController = this.orderService.connectCustomerSSE(token, (update) => {
+      this.allOrders = this.allOrders.map(o =>
+        o.id === update.orderId ? { ...o, status: update.newStatus } : o
+      );
+      this.applyTab(this.activeTab);   // keep active/delivered tabs in sync
+    });
+  }
+
+  // ── Order loading ─────────────────────────────────────────────────
+
+  loadOrders(): void {
+    this.loading = true;
+    this.orderService.getOrders().subscribe({
+      next: res => {
+        this.allOrders = res.data ?? [];
+        this.applyTab(this.activeTab);
+        this.loading = false;
+      },
+      error: () => { this.loading = false; }
+    });
   }
 
   applyTab(tab: Tab) {

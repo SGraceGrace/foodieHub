@@ -154,6 +154,184 @@ button, a { cursor: pointer; }
   justify-content: center;
 }
 
+// ── Notification Bell ─────────────────────────────────────────────
+.notif-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.notif-enable-btn {
+  background: #fff8e1;
+  border: 1px solid $gold;
+  color: #7a5400;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s;
+  &:hover { background: #fff3cd; }
+}
+
+.notif-btn {
+  position: relative;   // needed so badge positions correctly
+}
+
+.notif-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #e53935;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  pointer-events: none;
+}
+
+.notif-panel {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 6px 28px rgba(0,0,0,.13);
+  border: 1px solid $border;
+  width: 300px;
+  z-index: 300;
+  animation: fadeIn .15s ease;
+  overflow: hidden;
+}
+
+.notif-panel-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .75rem 1rem;
+  border-bottom: 1px solid $border;
+}
+
+.notif-panel-title {
+  font-size: .88rem;
+  font-weight: 700;
+  color: $text-dark;
+}
+
+.notif-panel-close {
+  background: none;
+  border: none;
+  font-size: .85rem;
+  color: $text-light;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  &:hover { background: #f5f5f5; color: $text-dark; }
+}
+
+.notif-empty {
+  padding: 1.5rem 1rem;
+  font-size: .83rem;
+  color: $text-light;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.notif-list {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.notif-item {
+  display: block;           // override <a> default inline
+  padding: .65rem 1rem;
+  border-bottom: 1px solid #fafafa;
+  transition: background .15s;
+  text-decoration: none;    // no underline on <a>
+  color: inherit;           // inherit text colour from parent
+  cursor: pointer;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: #fafafa; }
+
+  &--unread {
+    background: #fffde7;
+    &:hover { background: #fff8e1; }
+  }
+}
+
+.notif-item-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.notif-item-emoji {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  line-height: 1.3;
+}
+
+.notif-item-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-item-restaurant {
+  font-size: .8rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin-bottom: 2px;
+}
+
+.notif-item-msg {
+  font-size: .8rem;
+  color: $text;
+  line-height: 1.4;
+}
+
+.notif-item-arrow {
+  font-size: 1rem;
+  color: $text-light;
+  align-self: center;
+  flex-shrink: 0;
+  margin-left: auto;
+  transition: color .15s, transform .15s;
+
+  .notif-item:hover & {
+    color: $gold-dark;
+    transform: translateX(2px);
+  }
+}
+
+.notif-panel-footer {
+  padding: .6rem 1rem;
+  border-top: 1px solid $border;
+  text-align: center;
+}
+
+.notif-view-all {
+  font-size: .82rem;
+  font-weight: 600;
+  color: $gold-dark;
+  text-decoration: none;
+  &:hover { text-decoration: underline; }
+}
+
+.notif-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 299;
+}
+
 // ── User Avatar + Dropdown ────────────────────────────────────────
 .user-menu {
   position: relative;

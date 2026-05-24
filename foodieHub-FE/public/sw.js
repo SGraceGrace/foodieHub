@@ -1,11 +1,17 @@
-// FoodieHub Admin — Service Worker
-// Handles Web Push events and notification clicks.
+// FoodieHub — Service Worker
+// Handles Web Push events and notification clicks for both Admin and Customer.
 
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (event) => event.waitUntil(clients.claim()));
 
 self.addEventListener('push', (event) => {
-  let payload = { title: 'FoodieHub Admin', body: 'You have a new notification', url: '/admin', tag: 'foodiehub' };
+  // Defaults — overridden by whatever the backend sends in the payload
+  let payload = {
+    title: 'FoodieHub',
+    body:  'You have a new notification',
+    url:   '/',
+    tag:   'foodiehub',
+  };
 
   if (event.data) {
     try { payload = { ...payload, ...event.data.json() }; } catch (_) {}
@@ -13,11 +19,11 @@ self.addEventListener('push', (event) => {
 
   event.waitUntil(
     self.registration.showNotification(payload.title, {
-      body: payload.body,
-      icon: '/favicon.ico',
-      badge: '/favicon.ico',
-      tag: payload.tag,
-      data: { url: payload.url },
+      body:             payload.body,
+      icon:             '/favicon.ico',
+      badge:            '/favicon.ico',
+      tag:              payload.tag,
+      data:             { url: payload.url },
       requireInteraction: false,
     })
   );
@@ -25,13 +31,19 @@ self.addEventListener('push', (event) => {
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  const targetUrl = event.notification.data?.url ?? '/admin';
+  const targetUrl = event.notification.data?.url ?? '/';
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      // If FoodieHub tab already open — focus it and navigate
       for (const client of list) {
-        if ('focus' in client) return client.focus();
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          client.focus();
+          client.navigate(targetUrl);
+          return;
+        }
       }
+      // No tab open — open a new one
       return clients.openWindow(targetUrl);
     })
   );

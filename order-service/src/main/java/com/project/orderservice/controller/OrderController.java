@@ -10,6 +10,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -66,6 +69,30 @@ public class OrderController {
 
         List<Order> orders = orderService.getRestaurantOrders(restaurantId, statusList);
         return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", orders, 200, null));
+    }
+
+    /**
+     * GET /api/orders/restaurant/{restaurantId}/all?page=0&size=10&from=2025-05-01&to=2025-05-24
+     * Paginated full order history for a restaurant — used by the All Orders tab.
+     * from/to are optional ISO local dates (yyyy-MM-dd). When omitted, all orders are returned.
+     */
+    @GetMapping("/restaurant/{restaurantId}/all")
+    public ResponseEntity<BaseAPIResponse> getAllRestaurantOrders(
+            @PathVariable String restaurantId,
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String from,
+            @RequestParam(required = false) String to) {
+
+        LocalDateTime fromDt = (from != null && !from.isBlank())
+                ? LocalDate.parse(from).atStartOfDay() : null;
+        LocalDateTime toDt   = (to   != null && !to.isBlank())
+                ? LocalDate.parse(to).atTime(LocalTime.MAX) : null;
+
+        return ResponseEntity.ok(new BaseAPIResponse(
+                "SUCCESS",
+                orderService.getRestaurantAllOrders(restaurantId, page, size, fromDt, toDt),
+                200, null));
     }
 
     /**

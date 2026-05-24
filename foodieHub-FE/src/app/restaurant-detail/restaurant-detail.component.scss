@@ -249,58 +249,6 @@ $font-sans: 'Inter', 'Segoe UI', sans-serif;
 
 .rd-empty, .rd-no-menu { color: $muted; font-size: 0.9rem; padding: 2rem 0; text-align: center; }
 
-// ── Floating Cart Bar ─────────────────────────────────────────────────
-.rd-cart-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  padding: 0 1rem 0.75rem;
-  pointer-events: none;
-}
-
-.rd-cart-bar-inner {
-  max-width: 900px;
-  margin: 0 auto;
-  background: #1a1a1a;
-  color: #fff;
-  border-radius: 14px;
-  padding: 1rem 1.4rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-  box-shadow: 0 4px 20px rgba(0,0,0,.3);
-  pointer-events: all;
-  animation: slideUp 0.25s ease;
-}
-
-@keyframes slideUp {
-  from { transform: translateY(100%); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; }
-}
-
-.rd-cart-bar-info { display: flex; flex-direction: column; gap: 2px; }
-.rd-cart-bar-count { font-size: 0.8rem; color: #bbb; font-family: $font-sans; }
-.rd-cart-bar-name { font-size: 0.95rem; font-weight: 600; font-family: $font-sans; }
-.rd-cart-bar-right { display: flex; align-items: center; gap: 1rem; }
-.rd-cart-bar-total { font-size: 1rem; font-weight: 700; font-family: $font-sans; }
-
-.rd-cart-bar-btn {
-  background: $gold;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  padding: 0.5rem 1.2rem;
-  font-weight: 700;
-  font-size: 0.9rem;
-  cursor: pointer;
-  font-family: $font-sans;
-  white-space: nowrap;
-  transition: background .15s;
-  &:hover { background: #d4930a; }
-}
 
 // ── Mobile ────────────────────────────────────────────────────────────
 @media (max-width: 768px) {
@@ -311,8 +259,6 @@ $font-sans: 'Inter', 'Segoe UI', sans-serif;
   .rd-menu-wrap { padding: 1rem 1rem 5rem; }
   .rd-item { align-items: flex-start; gap: 0.75rem; }
   .rd-item-img { width: 74px; height: 58px; }
-  .rd-cart-bar-inner { border-radius: 10px; padding: 0.85rem 1rem; }
-  .rd-cart-bar-btn { padding: 0.45rem 0.9rem; font-size: 0.85rem; }
 }
 
 @media (max-width: 480px) {

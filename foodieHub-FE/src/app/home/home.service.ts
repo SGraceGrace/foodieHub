@@ -15,14 +15,15 @@ export class HomeService {
     return this.http.get<ApiResponse<Slide[]>>(`${this.base}/api/v1/slides`);
   }
 
-  getRestaurants(cuisine?: string, lat?: number, lng?: number, page = 0, size = 10): Observable<ApiResponse<PaginatedResponse<Restaurant>>> {
+  getRestaurants(cuisine?: string, lat?: number, lng?: number, page = 0, size = 10, sort = 'relevance'): Observable<ApiResponse<PaginatedResponse<Restaurant>>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString());
-    if (cuisine)     params = params.set('cuisine', cuisine);
-    if (lat != null) params = params.set('lat', lat.toString());
-    if (lng != null) params = params.set('lng', lng.toString());
-    if (lat != null) params = params.set('radiusKm', '10');
+    if (cuisine)                        params = params.set('cuisine', cuisine);
+    if (lat != null)                    params = params.set('lat', lat.toString());
+    if (lng != null)                    params = params.set('lng', lng.toString());
+    if (lat != null)                    params = params.set('radiusKm', '10');
+    if (sort && sort !== 'relevance')   params = params.set('sort', sort);
     return this.http.get<ApiResponse<PaginatedResponse<Restaurant>>>(`${this.base}/api/v1/restaurants`, { params });
   }
 

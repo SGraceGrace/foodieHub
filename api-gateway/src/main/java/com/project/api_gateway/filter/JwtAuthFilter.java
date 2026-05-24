@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
@@ -55,7 +57,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            sendUnauthorized(response, "Missing or invalid Authorization header");
+            sendUnauthorized(request, response, "Missing or invalid Authorization header");
             return;
         }
 
@@ -74,13 +76,23 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(mutableRequest, response);
         } catch (Exception e) {
-            sendUnauthorized(response, "Invalid or expired token");
+            sendUnauthorized(request, response, "Invalid or expired token");
         }
     }
 
-    private void sendUnauthorized(HttpServletResponse response, String message) throws IOException {
+    private void sendUnauthorized(HttpServletRequest request, HttpServletResponse response, String message) throws IOException {
+        // Always add CORS headers on 401 so the browser can read the response
+        // (without these, status 0 arrives in Angular and the refresh-token
+        // interceptor never fires because error.status !== 401)
+        String origin = request.getHeader(HttpHeaders.ORIGIN);
+        if (origin != null) {
+            response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, origin);
+            response.setHeader(HttpHeaders.ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
+            response.setHeader(HttpHeaders.VARY, HttpHeaders.ORIGIN);
+        }
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
-        response.getWriter().write(message);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.getWriter().write("{\"status\":401,\"error\":\"" + message + "\"}");
     }
 
     private boolean isPublicPath(String path) {

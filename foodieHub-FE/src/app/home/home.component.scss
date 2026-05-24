@@ -392,6 +392,23 @@ $font-sans:  'DM Sans', sans-serif;
   &:hover { background: $gold-dark; }
 }
 
+// ── Qty controls (popular dishes) ─────────────────────────────────
+.qty-ctrl {
+  display: flex; align-items: center; gap: 6px;
+}
+.qty-btn {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: $gold; border: none; font-size: 1rem; font-weight: 700;
+  cursor: pointer; color: $text-dark; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s;
+  &:hover { background: $gold-dark; }
+}
+.qty-num {
+  min-width: 18px; text-align: center;
+  font-size: .9rem; font-weight: 700; color: $text-dark;
+}
+
 // ── Restaurant Cards ──────────────────────────────────────────────
 .rest-grid {
   display: grid;

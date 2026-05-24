@@ -10,6 +10,19 @@
   <div class="header-right">
     <!-- Notification Bell -->
     <div class="notif-bell-wrap">
+      <!-- Enable browser notifications prompt -->
+      <button class="notif-enable-btn"
+              *ngIf="notifPermission !== 'granted' && notifPermission !== 'denied'"
+              (click)="enableBrowserNotifications()"
+              title="Enable browser notifications for new orders">
+        🔕 Enable alerts
+      </button>
+      <span class="notif-denied-hint"
+            *ngIf="notifPermission === 'denied'"
+            title="Browser notifications blocked — allow them in browser settings">
+        🔕
+      </span>
+
       <button class="notif-bell-btn" (click)="toggleNotifPanel()" title="Order notifications">
         🔔
         <span class="notif-badge" *ngIf="unreadCount > 0">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
@@ -27,10 +40,14 @@
         </div>
 
         <div class="notif-list" *ngIf="notifications.length > 0">
-          <div class="notif-item" *ngFor="let n of notifications" [class.notif-item--unread]="!n.read">
+          <div class="notif-item notif-item--clickable" *ngFor="let n of notifications"
+               [class.notif-item--unread]="!n.read"
+               (click)="onNotifItemClick()"
+               title="View live orders">
             <div class="notif-item-hdr">
               <span class="notif-item-type">📦 New Order</span>
               <span class="notif-item-time">{{ n.createdAt | date:'h:mm a' }}</span>
+              <span class="notif-item-goto">› View</span>
             </div>
             <div class="notif-item-customer">{{ n.customerName }}</div>
             <div class="notif-item-items">{{ n.itemNames.join(', ') }}</div>
@@ -76,6 +93,9 @@
     <button class="nav-btn" [class.active]="activeTab==='orders'" (click)="goTab('orders')">
       <span>📦</span> Live Orders
       <span class="nav-badge" *ngIf="liveOrderCount > 0">{{ liveOrderCount }}</span>
+    </button>
+    <button class="nav-btn" [class.active]="activeTab==='all-orders'" (click)="goTab('all-orders')">
+      <span>🗂️</span> All Orders
     </button>
     <button class="nav-btn" [class.active]="activeTab==='menu'" (click)="goTab('menu')">
       <span>🍽️</span> Menu
@@ -313,6 +333,140 @@
             </button>
           </div>
 
+        </div>
+      </div>
+    </div>
+
+    <!-- ── All Orders ────────────────────────────────────────── -->
+    <div *ngIf="activeTab === 'all-orders'">
+      <div class="tab-header">
+        <div class="page-title" style="margin:0">All Orders</div>
+        <span class="ao-count" *ngIf="allOrdersPagination.totalElements > 0">
+          {{ allOrdersPagination.totalElements }} total
+        </span>
+      </div>
+
+      <!-- ── Date filter bar ──────────────────────────────────── -->
+      <div class="ao-filter-bar">
+        <!-- Preset toggle pills -->
+        <div class="ao-filter-presets">
+          <button class="ao-filter-btn"
+                  [class.ao-filter-btn--active]="aoFilterPreset === 'all'"
+                  (click)="setAoFilter('all')">All time</button>
+          <button class="ao-filter-btn"
+                  [class.ao-filter-btn--active]="aoFilterPreset === 'today'"
+                  (click)="setAoFilter('today')">Today</button>
+          <button class="ao-filter-btn"
+                  [class.ao-filter-btn--active]="aoFilterPreset === 'custom'"
+                  (click)="setAoFilter('custom')">Custom range</button>
+        </div>
+
+        <!-- Custom date pickers (shown when "Custom range" is selected) -->
+        <div class="ao-date-range" *ngIf="aoShowCustom">
+          <input class="ao-date-input" type="date"
+                 [(ngModel)]="aoFromDate"
+                 [max]="aoToDate || ''"
+                 placeholder="From" />
+          <span class="ao-date-sep">→</span>
+          <input class="ao-date-input" type="date"
+                 [(ngModel)]="aoToDate"
+                 [min]="aoFromDate"
+                 placeholder="To" />
+          <button class="btn-primary btn-sm"
+                  (click)="applyAoCustomFilter()"
+                  [disabled]="!aoFromDate || !aoToDate">
+            Apply
+          </button>
+        </div>
+
+        <!-- Active filter chip + clear -->
+        <div class="ao-active-filter" *ngIf="aoFilterActive">
+          <span class="ao-active-chip">🗓 {{ aoFilterLabel }}</span>
+          <button class="ao-clear-btn" (click)="clearAoFilter()">✕ Clear</button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div class="section-box" *ngIf="allOrdersLoading && allOrdersHistory.length === 0">
+        <p class="empty-sub" style="text-align:center;padding:2rem">Loading orders…</p>
+      </div>
+
+      <!-- Empty -->
+      <div class="section-box" *ngIf="!allOrdersLoading && allOrdersHistory.length === 0">
+        <div class="empty-state">
+          <div class="empty-icon">🗂️</div>
+          <p>No orders found{{ aoFilterActive ? ' for this date range' : '' }}.</p>
+          <p class="empty-sub" *ngIf="!aoFilterActive">All past and present orders will appear here.</p>
+          <p class="empty-sub" *ngIf="aoFilterActive">
+            <button class="ao-clear-btn" (click)="clearAoFilter()">Clear filter</button> to see all orders.
+          </p>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="section-box ao-box" *ngIf="allOrdersHistory.length > 0">
+        <table class="ao-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th>Date &amp; Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let o of allOrdersHistory">
+              <td class="ao-id">#{{ o.id | slice:0:8 }}…</td>
+              <td>{{ o.customerName || '—' }}</td>
+              <td class="ao-items">
+                <span class="ao-item-tag" *ngFor="let item of o.items">
+                  {{ item.qty }}× {{ item.name }}
+                </span>
+              </td>
+              <td class="ao-amount">₹{{ o.totalAmount }}</td>
+              <td>
+                <span class="ao-pay-badge"
+                      [class.ao-pay-paid]="o.paymentStatus === 'PAID'"
+                      [class.ao-pay-pending]="o.paymentStatus !== 'PAID'">
+                  {{ o.paymentStatus === 'PAID' ? 'Paid' : 'COD' }}
+                </span>
+              </td>
+              <td>
+                <span class="ao-status-badge ao-status-{{ o.status.toLowerCase() }}">
+                  {{ statusLabel(o.status || '') }}
+                </span>
+              </td>
+              <td class="ao-date">{{ o.createdAt | date:'d MMM y, h:mm a' }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="ao-pagination">
+          <span class="ao-page-info">
+            Showing {{ allOrdersFrom() }}–{{ allOrdersTo() }} of {{ allOrdersPagination.totalElements }}
+          </span>
+          <div class="ao-page-btns">
+            <button class="ao-page-btn"
+                    [disabled]="allOrdersPagination.currentPage === 0"
+                    (click)="loadAllOrdersHistory(allOrdersPagination.currentPage - 1)">
+              ‹
+            </button>
+            <button class="ao-page-btn"
+                    *ngFor="let p of allOrdersPageRange()"
+                    [class.ao-page-btn--active]="p === allOrdersPagination.currentPage"
+                    (click)="loadAllOrdersHistory(p)">
+              {{ p + 1 }}
+            </button>
+            <button class="ao-page-btn"
+                    [disabled]="allOrdersPagination.currentPage >= allOrdersPagination.totalPages - 1"
+                    (click)="loadAllOrdersHistory(allOrdersPagination.currentPage + 1)">
+              ›
+            </button>
+          </div>
         </div>
       </div>
     </div>

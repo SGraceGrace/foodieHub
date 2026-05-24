@@ -126,6 +126,11 @@ spring:
             predicates:
               - Path=/api/v1/restaurant/notifications, /api/v1/restaurant/notifications/**
 
+          - id: notification-service-customer
+            uri: http://localhost:8084
+            predicates:
+              - Path=/api/v1/customer/notifications, /api/v1/customer/notifications/**, /api/v1/customer/push-subscription
+
 
 server:
   port: 8080

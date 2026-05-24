@@ -5,8 +5,10 @@ import com.project.orderservice.document.CartItem;
 import com.project.orderservice.document.Order;
 import com.project.orderservice.document.OrderItem;
 import com.project.orderservice.document.RestaurantCart;
+import com.project.orderservice.dto.PaginatedResponse;
 import com.project.orderservice.dto.PlaceOrderRequest;
 import com.project.orderservice.messaging.OrderPlacedEvent;
+import com.project.orderservice.messaging.OrderStatusUpdatedEvent;
 import com.project.orderservice.messaging.RabbitMQConfig;
 import com.project.orderservice.repo.CartRepository;
 import com.project.orderservice.repo.OrderRepository;
@@ -14,6 +16,8 @@ import com.project.orderservice.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -145,11 +149,43 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public PaginatedResponse<Order> getRestaurantAllOrders(
+            String restaurantId, int page, int size, LocalDateTime from, LocalDateTime to) {
+        var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        if (from != null && to != null) {
+            return PaginatedResponse.of(
+                    orderRepository.findByRestaurantIdAndCreatedAtBetweenOrderByCreatedAtDesc(
+                            restaurantId, from, to, pageable)
+            );
+        }
+        return PaginatedResponse.of(
+                orderRepository.findByRestaurantIdOrderByCreatedAtDesc(restaurantId, pageable)
+        );
+    }
+
+    @Override
     public Order updateStatus(String orderId, String newStatus) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
         order.setStatus(newStatus);
         order.setUpdatedAt(LocalDateTime.now());
-        return orderRepository.save(order);
+        Order saved = orderRepository.save(order);
+
+        // Publish event → Notification-Service will push SSE to the customer
+        OrderStatusUpdatedEvent event = OrderStatusUpdatedEvent.builder()
+                .orderId(saved.getId())
+                .userId(saved.getUserId())
+                .customerName(saved.getCustomerName())
+                .restaurantName(saved.getRestaurantName())
+                .newStatus(newStatus)
+                .updatedAt(saved.getUpdatedAt())
+                .build();
+        rabbitTemplate.convertAndSend(
+                RabbitMQConfig.EXCHANGE,
+                RabbitMQConfig.ORDER_STATUS_UPDATED_RKEY,
+                event);
+        log.info("Published order.status.updated orderId={} status={}", saved.getId(), newStatus);
+
+        return saved;
     }
 }

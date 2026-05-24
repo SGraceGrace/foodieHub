@@ -111,20 +111,4 @@
     Menu not available yet.
   </div>
 
-  <!-- ── Floating Cart Bar (shows when this restaurant has items) ──── -->
-  <div class="rd-cart-bar" *ngIf="restaurantCart && thisRestaurantItemCount > 0">
-    <div class="rd-cart-bar-inner">
-      <div class="rd-cart-bar-info">
-        <span class="rd-cart-bar-count">
-          {{ thisRestaurantItemCount }} item{{ thisRestaurantItemCount !== 1 ? 's' : '' }}
-        </span>
-        <span class="rd-cart-bar-name">{{ restaurantCart.restaurantName }}</span>
-      </div>
-      <div class="rd-cart-bar-right">
-        <span class="rd-cart-bar-total">₹{{ thisRestaurantAmount }}</span>
-        <button class="rd-cart-bar-btn" routerLink="/user/cart">View Cart →</button>
-      </div>
-    </div>
-  </div>
-
 </ng-container>

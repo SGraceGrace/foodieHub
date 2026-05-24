@@ -1,8 +1,9 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, NgZone, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TokenService } from '../../core/shared/token.service';
+import { PaginatedResponse } from '../../model/restaurant.model';
 import { CloudinaryService } from '../../core/shared/cloudinary.service';
 import { PartnerService } from '../partner.service';
 import { OrderService } from '../../core/shared/order.service';
@@ -11,7 +12,7 @@ import { Restaurant, DaySchedule, RestaurantStaff } from '../../model/restaurant
 import { Order, RestaurantOrderNotification } from '../../model/order.model';
 import { LocationPickerComponent, PickedLocation } from '../../core/shared/components/location-picker/location-picker.component';
 
-type WorkspaceTab = 'overview' | 'orders' | 'menu' | 'analytics' | 'hours' | 'settings';
+type WorkspaceTab = 'overview' | 'orders' | 'all-orders' | 'menu' | 'analytics' | 'hours' | 'settings';
 
 export interface DayHours {
   day: string;
@@ -59,6 +60,7 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
   // ── Order notifications (bell) ────────────────────────────────────
   notifications: RestaurantOrderNotification[] = [];
   showNotifPanel = false;
+  notifPermission: NotificationPermission = 'default';
 
   get unreadCount(): number {
     return this.notifications.filter(n => !n.read).length;
@@ -76,6 +78,18 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
       ['PLACED', 'CONFIRMED', 'PREPARING'].includes(o.status ?? '')
     ).length;
   }
+
+  // ── All Orders tab (paginated history) ───────────────────────────
+  allOrdersHistory: Order[] = [];
+  allOrdersLoading = false;
+  allOrdersPagination = { currentPage: 0, totalPages: 0, totalElements: 0, pageSize: 10 };
+
+  // ── All Orders date filter ────────────────────────────────────────
+  aoFilterPreset: 'all' | 'today' | 'custom' = 'all';
+  aoFromDate = '';     // yyyy-MM-dd
+  aoToDate   = '';     // yyyy-MM-dd
+  aoShowCustom = false;
+  aoCustomApplied = false;
 
   // ── Operating hours ──────────────────────────────────────────────
   hours: DayHours[] = [
@@ -399,13 +413,41 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
     private tokenService: TokenService,
     private partnerService: PartnerService,
     private cloudinary: CloudinaryService,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit() {
     this.tokenService.userInfo$.subscribe(u => this.user = u);
     const id = this.route.snapshot.paramMap.get('id');
     if (id) this.loadRestaurant(id);
+    this.initNotifPermission();
+  }
+
+  // ── Browser notification permission ───────────────────────────────
+
+  private initNotifPermission(): void {
+    if (!('Notification' in window)) return;
+    this.notifPermission = Notification.permission;
+  }
+
+  enableBrowserNotifications(): void {
+    if (!('Notification' in window)) return;
+    Notification.requestPermission().then(p => {
+      this.ngZone.run(() => { this.notifPermission = p; });
+    });
+  }
+
+  private showBrowserNotification(notif: RestaurantOrderNotification): void {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    try {
+      new Notification('🛎 New Order!', {
+        body: `${notif.customerName} placed an order • ₹${notif.totalAmount}`,
+        icon: '/favicon.ico',
+        tag: `order-${notif.orderId ?? Date.now()}`,
+        requireInteraction: true,
+      });
+    } catch { /* some browsers block Notification outside user gesture — safe to ignore */ }
   }
 
   loadRestaurant(id: string) {
@@ -418,6 +460,7 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
         this.loading = false;
         this.startStatusPoll();
         this.loadNotifications();
+        this.loadLiveOrders();   // populate badge immediately on load
         this.startSseStream();
       },
       error: () => {
@@ -452,6 +495,8 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
         this.notifications = [notif, ...this.notifications];
         // Refresh live orders list so the new order appears immediately
         this.loadLiveOrders();
+        // Fire a browser push notification if permission is granted
+        this.showBrowserNotification(notif);
       }
     );
   }
@@ -467,6 +512,12 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   closeNotifPanel() { this.showNotifPanel = false; }
+
+  /** Clicking a notification card closes the panel and jumps to Live Orders tab */
+  onNotifItemClick() {
+    this.closeNotifPanel();
+    this.goTab('orders');
+  }
 
   // ── Live Orders ───────────────────────────────────────────────────
 
@@ -537,10 +588,108 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
 
   goTab(tab: WorkspaceTab) {
     this.activeTab = tab;
-    if (tab === 'menu')    this.initMenu();
-    if (tab === 'hours')   this.refreshHours();
-    if (tab === 'settings') this.loadStaff();
-    if (tab === 'orders')  this.loadLiveOrders();
+    if (tab === 'menu')       this.initMenu();
+    if (tab === 'hours')      this.refreshHours();
+    if (tab === 'settings')   this.loadStaff();
+    if (tab === 'orders')     this.loadLiveOrders();
+    if (tab === 'all-orders') this.loadAllOrdersHistory(0);
+  }
+
+  // ── All Orders history ────────────────────────────────────────────
+
+  loadAllOrdersHistory(page: number) {
+    if (!this.restaurant) return;
+    this.allOrdersLoading = true;
+
+    let from: string | undefined;
+    let to: string | undefined;
+
+    if (this.aoFilterPreset === 'today') {
+      const today = new Date().toISOString().split('T')[0]; // yyyy-MM-dd
+      from = today;
+      to   = today;
+    } else if (this.aoFilterPreset === 'custom' && this.aoCustomApplied) {
+      from = this.aoFromDate || undefined;
+      to   = this.aoToDate   || undefined;
+    }
+
+    this.orderService.getRestaurantAllOrders(
+      this.restaurant.id, page, this.allOrdersPagination.pageSize, from, to
+    ).subscribe({
+      next: res => {
+        const p: PaginatedResponse<Order> = res.data as any;
+        this.allOrdersHistory   = p.content ?? [];
+        this.allOrdersPagination = {
+          currentPage:   p.currentPage,
+          totalPages:    p.totalPages,
+          totalElements: p.totalElements,
+          pageSize:      p.pageSize,
+        };
+        this.allOrdersLoading = false;
+      },
+      error: () => { this.allOrdersLoading = false; }
+    });
+  }
+
+  setAoFilter(preset: 'all' | 'today' | 'custom') {
+    this.aoFilterPreset = preset;
+    if (preset === 'custom') {
+      this.aoShowCustom = true;
+      // Don't load yet — wait for the user to click Apply
+    } else {
+      this.aoShowCustom    = false;
+      this.aoCustomApplied = false;
+      this.loadAllOrdersHistory(0);
+    }
+  }
+
+  applyAoCustomFilter() {
+    if (!this.aoFromDate || !this.aoToDate) return;
+    this.aoCustomApplied = true;
+    this.loadAllOrdersHistory(0);
+  }
+
+  clearAoFilter() {
+    this.aoFilterPreset  = 'all';
+    this.aoFromDate      = '';
+    this.aoToDate        = '';
+    this.aoShowCustom    = false;
+    this.aoCustomApplied = false;
+    this.loadAllOrdersHistory(0);
+  }
+
+  /** True when a non-"all" filter is actively applied (used to show the clear button) */
+  get aoFilterActive(): boolean {
+    return this.aoFilterPreset === 'today' ||
+           (this.aoFilterPreset === 'custom' && this.aoCustomApplied);
+  }
+
+  /** Human-readable label for the active filter chip */
+  get aoFilterLabel(): string {
+    if (this.aoFilterPreset === 'today') return 'Today';
+    if (this.aoFilterPreset === 'custom' && this.aoCustomApplied) {
+      return `${this.aoFromDate} → ${this.aoToDate}`;
+    }
+    return '';
+  }
+
+  allOrdersPageRange(): number[] {
+    const total = this.allOrdersPagination.totalPages;
+    const cur   = this.allOrdersPagination.currentPage;
+    // Show at most 5 page buttons centred on current page
+    const start = Math.max(0, Math.min(cur - 2, total - 5));
+    const end   = Math.min(total, start + 5);
+    return Array.from({ length: end - start }, (_, i) => start + i);
+  }
+
+  allOrdersFrom(): number {
+    const { currentPage, pageSize } = this.allOrdersPagination;
+    return currentPage * pageSize + 1;
+  }
+
+  allOrdersTo(): number {
+    const { currentPage, pageSize, totalElements } = this.allOrdersPagination;
+    return Math.min((currentPage + 1) * pageSize, totalElements);
   }
 
   // ── Settings: staff ───────────────────────────────────────────────

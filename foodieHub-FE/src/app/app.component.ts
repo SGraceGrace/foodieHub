@@ -8,10 +8,10 @@ import { UserHeaderComponent } from "./user/user-header/user-header.component";
 import { AdminHeaderComponent } from "./admin/admin-header/admin-header.component";
 import { GlobalLoaderComponent } from "./core/shared/components/global-loader/global-loader.component";
 import { FooterComponent } from './footer/footer.component';
-
+import { CartFloatBarComponent } from './core/shared/components/cart-float-bar/cart-float-bar.component';
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, CommonModule, HeaderComponent, UserHeaderComponent, AdminHeaderComponent, GlobalLoaderComponent, FooterComponent],
+  imports: [RouterOutlet, CommonModule, HeaderComponent, UserHeaderComponent, AdminHeaderComponent, GlobalLoaderComponent, FooterComponent, CartFloatBarComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

@@ -38,6 +38,63 @@
       <span class="cart-count" *ngIf="cartCount > 0">{{ cartCount }}</span>
     </button>
 
+    <!-- Order Status Notifications Bell -->
+    <div class="notif-wrap">
+
+      <!-- Enable alerts button — shown only when permission is not yet decided -->
+      <button class="notif-enable-btn"
+              *ngIf="notifPermission === 'default'"
+              (click)="enableBrowserNotifications()"
+              title="Get browser alerts when your order status changes">
+        Enable alerts
+      </button>
+
+      <!-- Bell button -->
+      <button class="icon-btn notif-btn" (click)="toggleNotifPanel()" title="Order updates">
+        🔔
+        <span class="notif-badge" *ngIf="unreadCount > 0">
+          {{ unreadCount > 9 ? '9+' : unreadCount }}
+        </span>
+      </button>
+
+      <!-- Dropdown panel -->
+      <div class="notif-panel" *ngIf="showNotifPanel">
+        <div class="notif-panel-hdr">
+          <span class="notif-panel-title">Order Updates</span>
+          <button class="notif-panel-close" (click)="closeNotifPanel()">✕</button>
+        </div>
+
+        <div class="notif-empty" *ngIf="notifications.length === 0">
+          No updates yet — we'll notify you when your order status changes 🍽️
+        </div>
+
+        <div class="notif-list" *ngIf="notifications.length > 0">
+          <a class="notif-item" *ngFor="let n of notifications"
+             [class.notif-item--unread]="!n.read"
+             routerLink="/user/orders"
+             (click)="closeNotifPanel()">
+            <div class="notif-item-row">
+              <span class="notif-item-emoji">{{ statusEmoji(n.newStatus) }}</span>
+              <div class="notif-item-body">
+                <div class="notif-item-restaurant">{{ n.restaurantName }}</div>
+                <div class="notif-item-msg">{{ n.message }}</div>
+              </div>
+              <span class="notif-item-arrow">›</span>
+            </div>
+          </a>
+        </div>
+
+        <div class="notif-panel-footer" *ngIf="notifications.length > 0">
+          <a routerLink="/user/orders" (click)="closeNotifPanel()" class="notif-view-all">
+            View all orders →
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Click-outside overlay -->
+    <div class="notif-overlay" *ngIf="showNotifPanel" (click)="closeNotifPanel()"></div>
+
     <!-- User Avatar + Dropdown -->
     <div class="user-menu">
       <button class="user-av" (click)="toggleMenu()">

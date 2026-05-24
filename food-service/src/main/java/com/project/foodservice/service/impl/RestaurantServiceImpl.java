@@ -14,12 +14,15 @@ import com.project.foodservice.repo.OwnerApprovalRepo;
 import com.project.foodservice.repo.RestaurantRepo;
 import com.project.foodservice.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,36 +35,74 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final OwnerApprovalRepo ownerApprovalRepo;
 
     @Override
-    public PaginatedResponse<Restaurant> getAll(String cuisine, Double lat, Double lng, Double radiusKm, Pageable pageable) {
+    public PaginatedResponse<Restaurant> getAll(String cuisine, Double lat, Double lng, Double radiusKm, String sort, Pageable pageable) {
         boolean hasCuisine  = cuisine != null && !cuisine.isBlank();
         boolean hasLocation = lat != null && lng != null;
         double  radius      = (radiusKm != null) ? radiusKm : 10.0;
 
-        // No location provided — return cuisine-filtered (or all) active restaurants
+        // Rebuild pageable with the requested sort for DB-level ordering
+        Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), toSort(sort));
+
+        // No location provided — let MongoDB handle sorting
         if (!hasLocation) {
             if (hasCuisine) {
                 return PaginatedResponse.of(
-                    restaurantRepo.findByStatusAndCuisineContainingIgnoreCase(RestaurantStatus.ACTIVE, cuisine, pageable));
+                    restaurantRepo.findByStatusAndCuisineContainingIgnoreCase(RestaurantStatus.ACTIVE, cuisine, sortedPageable));
             }
-            return PaginatedResponse.of(restaurantRepo.findByStatus(RestaurantStatus.ACTIVE, pageable));
+            return PaginatedResponse.of(restaurantRepo.findByStatus(RestaurantStatus.ACTIVE, sortedPageable));
         }
 
-        // Location provided — fetch candidates then filter by proximity
+        // Location provided — fetch candidates, filter by proximity, then sort
+        // Use original pageable (no sort) for fetching; sorting happens in-memory after proximity filter
         List<Restaurant> candidates = hasCuisine
             ? restaurantRepo.findByStatusAndCuisineContainingIgnoreCase(RestaurantStatus.ACTIVE, cuisine, pageable).getContent()
             : restaurantRepo.findByStatus(RestaurantStatus.ACTIVE, pageable).getContent();
 
+        Comparator<Restaurant> comparator = toComparator(sort, lat, lng);
         List<Restaurant> nearby = candidates.stream()
             .filter(r -> r.getLocation() != null
                       && r.getLocation().getLat() != null
                       && r.getLocation().getLng() != null)
             .filter(r -> haversineKm(lat, lng, r.getLocation().getLat(), r.getLocation().getLng()) <= radius)
-            .sorted((a, b) -> Double.compare(
-                haversineKm(lat, lng, a.getLocation().getLat(), a.getLocation().getLng()),
-                haversineKm(lat, lng, b.getLocation().getLat(), b.getLocation().getLng())))
+            .sorted(comparator)
             .collect(Collectors.toList());
 
         return PaginatedResponse.ofList(nearby, pageable);
+    }
+
+    /** Maps the frontend sort token to a MongoDB Sort directive. */
+    private Sort toSort(String sort) {
+        if (sort == null) return Sort.unsorted();
+        return switch (sort) {
+            case "deliveryTime" -> Sort.by(Sort.Direction.ASC,  "deliveryTime");
+            case "priceLow"     -> Sort.by(Sort.Direction.ASC,  "minOrder");
+            case "priceHigh"    -> Sort.by(Sort.Direction.DESC, "minOrder");
+            case "rating"       -> Sort.by(Sort.Direction.DESC, "rating");
+            default             -> Sort.unsorted(); // "relevance" → DB default
+        };
+    }
+
+    /** Maps the frontend sort token to an in-memory Comparator for the proximity path. */
+    private Comparator<Restaurant> toComparator(String sort, Double lat, Double lng) {
+        // Sort by actual distance — used for "deliveryTime" (closest = fastest delivery)
+        Comparator<Restaurant> byDistance = Comparator.comparingDouble(r ->
+            haversineKm(lat, lng, r.getLocation().getLat(), r.getLocation().getLng()));
+
+        // No-op comparator — preserves the fetch order from DB (used for "relevance")
+        // Proximity filter still applies (only nearby restaurants are included),
+        // but we don't impose any ordering on top of that
+        Comparator<Restaurant> noSort = (a, b) -> 0;
+
+        if (sort == null || sort.equals("relevance")) return noSort;
+
+        return switch (sort) {
+            // deliveryTime = sort ascending by actual distance (closest = fastest delivery)
+            case "deliveryTime" -> byDistance;
+            case "priceLow"     -> Comparator.comparingInt(Restaurant::getMinOrder);
+            case "priceHigh"    -> Comparator.comparingInt(Restaurant::getMinOrder).reversed();
+            case "rating"       -> Comparator.comparingDouble(Restaurant::getRating).reversed();
+            default             -> noSort;
+        };
     }
 
     private double haversineKm(double lat1, double lng1, double lat2, double lng2) {

@@ -3,13 +3,11 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
+const ADMIN_SUBSCRIPTION_URL    = `${environment.apiBaseUrl}/api/v1/admin/push-subscription`;
+const CUSTOMER_SUBSCRIPTION_URL = `${environment.apiBaseUrl}/api/v1/customer/push-subscription`;
+
 @Injectable({ providedIn: 'root' })
 export class PushNotificationService {
-  /**
-   * VAPID public key from your Spring Boot backend.
-   * Generate it once with: webpush.generateVAPIDKeys() (Java: vapid-jose or web-push library)
-   * Paste the urlSafeBase64 public key string here.
-   */
   private readonly VAPID_PUBLIC_KEY = 'BBExuSKx28RTr_4tt3TJIqAfVoWOfTpwNExZez0UjTUx4rnrSEgyjX0tFqmQPGYY5YS_CZeSRIFvmBL0S-39UQw';
 
   private permissionSubject = new BehaviorSubject<NotificationPermission>(
@@ -24,36 +22,41 @@ export class PushNotificationService {
   }
 
   /**
-   * Called on admin login. Registers the service worker and re-subscribes
-   * if the user already granted permission in a previous session.
+   * Call on login.
+   * Registers the service worker and re-subscribes if the user already
+   * granted permission in a previous session.
+   *
+   * @param role  'admin' → saves to admin endpoint, 'customer' → customer endpoint
    */
-  async init(): Promise<void> {
+  async init(role: 'admin' | 'customer' = 'admin'): Promise<void> {
     if (!this.isSupported) return;
     this.permissionSubject.next(Notification.permission);
     if (Notification.permission === 'granted') {
-      await this.subscribe();
+      await this.subscribe(role === 'customer' ? CUSTOMER_SUBSCRIPTION_URL : ADMIN_SUBSCRIPTION_URL);
     }
   }
 
   /**
-   * Called when the admin clicks "Enable Notifications".
+   * Call when the user clicks "Enable Notifications".
    * Shows the browser permission prompt, then subscribes if granted.
+   *
+   * @param role  'admin' | 'customer'
    */
-  async requestAndSubscribe(): Promise<void> {
+  async requestAndSubscribe(role: 'admin' | 'customer' = 'admin'): Promise<void> {
     if (!this.isSupported) return;
     const permission = await Notification.requestPermission();
     this.permissionSubject.next(permission);
     if (permission === 'granted') {
-      await this.subscribe();
+      await this.subscribe(role === 'customer' ? CUSTOMER_SUBSCRIPTION_URL : ADMIN_SUBSCRIPTION_URL);
     }
   }
 
-  private async subscribe(): Promise<void> {
+  private async subscribe(subscriptionUrl: string): Promise<void> {
     try {
       const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
       await navigator.serviceWorker.ready;
 
-      // Reuse existing subscription so we don't re-register on every page load
+      // Reuse existing subscription — avoids re-registering on every page load
       let subscription = await registration.pushManager.getSubscription();
       if (!subscription) {
         subscription = await registration.pushManager.subscribe({
@@ -62,21 +65,18 @@ export class PushNotificationService {
         });
       }
 
-      this.saveSubscriptionOnServer(subscription);
+      this.saveSubscriptionOnServer(subscription, subscriptionUrl);
     } catch (err) {
       console.error('[Push] Subscription failed:', err);
     }
   }
 
-  private saveSubscriptionOnServer(sub: PushSubscription): void {
-    // Sends { endpoint, keys: { p256dh, auth } } to the backend so it can
-    // call the push service later when an event happens.
+  private saveSubscriptionOnServer(sub: PushSubscription, subscriptionUrl: string): void {
     this.http
-      .post(`${environment.apiBaseUrl}/api/v1/admin/push-subscription`, sub.toJSON())
+      .post(subscriptionUrl, sub.toJSON())
       .subscribe({ error: (e) => console.error('[Push] Failed to save subscription:', e) });
   }
 
-  // Web Push requires the VAPID key as a Uint8Array, not a base64 string
   private urlBase64ToUint8Array(base64: string): Uint8Array {
     const padding = '='.repeat((4 - (base64.length % 4)) % 4);
     const b64 = (base64 + padding).replace(/-/g, '+').replace(/_/g, '/');

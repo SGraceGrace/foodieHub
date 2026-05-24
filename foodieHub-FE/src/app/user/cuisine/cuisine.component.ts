@@ -4,6 +4,8 @@ import { RouterModule } from '@angular/router';
 import { HomeService } from '../../home/home.service';
 import { Restaurant } from '../../model/restaurant.model';
 import { CUISINE_EMOJI, getCuisineEmoji, getCuisineBg } from '../../core/constants/cuisine.constants';
+import { DeliveryAddressService } from '../../core/shared/delivery-address.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-cuisine',
@@ -35,12 +37,25 @@ export class CuisineComponent implements OnInit, AfterViewInit, OnDestroy {
   totalElements  = 0;
   readonly pageSize = 10;
 
-  private observer!: IntersectionObserver;
+  private userLat: number | undefined;
+  private userLng: number | undefined;
 
-  constructor(private homeService: HomeService) {}
+  private observer!: IntersectionObserver;
+  private addressSub!: Subscription;
+
+  constructor(
+    private homeService: HomeService,
+    private deliveryAddressService: DeliveryAddressService
+  ) {}
 
   ngOnInit() {
     this.cuisines = Object.keys(CUISINE_EMOJI).filter(k => k !== 'default');
+    // Pick up the user's selected delivery address (lat/lng) so delivery-time
+    // sort can use actual distance instead of the owner's static estimate
+    this.addressSub = this.deliveryAddressService.selected$.subscribe(addr => {
+      this.userLat = addr?.location?.lat ?? undefined;
+      this.userLng = addr?.location?.lng ?? undefined;
+    });
     this.load();
   }
 
@@ -56,6 +71,7 @@ export class CuisineComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.observer?.disconnect();
+    this.addressSub?.unsubscribe();
   }
 
   selectCuisine(c?: string) {
@@ -67,7 +83,9 @@ export class CuisineComponent implements OnInit, AfterViewInit, OnDestroy {
 
   selectSort(sort: string) {
     this.selectedSort = sort;
-    // TODO: wire sorting logic when BE sort param is ready
+    this.currentPage = 0;
+    this.restaurants = [];
+    this.load();
   }
 
   get hasMore(): boolean {
@@ -79,7 +97,7 @@ export class CuisineComponent implements OnInit, AfterViewInit, OnDestroy {
   private load(append = false) {
     this.loading = true;
     const cuisine = this.selectedCuisine === 'All' ? undefined : this.selectedCuisine;
-    this.homeService.getRestaurants(cuisine, undefined, undefined, this.currentPage, this.pageSize).subscribe({
+    this.homeService.getRestaurants(cuisine, this.userLat, this.userLng, this.currentPage, this.pageSize, this.selectedSort).subscribe({
       next: (res) => {
         const p        = res.data;
         const incoming = p?.content ?? [];

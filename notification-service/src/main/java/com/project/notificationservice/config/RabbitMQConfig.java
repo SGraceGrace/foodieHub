@@ -4,6 +4,7 @@ import com.project.notificationservice.event.ActivityLoggedEvent;
 import com.project.notificationservice.event.ContactMessageEvent;
 import com.project.notificationservice.event.DriverRegisteredEvent;
 import com.project.notificationservice.event.OrderPlacedEvent;
+import com.project.notificationservice.event.OrderStatusUpdatedEvent;
 import com.project.notificationservice.event.OwnerStatusEvent;
 import com.project.notificationservice.event.PartnerRegisteredEvent;
 import org.springframework.amqp.core.Binding;
@@ -34,8 +35,10 @@ public class RabbitMQConfig {
     public static final String DRIVER_RKEY           = "driver.registered";
     public static final String ACTIVITY_QUEUE        = "activity.logged.queue";
     public static final String ACTIVITY_RKEY         = "activity.logged";
-    public static final String CONTACT_QUEUE         = "contact.message.queue";
-    public static final String CONTACT_RKEY          = "contact.message";
+    public static final String CONTACT_QUEUE                = "contact.message.queue";
+    public static final String CONTACT_RKEY                 = "contact.message";
+    public static final String ORDER_STATUS_UPDATED_QUEUE   = "order.status.updated.queue";
+    public static final String ORDER_STATUS_UPDATED_RKEY    = "order.status.updated";
 
     @Bean public TopicExchange foodiehubExchange() { return new TopicExchange(EXCHANGE); }
 
@@ -44,7 +47,8 @@ public class RabbitMQConfig {
     @Bean public Queue orderPlacedQueue()        { return new Queue(ORDER_PLACED_QUEUE, true); }
     @Bean public Queue driverRegisteredQueue()   { return new Queue(DRIVER_QUEUE, true); }
     @Bean public Queue activityLoggedQueue()     { return new Queue(ACTIVITY_QUEUE, true); }
-    @Bean public Queue contactMessageQueue()     { return new Queue(CONTACT_QUEUE, true); }
+    @Bean public Queue contactMessageQueue()           { return new Queue(CONTACT_QUEUE, true); }
+    @Bean public Queue orderStatusUpdatedQueue()       { return new Queue(ORDER_STATUS_UPDATED_QUEUE, true); }
 
     @Bean
     public Binding partnerRegisteredBinding(Queue partnerRegisteredQueue, TopicExchange foodiehubExchange) {
@@ -70,6 +74,10 @@ public class RabbitMQConfig {
     public Binding contactMessageBinding(Queue contactMessageQueue, TopicExchange foodiehubExchange) {
         return BindingBuilder.bind(contactMessageQueue).to(foodiehubExchange).with(CONTACT_RKEY);
     }
+    @Bean
+    public Binding orderStatusUpdatedBinding(Queue orderStatusUpdatedQueue, TopicExchange foodiehubExchange) {
+        return BindingBuilder.bind(orderStatusUpdatedQueue).to(foodiehubExchange).with(ORDER_STATUS_UPDATED_RKEY);
+    }
 
     @Bean
     public Jackson2JsonMessageConverter messageConverter() {
@@ -80,7 +88,8 @@ public class RabbitMQConfig {
         Map<String, Class<?>> idClassMapping = new HashMap<>();
         idClassMapping.put("com.project.foodieHub.messaging.PartnerRegisteredEvent",  PartnerRegisteredEvent.class);
         idClassMapping.put("com.project.foodieHub.messaging.OwnerStatusEvent",        OwnerStatusEvent.class);
-        idClassMapping.put("com.project.orderservice.messaging.OrderPlacedEvent",     OrderPlacedEvent.class);
+        idClassMapping.put("com.project.orderservice.messaging.OrderPlacedEvent",          OrderPlacedEvent.class);
+        idClassMapping.put("com.project.orderservice.messaging.OrderStatusUpdatedEvent",   OrderStatusUpdatedEvent.class);
         idClassMapping.put("com.project.foodieHub.messaging.DriverRegisteredEvent",   DriverRegisteredEvent.class);
         idClassMapping.put("com.project.foodieHub.messaging.ActivityLoggedEvent",     ActivityLoggedEvent.class);
         idClassMapping.put("com.project.foodieHub.messaging.ContactMessageEvent",     ContactMessageEvent.class);

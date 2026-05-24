@@ -1,5 +1,6 @@
 package com.project.notificationservice.service;
 
+import com.project.notificationservice.dto.CustomerOrderUpdateDTO;
 import com.project.notificationservice.dto.NotificationDTO;
 import com.project.notificationservice.dto.RestaurantNotificationDTO;
 import org.springframework.http.MediaType;
@@ -21,6 +22,10 @@ public class SseEmitterService {
     // ── Restaurant SSE sessions ───────────────────────────────────────
     private final List<RestaurantSession> restaurantSessions = new CopyOnWriteArrayList<>();
     record RestaurantSession(String restaurantId, SseEmitter emitter) {}
+
+    // ── Customer SSE sessions ─────────────────────────────────────────
+    private final List<CustomerSession> customerSessions = new CopyOnWriteArrayList<>();
+    record CustomerSession(String userId, SseEmitter emitter) {}
 
     // ── Admin subscribe ───────────────────────────────────────────────
 
@@ -82,5 +87,32 @@ public class SseEmitterService {
             }
         }
         restaurantSessions.removeAll(dead);
+    }
+
+    // ── Customer subscribe ────────────────────────────────────────────
+
+    public SseEmitter subscribeCustomer(String userId) {
+        SseEmitter emitter = new SseEmitter(0L);
+        CustomerSession session = new CustomerSession(userId, emitter);
+        customerSessions.add(session);
+
+        Runnable remove = () -> customerSessions.remove(session);
+        emitter.onCompletion(remove);
+        emitter.onTimeout(remove);
+        emitter.onError(e -> customerSessions.remove(session));
+        return emitter;
+    }
+
+    public void pushToCustomer(String userId, CustomerOrderUpdateDTO dto) {
+        List<CustomerSession> dead = new ArrayList<>();
+        for (CustomerSession session : customerSessions) {
+            if (!session.userId().equals(userId)) continue;
+            try {
+                session.emitter().send(SseEmitter.event().data(dto, MediaType.APPLICATION_JSON));
+            } catch (Exception e) {
+                dead.add(session);
+            }
+        }
+        customerSessions.removeAll(dead);
     }
 }

@@ -386,6 +386,131 @@ These are the questions you'll get — here's what to say:
 
 ---
 
+## 🔔 Notification Architecture — Mandatory Pattern
+
+> ⚠️ **Every notification feature in this project must follow this exact pattern, no exceptions.**
+> Never use `new Notification()` directly in a component. Never skip the service worker.
+> The admin push notification is the reference implementation — all other notifications copy it.
+
+### The two-layer stack (both layers are always required)
+
+| Layer | Technology | Purpose |
+|---|---|---|
+| **SSE** (Server-Sent Events) | `SseEmitter` in notification-service | Real-time update while the tab is open — patches UI state (badge count, order tracker, list) |
+| **Web Push (VAPID)** | `WebPushService` + service worker `sw.js` | OS-level browser notification — fires even when the tab is closed |
+
+**Never use only one layer.** SSE alone means no notification when the tab is closed. `new Notification()` in a component is not Web Push — it is a cheap workaround that looks different from a real OS notification and breaks when the tab is not focused.
+
+---
+
+### Backend — what every notification feature needs
+
+#### 1. RabbitMQ event (in the publishing service, e.g. order-service)
+```java
+// Event class
+public class SomethingHappenedEvent { ... }
+
+// Routing key constant in RabbitMQConfig
+public static final String SOMETHING_HAPPENED_RKEY = "something.happened";
+
+// Publish after the DB write
+rabbitTemplate.convertAndSend(EXCHANGE, SOMETHING_HAPPENED_RKEY, event);
+```
+
+#### 2. notification-service — queue + binding (RabbitMQConfig)
+```java
+public static final String SOMETHING_HAPPENED_QUEUE = "something.happened.queue";
+public static final String SOMETHING_HAPPENED_RKEY  = "something.happened";
+
+@Bean public Queue somethingHappenedQueue() { return new Queue(SOMETHING_HAPPENED_QUEUE, true); }
+
+@Bean
+public Binding somethingHappenedBinding(Queue somethingHappenedQueue, TopicExchange foodiehubExchange) {
+    return BindingBuilder.bind(somethingHappenedQueue).to(foodiehubExchange).with(SOMETHING_HAPPENED_RKEY);
+}
+// Also add the class mapping in the Jackson2JsonMessageConverter bean
+```
+
+#### 3. notification-service — listener (NotificationListener)
+```java
+@RabbitListener(queues = RabbitMQConfig.SOMETHING_HAPPENED_QUEUE)
+public void onSomethingHappened(SomethingHappenedEvent event) {
+    // Layer 1 — SSE (patches UI while tab is open)
+    sseEmitterService.pushToXxx(event.getTargetId(), dto);
+
+    // Layer 2 — Web Push (OS notification, works tab closed)
+    webPushService.sendToXxx(event.getTargetId(), title, body, orderId);
+}
+```
+
+#### 4. notification-service — push subscription entity + repo
+- Mirror `AdminPushSubscription` / `AdminPushSubscriptionRepo`
+- Collection name: `xxx_push_subscriptions`
+- Key field: the user/entity identifier (userId, restaurantId, etc.)
+
+#### 5. notification-service — controller
+- `GET  /api/v1/{context}/notifications/stream` → SSE subscribe
+- `POST /api/v1/{context}/push-subscription`    → save Web Push subscription
+
+#### 6. api-gateway — route
+Add both paths to `application.yaml` so the gateway proxies them.
+
+---
+
+### Frontend — what every notification feature needs
+
+#### 1. `PushNotificationService` (`core/services/push-notification.service.ts`)
+The shared service already exists. Call it with the correct role:
+```typescript
+// On login / component init — re-subscribe if permission already granted
+this.pushService.init('customer');      // or 'admin', or future roles
+
+// When user clicks "Enable alerts"
+this.pushService.requestAndSubscribe('customer');
+```
+- `permission$` observable — subscribe to it to keep the UI button in sync
+- `NgZone.run()` is handled inside the service — no need in the component
+
+#### 2. SSE connection (in the persistent component — header, layout, etc.)
+```typescript
+this.sseController = this.orderService.connectCustomerSSE(token, (update) => {
+  this.ngZone.run(() => {
+    // Update badge / list / tracker only — do NOT call new Notification() here
+    // Web Push from the service worker handles the OS notification
+  });
+});
+```
+- Always open SSE in the **header or layout component** so it stays alive across navigation
+- Always abort in `ngOnDestroy()`
+
+#### 3. "Enable alerts" button in the UI
+```html
+<button *ngIf="notifPermission === 'default'" (click)="enableBrowserNotifications()">
+  Enable alerts
+</button>
+<span *ngIf="notifPermission === 'denied'" title="Blocked in browser settings">🔕</span>
+```
+- `notifPermission` must be driven by `pushService.permission$` (not by a manual `Notification.permission` read)
+- The button must disappear after clicking — this only works if `permission$` is subscribed via `NgZone.run()`
+
+#### 4. Service worker (`public/sw.js`)
+Already handles all push events for the whole app. The backend controls what the notification says and where clicking it navigates (`url` field in the JSON payload). **Do not modify `sw.js` per feature** — control behaviour from the backend payload:
+```json
+{ "title": "Restaurant Name", "body": "message text", "url": "/user/orders", "tag": "order-abc123" }
+```
+
+---
+
+### Existing implementations (reference these)
+
+| Recipient | SSE endpoint | Push endpoint | Where initiated | Listener method |
+|---|---|---|---|---|
+| Admin / Super Admin | `/api/v1/admin/notifications/stream` | `/api/v1/admin/push-subscription` | Admin header (via `PushNotificationService`) | `NotificationListener.*` various |
+| Restaurant partner | `/api/v1/restaurant/notifications/stream/{restaurantId}` | *(SSE only — partner is always on the tab)* | `PartnerWorkspaceComponent` | `NotificationListener.onOrderPlaced()` |
+| Customer | `/api/v1/customer/notifications/stream` | `/api/v1/customer/push-subscription` | `UserHeaderComponent` | `NotificationListener.onOrderStatusUpdated()` |
+
+---
+
 ## 📐 Coding Conventions (Always Follow These)
 
 ### Pagination — mandatory for every table

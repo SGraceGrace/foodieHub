@@ -5,10 +5,19 @@ import { HomeService } from './home.service';
 import { Slide, Restaurant } from '../model/restaurant.model';
 import { CUISINE_EMOJI, getCuisineEmoji, getCuisineBg } from '../core/constants/cuisine.constants';
 import { DeliveryAddressService } from '../core/shared/delivery-address.service';
+import { CartService } from '../core/shared/cart.service';
 
 interface FoodCard {
-  emoji: string; name: string; price: number;
-  rating: number; bg: string; imageUrl?: string;
+  emoji: string;
+  name: string;
+  price: number;
+  rating: number;
+  bg: string;
+  imageUrl?: string;
+  isVeg: boolean;
+  description?: string;
+  restaurantId: string;
+  restaurantName: string;
 }
 
 @Component({
@@ -37,7 +46,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   constructor(
     private homeService: HomeService,
-    private deliveryAddressService: DeliveryAddressService
+    private deliveryAddressService: DeliveryAddressService,
+    public cartService: CartService
   ) {}
 
   ngOnInit() {
@@ -116,6 +126,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       const cuisine = r.cuisine?.[0];
       for (const category of r.menu ?? []) {
         for (const item of category.items ?? []) {
+          if (!item.available) continue;
           dishes.push({
             emoji: getCuisineEmoji(cuisine),
             name: item.name,
@@ -123,12 +134,35 @@ export class HomeComponent implements OnInit, OnDestroy {
             rating: r.rating ?? 0,
             bg: getCuisineBg(cuisine),
             imageUrl: item.imageUrl ?? r.imageUrl,
+            isVeg: item.isVeg,
+            description: item.description,
+            restaurantId: r.id,
+            restaurantName: r.name,
           });
           if (dishes.length === 10) break outer;
         }
       }
     }
     this.popularDishes = dishes;
+  }
+
+  getQty(dish: FoodCard): number {
+    return this.cartService.getQty(dish.restaurantId, dish.name);
+  }
+
+  addToCart(dish: FoodCard) {
+    this.cartService.addItem(dish.restaurantId, dish.restaurantName, {
+      name: dish.name,
+      price: dish.price,
+      qty: 1,
+      isVeg: dish.isVeg,
+      description: dish.description,
+      imageUrl: dish.imageUrl,
+    }).subscribe();
+  }
+
+  removeFromCart(dish: FoodCard) {
+    this.cartService.removeItem(dish.restaurantId, dish.name).subscribe();
   }
 
   getEmoji(r: Restaurant): string { return getCuisineEmoji(r.cuisine?.[0]); }

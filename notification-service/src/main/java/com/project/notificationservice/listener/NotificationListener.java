@@ -5,10 +5,12 @@ import com.project.notificationservice.dto.NotificationDTO;
 import com.project.notificationservice.dto.RestaurantNotificationDTO;
 import com.project.notificationservice.entity.Notification;
 import com.project.notificationservice.entity.RestaurantNotification;
+import com.project.notificationservice.dto.CustomerOrderUpdateDTO;
 import com.project.notificationservice.event.ActivityLoggedEvent;
 import com.project.notificationservice.event.ContactMessageEvent;
 import com.project.notificationservice.event.DriverRegisteredEvent;
 import com.project.notificationservice.event.OrderPlacedEvent;
+import com.project.notificationservice.event.OrderStatusUpdatedEvent;
 import com.project.notificationservice.event.OwnerStatusEvent;
 import com.project.notificationservice.event.PartnerRegisteredEvent;
 import com.project.notificationservice.repo.NotificationRepo;
@@ -169,6 +171,44 @@ public class NotificationListener {
         } catch (Exception e) {
             log.error("Failed to send order email for order {}: {}", event.getOrderId(), e.getMessage());
         }
+    }
+
+    // ── Order status changed → notify customer via SSE ────────────
+
+    @RabbitListener(queues = RabbitMQConfig.ORDER_STATUS_UPDATED_QUEUE)
+    public void onOrderStatusUpdated(OrderStatusUpdatedEvent event) {
+        String msg = statusMessage(event.getNewStatus(), event.getRestaurantName());
+
+        // 1. SSE — patches the order tracker in real-time if the tab is open
+        CustomerOrderUpdateDTO dto = new CustomerOrderUpdateDTO(
+                event.getOrderId(),
+                event.getRestaurantName(),
+                event.getNewStatus(),
+                msg,
+                event.getUpdatedAt());
+        sseEmitterService.pushToCustomer(event.getUserId(), dto);
+
+        // 2. Web Push — OS-level notification via VAPID, works even when tab is closed
+        webPushService.sendToCustomer(
+                event.getUserId(),
+                event.getRestaurantName(),
+                msg,
+                event.getOrderId(),
+                event.getNewStatus());
+
+        log.info("Notified customer {} — orderId={} status={}",
+                event.getUserId(), event.getOrderId(), event.getNewStatus());
+    }
+
+    private String statusMessage(String status, String restaurantName) {
+        return switch (status) {
+            case "CONFIRMED"  -> "✅ " + restaurantName + " accepted your order!";
+            case "PREPARING"  -> "👨‍🍳 " + restaurantName + " is preparing your food!";
+            case "READY"      -> "🛵 Your order is ready and on its way!";
+            case "DELIVERED"  -> "🎉 Order delivered! Enjoy your meal.";
+            case "CANCELLED"  -> "❌ Your order was cancelled by the restaurant.";
+            default           -> "Order status updated: " + status;
+        };
     }
 
     // ── Email bodies ──────────────────────────────────────────────
