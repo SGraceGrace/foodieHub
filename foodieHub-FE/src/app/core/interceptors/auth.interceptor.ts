@@ -31,7 +31,11 @@ export function authInterceptor(
   const loginService = inject(LoginService);
   const router = inject(Router);
 
-  const publicUrls = ['/login', '/signup', '/api/v1/contact', '/api/v1/slides', '/api/v1/restaurants', '/partner/register', '/api/v1/refresh-token', 'api.cloudinary.com', 'nominatim.openstreetmap.org'];
+  // Only truly public paths — no token needed.
+  // GET /api/v1/restaurants is public for browsing, but POST/PUT on restaurant
+  // sub-paths (menu save, rating) require auth. The gateway enforces this on the
+  // server side; we must NOT skip token injection for the whole restaurants prefix.
+  const publicUrls = ['/login', '/signup', '/api/v1/contact', '/api/v1/slides', '/partner/register', '/api/v1/refresh-token', 'api.cloudinary.com', 'nominatim.openstreetmap.org'];
   if (publicUrls.some((u) => req.url.includes(u))) {
     return next(req);
   }
