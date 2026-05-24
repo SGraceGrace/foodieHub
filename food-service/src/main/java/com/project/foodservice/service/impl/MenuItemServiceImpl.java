@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.function.Function;
 
 @Service
 @RequiredArgsConstructor
@@ -44,17 +45,50 @@ public class MenuItemServiceImpl implements MenuItemService {
 
     @Override
     public void saveFullMenu(String restaurantId, List<MenuCategory> categories) {
-        menuItemRepo.deleteByRestaurantId(restaurantId);
-        if (categories == null || categories.isEmpty()) return;
+        if (categories == null || categories.isEmpty()) {
+            menuItemRepo.deleteByRestaurantId(restaurantId);
+            return;
+        }
 
-        List<MenuItemDocument> docs = new ArrayList<>();
+        // Build a lookup of existing docs by ID so we can update in-place (preserving order stats)
+        List<MenuItemDocument> existingDocs = menuItemRepo.findByRestaurantIdOrderByCategory(restaurantId);
+        Map<String, MenuItemDocument> existingById = existingDocs.stream()
+                .filter(d -> d.getId() != null)
+                .collect(Collectors.toMap(MenuItemDocument::getId, Function.identity()));
+
+        Set<String> processedIds = new HashSet<>();
+        List<MenuItemDocument> toSave = new ArrayList<>();
+
         for (MenuCategory cat : categories) {
             if (cat.getItems() == null) continue;
             for (MenuItem item : cat.getItems()) {
-                docs.add(toDocument(restaurantId, cat.getCategory(), item));
+                if (item.getId() != null && existingById.containsKey(item.getId())) {
+                    // Existing item — update fields, keep orderCount / totalQuantity / totalRevenue intact
+                    MenuItemDocument existing = existingById.get(item.getId());
+                    existing.setCategory(cat.getCategory());
+                    existing.setName(item.getName());
+                    existing.setPrice(item.getPrice());
+                    existing.setGstPercent(item.getGstPercent());
+                    existing.setVeg(item.isVeg());
+                    existing.setAvailable(item.isAvailable());
+                    existing.setDescription(item.getDescription());
+                    existing.setImageUrl(item.getImageUrl());
+                    existing.setExtras(item.getExtras());
+                    toSave.add(existing);
+                    processedIds.add(item.getId());
+                } else {
+                    // New item — create fresh (no ID)
+                    toSave.add(toDocument(restaurantId, cat.getCategory(), item));
+                }
             }
         }
-        menuItemRepo.saveAll(docs);
+
+        // Delete items that were removed (existed before but not in the incoming payload)
+        existingDocs.stream()
+                .filter(d -> d.getId() != null && !processedIds.contains(d.getId()))
+                .forEach(menuItemRepo::delete);
+
+        menuItemRepo.saveAll(toSave);
     }
 
     @Override

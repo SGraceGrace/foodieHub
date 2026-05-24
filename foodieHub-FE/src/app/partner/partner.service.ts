@@ -95,7 +95,8 @@ export class PartnerService {
     return this.http.put<ApiResponse<Restaurant>>(`${this.restaurantBase}/${id}/hours`, hours);
   }
 
-  updateRestaurantMenu(id: string, menu: MenuCategory[]): Observable<ApiResponse<Restaurant>> {
-    return this.http.put<ApiResponse<Restaurant>>(`${this.restaurantBase}/${id}/menu`, menu);
+  /** Returns the saved menu grouped by category (items include their DB id). */
+  updateRestaurantMenu(id: string, menu: MenuCategory[]): Observable<ApiResponse<MenuCategory[]>> {
+    return this.http.put<ApiResponse<MenuCategory[]>>(`${this.restaurantBase}/${id}/menu`, menu);
   }
 }

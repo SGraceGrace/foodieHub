@@ -8,7 +8,8 @@ import { CloudinaryService } from '../../core/shared/cloudinary.service';
 import { PartnerService } from '../partner.service';
 import { OrderService } from '../../core/shared/order.service';
 import { UserDetails } from '../../model/user.model';
-import { Restaurant, DaySchedule, RestaurantStaff } from '../../model/restaurant.model';
+import { Restaurant, DaySchedule, MenuCategory, RestaurantStaff } from '../../model/restaurant.model';
+import { HomeService } from '../../home/home.service';
 import { Order, RestaurantOrderNotification, RestaurantStats } from '../../model/order.model';
 import { LocationPickerComponent, PickedLocation } from '../../core/shared/components/location-picker/location-picker.component';
 
@@ -25,6 +26,7 @@ export interface DayHours {
 interface MenuExtra { label: string; amount: number; }
 
 interface LocalMenuItem {
+  id?: string;        // menu_items document ID — sent back on save so backend updates in-place (preserving order stats)
   name: string;
   price: number | null;
   gstPercent: number;
@@ -201,18 +203,27 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
 
   // ── Menu: category operations ─────────────────────────────────────
   initMenu() {
-    this.menuCategories = (this.restaurant?.menu ?? []).map(cat => ({
+    if (!this.restaurant?.id) return;
+    // Load from menu_items collection — items include their DB id so save can update in-place
+    this.homeService.getMenuByRestaurant(this.restaurant.id).subscribe({
+      next: res => this.applyMenuFromApi(res.data ?? [])
+    });
+  }
+
+  private applyMenuFromApi(apiMenu: MenuCategory[]) {
+    this.menuCategories = apiMenu.map(cat => ({
       category: cat.category,
       collapsed: false,
       items: (cat.items ?? []).map(item => ({
-        name: item.name,
-        price: item.price,
-        gstPercent: item.gstPercent ?? 0,
-        isVeg: item.isVeg,
-        available: item.available,
+        id:          item.id,
+        name:        item.name,
+        price:       item.price,
+        gstPercent:  item.gstPercent ?? 5,
+        isVeg:       item.isVeg,
+        available:   item.available,
         description: item.description ?? '',
-        imageUrl: item.imageUrl ?? '',
-        extras: (item.extras ?? []).map(e => ({ ...e })),
+        imageUrl:    item.imageUrl ?? '',
+        extras:      (item.extras ?? []).map(e => ({ ...e })),
       })),
     }));
     this.menuDirty = false;
@@ -363,6 +374,7 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
     const payload = this.menuCategories.map(cat => ({
       category: cat.category,
       items: cat.items.map(item => ({
+        id:          item.id ?? null,   // send existing ID → backend updates in-place, preserving order stats
         name:        item.name,
         price:       item.price ?? 0,
         gstPercent:  item.gstPercent,
@@ -375,8 +387,8 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
     }));
     this.partnerService.updateRestaurantMenu(this.restaurant.id, payload).subscribe({
       next: res => {
-        if (res.data) this.restaurant = res.data;
-        this.initMenu();
+        // res.data is List<MenuCategory> — apply directly; do NOT touch this.restaurant
+        this.applyMenuFromApi(res.data ?? []);
         this.savingMenu = false;
         this.menuSavedMsg = 'Menu saved successfully.';
         setTimeout(() => { this.menuSavedMsg = ''; }, 3000);
@@ -416,6 +428,7 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
     private router: Router,
     private tokenService: TokenService,
     private partnerService: PartnerService,
+    private homeService: HomeService,
     private cloudinary: CloudinaryService,
     private orderService: OrderService,
     private ngZone: NgZone
