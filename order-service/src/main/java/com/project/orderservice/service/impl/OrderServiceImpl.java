@@ -7,6 +7,7 @@ import com.project.orderservice.document.OrderItem;
 import com.project.orderservice.document.RestaurantCart;
 import com.project.orderservice.dto.PaginatedResponse;
 import com.project.orderservice.dto.PlaceOrderRequest;
+import com.project.orderservice.messaging.OrderItemEvent;
 import com.project.orderservice.messaging.OrderPlacedEvent;
 import com.project.orderservice.messaging.OrderStatusUpdatedEvent;
 import com.project.orderservice.messaging.RabbitMQConfig;
