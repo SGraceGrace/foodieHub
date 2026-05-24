@@ -374,7 +374,7 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
     const payload = this.menuCategories.map(cat => ({
       category: cat.category,
       items: cat.items.map(item => ({
-        id:          item.id ?? null,   // send existing ID → backend updates in-place, preserving order stats
+        id:          item.id ?? undefined, // send existing ID → backend updates in-place, preserving order stats
         name:        item.name,
         price:       item.price ?? 0,
         gstPercent:  item.gstPercent,
@@ -628,7 +628,9 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
 
   goTab(tab: WorkspaceTab) {
     this.activeTab = tab;
-    if (tab === 'menu')       this.initMenu();
+    // No initMenu() here — menu is loaded once in loadRestaurant() and kept in sync
+    // by saveMenu() applying the PUT response directly. Re-fetching on every tab
+    // click is wasteful and would wipe unsaved edits if the user switched tabs mid-edit.
     if (tab === 'hours')      this.refreshHours();
     if (tab === 'settings')   this.loadStaff();
     if (tab === 'orders')     this.loadLiveOrders();

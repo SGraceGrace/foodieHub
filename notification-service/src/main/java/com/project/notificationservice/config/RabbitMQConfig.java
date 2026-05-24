@@ -40,6 +40,14 @@ public class RabbitMQConfig {
     public static final String ORDER_STATUS_UPDATED_QUEUE   = "order.status.updated.queue";
     public static final String ORDER_STATUS_UPDATED_RKEY    = "order.status.updated";
 
+    /**
+     * Separate queue bound to the SAME order.placed routing key as ORDER_PLACED_QUEUE.
+     * RabbitMQ delivers one copy of each event to every bound queue, so the restaurant
+     * listener (ORDER_PLACED_QUEUE) and driver listener (DRIVER_ORDER_PLACED_QUEUE) both
+     * receive every order.placed event independently — neither steals messages from the other.
+     */
+    public static final String DRIVER_ORDER_PLACED_QUEUE = "driver.order.placed.queue";
+
     @Bean public TopicExchange foodiehubExchange() { return new TopicExchange(EXCHANGE); }
 
     @Bean public Queue partnerRegisteredQueue()  { return new Queue(PARTNER_QUEUE, true); }
@@ -49,6 +57,7 @@ public class RabbitMQConfig {
     @Bean public Queue activityLoggedQueue()     { return new Queue(ACTIVITY_QUEUE, true); }
     @Bean public Queue contactMessageQueue()           { return new Queue(CONTACT_QUEUE, true); }
     @Bean public Queue orderStatusUpdatedQueue()       { return new Queue(ORDER_STATUS_UPDATED_QUEUE, true); }
+    @Bean public Queue driverOrderPlacedQueue()        { return new Queue(DRIVER_ORDER_PLACED_QUEUE, true); }
 
     @Bean
     public Binding partnerRegisteredBinding(Queue partnerRegisteredQueue, TopicExchange foodiehubExchange) {
@@ -77,6 +86,11 @@ public class RabbitMQConfig {
     @Bean
     public Binding orderStatusUpdatedBinding(Queue orderStatusUpdatedQueue, TopicExchange foodiehubExchange) {
         return BindingBuilder.bind(orderStatusUpdatedQueue).to(foodiehubExchange).with(ORDER_STATUS_UPDATED_RKEY);
+    }
+    @Bean
+    public Binding driverOrderPlacedBinding(Queue driverOrderPlacedQueue, TopicExchange foodiehubExchange) {
+        // Same routing key as orderPlacedBinding — each queue gets its own independent copy of the event.
+        return BindingBuilder.bind(driverOrderPlacedQueue).to(foodiehubExchange).with(ORDER_PLACED_RKEY);
     }
 
     @Bean

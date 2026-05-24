@@ -33,7 +33,7 @@ export function authInterceptor(
 
   // Always public — skip token entirely (auth/static endpoints)
   const alwaysPublic = ['/login', '/signup', '/api/v1/contact', '/api/v1/slides',
-    '/partner/register', '/api/v1/refresh-token', 'api.cloudinary.com', 'nominatim.openstreetmap.org'];
+    '/partner/register', '/driver/register', '/api/v1/refresh-token', 'api.cloudinary.com', 'nominatim.openstreetmap.org'];
   if (alwaysPublic.some((u) => req.url.includes(u))) {
     return next(req);
   }

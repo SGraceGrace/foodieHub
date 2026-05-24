@@ -1,4 +1,4 @@
-<app-driver-header (navigateTab)="goTab($any($event))"></app-driver-header>
+<app-driver-header (navigateTab)="goTab($any($event))" (newOrderAlert)="onNewOrderAlert($event)"></app-driver-header>
 
 <div class="dashboard">
   <!-- SIDEBAR -->
@@ -35,8 +35,26 @@
             <button class="toggle-offline" (click)="goOffline()" [disabled]="!isOnline">⏹️ Go Offline</button>
           </div>
         </div>
-        <p class="status-hint" *ngIf="!isOnline">You are <strong>offline</strong>. Go online to receive delivery orders nearby.</p>
-        <p class="status-hint online-hint" *ngIf="isOnline">You are <strong>online</strong>. New orders will appear on your Available Orders tab.</p>
+        <p class="status-hint location-error" *ngIf="locationError">⚠️ {{ locationError }}</p>
+        <p class="status-hint" *ngIf="!isOnline && !locationError">You are <strong>offline</strong>. Go online to receive delivery orders nearby.</p>
+        <p class="status-hint online-hint" *ngIf="isOnline && !currentLat">You are <strong>online</strong>. Acquiring location...</p>
+
+        <!-- Live location card — shown once we have coordinates -->
+        <div class="location-card" *ngIf="isOnline && currentLat !== null">
+          <div class="location-card-header">
+            <span class="location-pulse"></span>
+            <span class="location-label">Live Location</span>
+            <span class="location-updated" *ngIf="locationUpdatedAt">
+              Updated {{ locationUpdatedAt | date:'h:mm:ss a' }}
+            </span>
+          </div>
+          <div class="location-address" *ngIf="currentAddress">
+            📍 {{ currentAddress }}
+          </div>
+          <div class="location-address" *ngIf="!currentAddress">
+            📍 Fetching address...
+          </div>
+        </div>
       </div>
 
       <!-- Earnings summary -->
@@ -290,62 +308,132 @@
       <div class="page-title">👤 My Profile</div>
 
       <div class="box">
-        <div class="profile-header">
-          <div class="profile-avatar">{{ profileInitials }}</div>
-          <div class="profile-info">
-            <h3>{{ profile.fullName || '—' }}</h3>
-            <p>📱 {{ profile.phone || '—' }}</p>
-            <p>📧 {{ profile.email || '—' }}</p>
-            <div class="rating-row" *ngIf="stats.rating > 0">
-              <span>⭐ {{ stats.rating | number:'1.1-1' }}</span>
-              <span class="rating-count">({{ stats.ratingCount }} ratings)</span>
-            </div>
-            <div class="rating-row" *ngIf="stats.rating === 0">
-              <span class="no-rating">No ratings yet</span>
-            </div>
-          </div>
-        </div>
 
-        <div class="section-divider">
-          <h3>Vehicle Information</h3>
-          <div class="info-row">
-            <span class="info-label">Vehicle Type</span>
-            <strong>{{ profile.vehicleType || '—' }}</strong>
+        <!-- ── VIEW MODE ── -->
+        <ng-container *ngIf="!editingProfile">
+          <div class="profile-header">
+            <div class="profile-avatar">{{ profileInitials }}</div>
+            <div class="profile-info">
+              <h3>{{ profile.fullName || '—' }}</h3>
+              <p>📱 {{ profile.phone || '—' }}</p>
+              <p>📧 {{ profile.email || '—' }}</p>
+              <div class="rating-row" *ngIf="stats.rating > 0">
+                <span>⭐ {{ stats.rating | number:'1.1-1' }}</span>
+                <span class="rating-count">({{ stats.ratingCount }} ratings)</span>
+              </div>
+              <div class="rating-row" *ngIf="stats.rating === 0">
+                <span class="no-rating">No ratings yet</span>
+              </div>
+            </div>
+            <button class="btn btn-outline small edit-profile-btn" (click)="openEditProfile()">✏️ Edit Profile</button>
           </div>
-          <div class="info-row">
-            <span class="info-label">License Number</span>
-            <strong>{{ profile.licenseNumber || '—' }}</strong>
-          </div>
-          <div class="info-row">
-            <span class="info-label">Verification Status</span>
-            <strong [class.approved]="profile.verificationStatus === 'APPROVED'"
-                    [class.pending]="profile.verificationStatus === 'PENDING'">
-              {{ profile.verificationStatus === 'APPROVED' ? '✅ Approved' : '🕐 Pending Verification' }}
-            </strong>
-          </div>
-        </div>
 
-        <div class="section-divider">
-          <h3>Performance Metrics</h3>
-          <div class="stats-grid">
-            <div class="stat-item">
-              <div class="stat-label">Total Deliveries</div>
-              <div class="stat-value">{{ stats.totalDeliveries }}</div>
+          <div class="section-divider">
+            <h3>Vehicle Information</h3>
+            <div class="info-row">
+              <span class="info-label">Vehicle Type</span>
+              <strong>{{ profile.vehicleType || '—' }}</strong>
             </div>
-            <div class="stat-item">
-              <div class="stat-label">Rating</div>
-              <div class="stat-value green">{{ stats.rating > 0 ? (stats.rating | number:'1.1-1') + ' ⭐' : '—' }}</div>
+            <div class="info-row">
+              <span class="info-label">License Number</span>
+              <strong>{{ profile.licenseNumber || '—' }}</strong>
             </div>
-            <div class="stat-item">
-              <div class="stat-label">Completion Rate</div>
-              <div class="stat-value">{{ stats.completionRate > 0 ? stats.completionRate + '%' : '—' }}</div>
+            <div class="info-row">
+              <span class="info-label">Bank Account</span>
+              <strong>{{ profile.bankAccount || '—' }}</strong>
             </div>
-            <div class="stat-item">
-              <div class="stat-label">Avg Delivery Time</div>
-              <div class="stat-value">{{ stats.avgDeliveryMinutes > 0 ? stats.avgDeliveryMinutes + ' min' : '—' }}</div>
+            <div class="info-row">
+              <span class="info-label">Verification Status</span>
+              <strong [class.approved]="profile.verificationStatus === 'APPROVED'"
+                      [class.pending]="profile.verificationStatus === 'PENDING'">
+                {{ profile.verificationStatus === 'APPROVED' ? '✅ Approved' : '🕐 Pending Verification' }}
+              </strong>
             </div>
           </div>
-        </div>
+
+          <div class="section-divider">
+            <h3>Performance Metrics</h3>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-label">Total Deliveries</div>
+                <div class="stat-value">{{ stats.totalDeliveries }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Rating</div>
+                <div class="stat-value green">{{ stats.rating > 0 ? (stats.rating | number:'1.1-1') + ' ⭐' : '—' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Completion Rate</div>
+                <div class="stat-value">{{ stats.completionRate > 0 ? stats.completionRate + '%' : '—' }}</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Avg Delivery Time</div>
+                <div class="stat-value">{{ stats.avgDeliveryMinutes > 0 ? stats.avgDeliveryMinutes + ' min' : '—' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="save-msg success" *ngIf="profileSaveMsg">{{ profileSaveMsg }}</div>
+        </ng-container>
+
+        <!-- ── EDIT MODE ── -->
+        <ng-container *ngIf="editingProfile">
+          <h3 class="edit-section-title">✏️ Edit Profile</h3>
+
+          <div class="edit-section">
+            <h4>Personal Information</h4>
+            <div class="form-row">
+              <div class="form-group">
+                <label>First Name</label>
+                <input type="text" [(ngModel)]="profileDraft.firstName" placeholder="First name" />
+              </div>
+              <div class="form-group">
+                <label>Last Name</label>
+                <input type="text" [(ngModel)]="profileDraft.lastName" placeholder="Last name" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Phone</label>
+              <input type="tel" [(ngModel)]="profileDraft.phone" placeholder="Phone number" />
+            </div>
+            <div class="form-group readonly-field">
+              <label>Email (cannot be changed)</label>
+              <input type="email" [value]="profile.email" disabled />
+            </div>
+          </div>
+
+          <div class="edit-section">
+            <h4>Vehicle Information</h4>
+            <div class="form-group">
+              <label>Vehicle Type</label>
+              <select [(ngModel)]="profileDraft.vehicleType">
+                <option value="">Select vehicle type</option>
+                <option value="BIKE">Bike</option>
+                <option value="SCOOTER">Scooter</option>
+                <option value="CAR">Car</option>
+                <option value="BICYCLE">Bicycle</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>License Number</label>
+              <input type="text" [(ngModel)]="profileDraft.licenseNumber" placeholder="License number" />
+            </div>
+            <div class="form-group">
+              <label>Bank Account Number</label>
+              <input type="text" [(ngModel)]="profileDraft.bankAccount" placeholder="Bank account number" />
+            </div>
+          </div>
+
+          <div class="save-msg error" *ngIf="profileSaveMsg && !savingProfile">{{ profileSaveMsg }}</div>
+
+          <div class="form-actions">
+            <button class="btn btn-primary" (click)="saveProfile()" [disabled]="savingProfile">
+              {{ savingProfile ? 'Saving...' : 'Save Changes' }}
+            </button>
+            <button class="btn btn-outline" (click)="cancelEditProfile()" [disabled]="savingProfile">Cancel</button>
+          </div>
+        </ng-container>
+
       </div>
     </div>
 

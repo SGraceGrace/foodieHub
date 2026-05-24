@@ -34,6 +34,9 @@ spring:
 admin:
   email: ${ADMIN_EMAIL:admin@foodiehub.com}
 
+user-service:
+  base-url: ${USER_SERVICE_URL:http://localhost:8081}
+
 vapid:
   public-key: ${VAPID_PUBLIC_KEY:BBExuSKx28RTr_4tt3TJIqAfVoWOfTpwNExZez0UjTUx4rnrSEgyjX0tFqmQPGYY5YS_CZeSRIFvmBL0S-39UQw}
   private-key: ${VAPID_PRIVATE_KEY:Ln6IM4WpM_77cEsTvtU-rpv8S0gj7TAmqZmo-3OPRjg}

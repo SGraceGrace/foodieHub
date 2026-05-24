@@ -5,6 +5,7 @@ import { environment } from '../../../environments/environment';
 
 const ADMIN_SUBSCRIPTION_URL    = `${environment.apiBaseUrl}/api/v1/admin/push-subscription`;
 const CUSTOMER_SUBSCRIPTION_URL = `${environment.apiBaseUrl}/api/v1/customer/push-subscription`;
+const DRIVER_SUBSCRIPTION_URL   = `${environment.apiBaseUrl}/api/v1/driver/push-subscription`;
 
 @Injectable({ providedIn: 'root' })
 export class PushNotificationService {
@@ -26,13 +27,13 @@ export class PushNotificationService {
    * Registers the service worker and re-subscribes if the user already
    * granted permission in a previous session.
    *
-   * @param role  'admin' → saves to admin endpoint, 'customer' → customer endpoint
+   * @param role  'admin' → saves to admin endpoint, 'customer' → customer endpoint, 'driver' → driver endpoint
    */
-  async init(role: 'admin' | 'customer' = 'admin'): Promise<void> {
+  async init(role: 'admin' | 'customer' | 'driver' = 'admin'): Promise<void> {
     if (!this.isSupported) return;
     this.permissionSubject.next(Notification.permission);
     if (Notification.permission === 'granted') {
-      await this.subscribe(role === 'customer' ? CUSTOMER_SUBSCRIPTION_URL : ADMIN_SUBSCRIPTION_URL);
+      await this.subscribe(this.subscriptionUrl(role));
     }
   }
 
@@ -40,14 +41,22 @@ export class PushNotificationService {
    * Call when the user clicks "Enable Notifications".
    * Shows the browser permission prompt, then subscribes if granted.
    *
-   * @param role  'admin' | 'customer'
+   * @param role  'admin' | 'customer' | 'driver'
    */
-  async requestAndSubscribe(role: 'admin' | 'customer' = 'admin'): Promise<void> {
+  async requestAndSubscribe(role: 'admin' | 'customer' | 'driver' = 'admin'): Promise<void> {
     if (!this.isSupported) return;
     const permission = await Notification.requestPermission();
     this.permissionSubject.next(permission);
     if (permission === 'granted') {
-      await this.subscribe(role === 'customer' ? CUSTOMER_SUBSCRIPTION_URL : ADMIN_SUBSCRIPTION_URL);
+      await this.subscribe(this.subscriptionUrl(role));
+    }
+  }
+
+  private subscriptionUrl(role: 'admin' | 'customer' | 'driver'): string {
+    switch (role) {
+      case 'customer': return CUSTOMER_SUBSCRIPTION_URL;
+      case 'driver':   return DRIVER_SUBSCRIPTION_URL;
+      default:         return ADMIN_SUBSCRIPTION_URL;
     }
   }
 

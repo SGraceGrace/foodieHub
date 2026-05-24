@@ -13,8 +13,11 @@ import com.project.notificationservice.event.OrderPlacedEvent;
 import com.project.notificationservice.event.OrderStatusUpdatedEvent;
 import com.project.notificationservice.event.OwnerStatusEvent;
 import com.project.notificationservice.event.PartnerRegisteredEvent;
+import com.project.notificationservice.dto.DriverOrderNotificationDTO;
 import com.project.notificationservice.entity.CustomerNotification;
+import com.project.notificationservice.entity.DriverNotification;
 import com.project.notificationservice.repo.CustomerNotificationRepo;
+import com.project.notificationservice.repo.DriverNotificationRepo;
 import com.project.notificationservice.repo.NotificationRepo;
 import com.project.notificationservice.repo.RestaurantNotificationRepo;
 import com.project.notificationservice.service.SseEmitterService;
@@ -23,9 +26,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.Collections;
+import java.util.List;
 
 @Slf4j
 @Component
@@ -36,11 +45,16 @@ public class NotificationListener {
     private final NotificationRepo notificationRepo;
     private final RestaurantNotificationRepo restaurantNotificationRepo;
     private final CustomerNotificationRepo customerNotificationRepo;
+    private final DriverNotificationRepo driverNotificationRepo;
     private final SseEmitterService sseEmitterService;
     private final WebPushService webPushService;
+    private final RestTemplate restTemplate;
 
     @Value("${admin.email}")
     private String adminEmail;
+
+    @Value("${user-service.base-url:http://localhost:8081}")
+    private String userServiceBaseUrl;
 
     // ── Partner registration → save notification + email admin ───
 
@@ -226,6 +240,69 @@ public class NotificationListener {
             case "CANCELLED"  -> "❌ Your order was cancelled by the restaurant.";
             default           -> "Order status updated: " + status;
         };
+    }
+
+    // ── Order placed → notify nearby online drivers (SSE + Web Push) ─
+
+    @RabbitListener(queues = RabbitMQConfig.DRIVER_ORDER_PLACED_QUEUE)
+    public void onOrderPlacedForDriver(OrderPlacedEvent event) {
+        // 1. Fetch all online drivers (those with known GPS location) from user-service.
+        //    Calls the internal endpoint directly on port 8081 — bypasses the gateway.
+        List<String> driverEmails;
+        try {
+            var response = restTemplate.exchange(
+                    userServiceBaseUrl + "/api/v1/internal/drivers/online",
+                    HttpMethod.GET, null,
+                    new ParameterizedTypeReference<List<String>>() {});
+            driverEmails = response.getBody() != null ? response.getBody() : Collections.emptyList();
+        } catch (Exception e) {
+            log.warn("Could not fetch online drivers — skipping driver notification for order {}: {}",
+                    event.getOrderId(), e.getMessage());
+            return;
+        }
+
+        if (driverEmails.isEmpty()) {
+            log.info("No online drivers to notify for order {}", event.getOrderId());
+            return;
+        }
+
+        int itemCount  = event.getItemNames() != null ? event.getItemNames().size() : 0;
+        // POC: earn ≈ 15% of order total. Real platforms compute this from distance + base fee.
+        double earnAmount = Math.round(event.getTotalAmount() * 0.15 * 100.0) / 100.0;
+
+        String bodyText = itemCount + " item" + (itemCount != 1 ? "s" : "")
+                + " · ₹" + String.format("%.0f", earnAmount) + " earn";
+
+        for (String driverEmail : driverEmails) {
+            // 2a. Persist notification to driver_notifications
+            DriverNotification dn = new DriverNotification();
+            dn.setDriverEmail(driverEmail);
+            dn.setOrderId(event.getOrderId());
+            dn.setRestaurantName(event.getRestaurantName());
+            dn.setDeliveryAddress(event.getDeliveryAddress());
+            dn.setItemCount(itemCount);
+            dn.setEarnAmount(earnAmount);
+            dn.setItemNames(event.getItemNames());
+            DriverNotification saved = driverNotificationRepo.save(dn);
+
+            // 2b. SSE — patches the notification bell in real-time if the tab is open
+            DriverOrderNotificationDTO dto = new DriverOrderNotificationDTO(
+                    saved.getId(),
+                    saved.getOrderId(),
+                    saved.getRestaurantName(),
+                    saved.getDeliveryAddress(),
+                    saved.getItemCount(),
+                    saved.getEarnAmount(),
+                    saved.getItemNames(),
+                    false,
+                    saved.getCreatedAt());
+            sseEmitterService.pushToDriver(driverEmail, dto);
+
+            // 2c. Web Push — OS-level notification, works when tab is closed
+            webPushService.sendToDriver(driverEmail, event.getRestaurantName(), bodyText, event.getOrderId());
+        }
+
+        log.info("Notified {} online driver(s) about order {}", driverEmails.size(), event.getOrderId());
     }
 
     // ── Email bodies ──────────────────────────────────────────────

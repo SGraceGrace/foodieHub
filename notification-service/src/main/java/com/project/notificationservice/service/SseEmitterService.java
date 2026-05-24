@@ -1,6 +1,7 @@
 package com.project.notificationservice.service;
 
 import com.project.notificationservice.dto.CustomerOrderUpdateDTO;
+import com.project.notificationservice.dto.DriverOrderNotificationDTO;
 import com.project.notificationservice.dto.NotificationDTO;
 import com.project.notificationservice.dto.RestaurantNotificationDTO;
 import org.springframework.http.MediaType;
@@ -26,6 +27,10 @@ public class SseEmitterService {
     // ── Customer SSE sessions ─────────────────────────────────────────
     private final List<CustomerSession> customerSessions = new CopyOnWriteArrayList<>();
     record CustomerSession(String userId, SseEmitter emitter) {}
+
+    // ── Driver SSE sessions ───────────────────────────────────────────
+    private final List<DriverSession> driverSessions = new CopyOnWriteArrayList<>();
+    record DriverSession(String driverEmail, SseEmitter emitter) {}
 
     // ── Admin subscribe ───────────────────────────────────────────────
 
@@ -114,5 +119,32 @@ public class SseEmitterService {
             }
         }
         customerSessions.removeAll(dead);
+    }
+
+    // ── Driver subscribe ──────────────────────────────────────────────
+
+    public SseEmitter subscribeDriver(String driverEmail) {
+        SseEmitter emitter = new SseEmitter(0L);
+        DriverSession session = new DriverSession(driverEmail, emitter);
+        driverSessions.add(session);
+
+        Runnable remove = () -> driverSessions.remove(session);
+        emitter.onCompletion(remove);
+        emitter.onTimeout(remove);
+        emitter.onError(e -> driverSessions.remove(session));
+        return emitter;
+    }
+
+    public void pushToDriver(String driverEmail, DriverOrderNotificationDTO dto) {
+        List<DriverSession> dead = new ArrayList<>();
+        for (DriverSession session : driverSessions) {
+            if (!session.driverEmail().equals(driverEmail)) continue;
+            try {
+                session.emitter().send(SseEmitter.event().data(dto, MediaType.APPLICATION_JSON));
+            } catch (Exception e) {
+                dead.add(session);
+            }
+        }
+        driverSessions.removeAll(dead);
     }
 }

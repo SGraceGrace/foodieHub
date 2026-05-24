@@ -32,7 +32,7 @@ export class AppComponent {
       if (event instanceof NavigationEnd) {
         this.currentUrl = event.url;
         const path = event.urlAfterRedirects.split('?')[0];
-        const noSharedLayout = path.startsWith('/admin') || path.startsWith('/partner');
+        const noSharedLayout = path.startsWith('/admin') || path.startsWith('/partner') || path.startsWith('/driver');
         const authPage = path === '/login' || path === '/signup';
         this.showHeader = !noSharedLayout && !authPage;
         this.showFooter = !noSharedLayout && !authPage;

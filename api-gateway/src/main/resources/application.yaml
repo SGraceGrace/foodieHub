@@ -86,6 +86,16 @@ spring:
             predicates:
               - Path=/api/v1/partner/**
 
+          - id: notification-service-driver-notifications
+            uri: http://localhost:8084
+            predicates:
+              - Path=/api/v1/driver/notifications, /api/v1/driver/notifications/**
+
+          - id: notification-service-driver-push-subscription
+            uri: http://localhost:8084
+            predicates:
+              - Path=/api/v1/driver/push-subscription
+
           - id: user-service-driver-register
             uri: http://localhost:8081
             predicates:
