@@ -23,7 +23,8 @@ import org.springframework.http.MediaType;
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
-    private static final List<String> PUBLIC_PATHS = List.of(
+    // Paths that are always public regardless of HTTP method
+    private static final List<String> ALWAYS_PUBLIC = List.of(
             "/api/auth/register",
             "/api/auth/login",
             "/api/auth/refresh",
@@ -33,12 +34,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             "/api/v1/refresh-token",
             "/api/v1/contact",
             "/api/v1/slides",
-            "/api/v1/restaurants",
             "/api/v1/partner/register",
             "/api/v1/driver/register",
             "/login/oauth2",
             "/oauth2",
             "/actuator"
+    );
+
+    // Paths that are public for GET only — POST/PUT/DELETE require auth.
+    // This lets unauthenticated users browse restaurants while protecting
+    // write operations like POST /api/v1/restaurants/{id}/rating.
+    private static final List<String> GET_PUBLIC_PATHS = List.of(
+            "/api/v1/restaurants"
     );
 
     @Value("${jwt.secret.key}")
@@ -50,7 +57,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
 
-        if (isPublicPath(path) || "OPTIONS".equalsIgnoreCase(request.getMethod())) {
+        if (isPublicPath(path, request.getMethod()) || "OPTIONS".equalsIgnoreCase(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -95,8 +102,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         response.getWriter().write("{\"status\":401,\"error\":\"" + message + "\"}");
     }
 
-    private boolean isPublicPath(String path) {
-        return PUBLIC_PATHS.stream().anyMatch(path::startsWith);
+    private boolean isPublicPath(String path, String method) {
+        if (ALWAYS_PUBLIC.stream().anyMatch(path::startsWith)) return true;
+        if ("GET".equalsIgnoreCase(method) && GET_PUBLIC_PATHS.stream().anyMatch(path::startsWith)) return true;
+        return false;
     }
 
     private Claims extractClaims(String token) {

@@ -563,6 +563,37 @@ After making code changes, always restart the affected service(s). Changes only 
 
 ---
 
+## ⭐ Rating Architecture
+
+### Design decisions (approved and implemented)
+- **One rating per order** — `ratings` is a separate MongoDB collection; each document ties a customer rating to exactly one order. The `orderId` field has a unique index (`@Indexed(unique = true)`) so no duplicate ratings are possible, even under concurrent requests.
+- **Avg recalculated from source of truth** — every time a new rating is saved, the restaurant's `rating` and `ratingCount` are recalculated by fetching *all* ratings for that restaurant from the `ratings` collection and averaging them. This is more accurate than a rolling weighted average which drifts if ratings are edited or deleted.
+- **auth guard** — `POST /api/v1/restaurants/{id}/rating` requires auth (the API Gateway splits `/api/v1/restaurants` into GET-public + POST-requires-auth). The customer email comes from the `X-User-Id` header injected by the gateway, not the request body.
+
+### Data flow
+```
+Customer clicks ★ (Orders page)
+  → Angular forkJoin:
+      ① POST /api/v1/restaurants/{restaurantId}/rating  { rating, orderId }
+             food-service checks existsByOrderId → saves Rating doc → recalculates avg → updates restaurant
+      ② PATCH /api/orders/{orderId}/rated
+             order-service sets rated=true on the Order doc
+  → Local allOrders list patched (rated=true) → "Rate Order" button disappears, "⭐ Rated" badge shows
+```
+
+### MongoDB collections
+| Collection | Owner service | Key fields |
+|---|---|---|
+| `ratings` | food-service | restaurantId, customerId, orderId (unique), rating, createdAt |
+| `restaurants` | food-service | rating (avg), ratingCount (kept in sync after every new rating) |
+
+### What NOT to do
+- ❌ Do not store rating as a rolling weighted average — it drifts and can't be verified
+- ❌ Do not accept orderId from the customer in a way that lets them rate without a real order — the orderId is validated against the ratings collection only (order-service is not called for verification in this POC)
+- ❌ Do not skip the `auto-index-creation: true` in food-service `application.yaml` — without it `@Indexed(unique = true)` on `orderId` is never created in MongoDB
+
+---
+
 ## ✅ Definition of Done (POC)
 
 Your POC is interview-ready when:

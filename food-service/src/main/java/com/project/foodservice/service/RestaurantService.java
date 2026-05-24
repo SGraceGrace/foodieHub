@@ -21,6 +21,9 @@ public interface RestaurantService {
     Restaurant updateMenu(String id, java.util.List<com.project.foodservice.document.MenuCategory> menu);
     Restaurant updateDetails(String id, RestaurantUpdateRequestDTO request);
 
-    /** Adds a star rating using weighted average, increments ratingCount. */
-    Restaurant addRating(String restaurantId, double rating);
+    /**
+     * Records a rating for the given order and recalculates the restaurant's avg.
+     * Throws if orderId has already been rated (duplicate guard).
+     */
+    Restaurant addRating(String restaurantId, double rating, String customerId, String orderId);
 }

@@ -190,9 +190,10 @@ export class OrdersComponent implements OnInit, OnDestroy {
     const order = this.ratingTarget;
     this.submitting = true;
 
-    // 1. Submit rating to food-service  2. Mark order as rated in order-service
+    // 1. Submit rating to food-service (tied to this order's ID)
+    // 2. Mark order as rated in order-service so the button disappears on next load
     forkJoin([
-      this.homeService.rateRestaurant(order.restaurantId!, this.selectedStar),
+      this.homeService.rateRestaurant(order.restaurantId!, this.selectedStar, order.id),
       this.orderService.markOrderRated(order.id),
     ]).subscribe({
       next: () => {

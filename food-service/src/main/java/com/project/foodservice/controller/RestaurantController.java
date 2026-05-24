@@ -92,14 +92,22 @@ public class RestaurantController {
 
     /**
      * POST /api/v1/restaurants/{id}/rating
-     * Customer submits a 1–5 star rating; weighted average is applied server-side.
+     * Customer submits a 1–5 star rating tied to a specific order.
+     * X-User-Id header is injected by the API Gateway from the verified JWT.
+     * One rating per order — duplicate submissions return 409.
      */
     @PostMapping("/{id}/rating")
     public ResponseEntity<BaseAPIResponse> addRating(
             @PathVariable String id,
+            @RequestHeader("X-User-Id") String customerId,
             @RequestBody RatingRequest req) {
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
-                restaurantService.addRating(id, req.rating()),
-                HttpStatus.OK.value(), null));
+        try {
+            return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+                    restaurantService.addRating(id, req.rating(), customerId, req.orderId()),
+                    HttpStatus.OK.value(), null));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(new BaseAPIResponse("ERROR", null, HttpStatus.CONFLICT.value(), e.getMessage()));
+        }
     }
 }

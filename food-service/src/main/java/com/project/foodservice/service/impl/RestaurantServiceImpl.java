@@ -5,12 +5,14 @@ import com.project.foodservice.document.Location;
 import com.project.foodservice.document.MenuCategory;
 import com.project.foodservice.document.MenuItem;
 import com.project.foodservice.document.OwnerApproval;
+import com.project.foodservice.document.Rating;
 import com.project.foodservice.document.Restaurant;
 import com.project.foodservice.dto.PaginatedResponse;
 import com.project.foodservice.dto.RestaurantCreateRequestDTO;
 import com.project.foodservice.dto.RestaurantUpdateRequestDTO;
 import com.project.foodservice.enums.RestaurantStatus;
 import com.project.foodservice.repo.OwnerApprovalRepo;
+import com.project.foodservice.repo.RatingRepo;
 import com.project.foodservice.repo.RestaurantRepo;
 import com.project.foodservice.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +35,7 @@ public class RestaurantServiceImpl implements RestaurantService {
 
     private final RestaurantRepo restaurantRepo;
     private final OwnerApprovalRepo ownerApprovalRepo;
+    private final RatingRepo ratingRepo;
 
     @Override
     public PaginatedResponse<Restaurant> getAll(String cuisine, Double lat, Double lng, Double radiusKm, String sort, Pageable pageable) {
@@ -225,18 +228,30 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
-    public Restaurant addRating(String restaurantId, double newRating) {
+    public Restaurant addRating(String restaurantId, double newRating, String customerId, String orderId) {
+        // Duplicate guard — one rating per order (DB unique index is the real guard, this is the friendly message)
+        if (ratingRepo.existsByOrderId(orderId)) {
+            throw new IllegalStateException("Order has already been rated");
+        }
+
         Restaurant r = restaurantRepo.findById(restaurantId)
                 .orElseThrow(() -> new RuntimeException("Restaurant not found"));
-        int oldCount    = r.getRatingCount();
-        double oldRating = r.getRating();
-        // Weighted average: keeps existing rating meaningful as more reviews come in
-        double updated = oldCount == 0
-                ? newRating
-                : (oldRating * oldCount + newRating) / (oldCount + 1);
+
+        // Persist the individual rating document
+        Rating rating = new Rating();
+        rating.setRestaurantId(restaurantId);
+        rating.setCustomerId(customerId);
+        rating.setOrderId(orderId);
+        rating.setRating(newRating);
+        ratingRepo.save(rating);
+
+        // Recalculate avg from all stored ratings — source of truth, not a rolling estimate
+        List<Rating> allRatings = ratingRepo.findByRestaurantId(restaurantId);
+        double avg = allRatings.stream().mapToDouble(Rating::getRating).average().orElse(newRating);
+
         // Round to 1 decimal place (e.g. 4.2666 → 4.3)
-        r.setRating(Math.round(updated * 10.0) / 10.0);
-        r.setRatingCount(oldCount + 1);
+        r.setRating(Math.round(avg * 10.0) / 10.0);
+        r.setRatingCount(allRatings.size());
         return restaurantRepo.save(r);
     }
 
