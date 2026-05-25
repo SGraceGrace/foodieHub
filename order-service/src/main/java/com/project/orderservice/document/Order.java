@@ -30,8 +30,17 @@ public class Order {
 
     private String deliveryAddress;
 
-    /** PLACED → CONFIRMED → PREPARING → READY → DELIVERED | CANCELLED */
+    /** Overall order lifecycle: PLACED → CONFIRMED → PREPARING → READY → OUT_FOR_DELIVERY → DELIVERED | CANCELLED */
     private String status = "PLACED";
+
+    /** Last status set by the restaurant: CONFIRMED | PREPARING | READY | CANCELLED */
+    private String restaurantStatus;
+
+    /** Last status set by the driver: OUT_FOR_DELIVERY | DELIVERED */
+    private String driverStatus;
+
+    /** Email of the driver who accepted this order. Null until a driver claims it. */
+    private String driverEmail;
 
     /** True after the customer has submitted a star rating. Prevents duplicate ratings. */
     private boolean rated = false;

@@ -120,6 +120,29 @@ public class OrderController {
     }
 
     /**
+     * GET /api/orders/available — All unassigned active orders visible to drivers.
+     * Returns orders where driverEmail IS NULL and status IN (PLACED, CONFIRMED, PREPARING, READY).
+     */
+    @GetMapping("/available")
+    public ResponseEntity<BaseAPIResponse> getAvailableOrders() {
+        return ResponseEntity.ok(
+                new BaseAPIResponse("SUCCESS", orderService.getAvailableOrders(), 200, null));
+    }
+
+    /**
+     * PATCH /api/orders/{id}/accept — Driver claims an order.
+     * Stores the driver's email on the order. Returns 409 if already taken.
+     * No request body needed — driver identity comes from the X-User-Id header.
+     */
+    @PatchMapping("/{id}/accept")
+    public ResponseEntity<BaseAPIResponse> acceptOrder(
+            @PathVariable String id,
+            @RequestHeader("X-User-Id") String driverEmail) {
+        Order order = orderService.acceptOrder(id, driverEmail);
+        return ResponseEntity.ok(new BaseAPIResponse("ORDER_ACCEPTED", order, 200, null));
+    }
+
+    /**
      * PATCH /api/orders/{id}/rated — Customer marks an order as rated.
      * Called immediately after successfully submitting a star rating to food-service.
      * Sets rated=true so the UI hides the rating button and prevents duplicates.
@@ -128,5 +151,18 @@ public class OrderController {
     public ResponseEntity<BaseAPIResponse> markRated(@PathVariable String id) {
         Order order = orderService.markRated(id);
         return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", order, 200, null));
+    }
+
+    /**
+     * PATCH /api/orders/{id}/driver-status — Driver updates order status.
+     * Allowed transitions driven by the driver: READY → OUT_FOR_DELIVERY → DELIVERED.
+     * Publishes the same OrderStatusUpdatedEvent so the customer is notified via SSE + Web Push.
+     */
+    @PatchMapping("/{id}/driver-status")
+    public ResponseEntity<BaseAPIResponse> driverUpdateStatus(
+            @PathVariable String id,
+            @Valid @RequestBody UpdateStatusRequest req) {
+        Order order = orderService.updateStatus(id, req.getStatus());
+        return ResponseEntity.ok(new BaseAPIResponse("STATUS_UPDATED", order, 200, null));
     }
 }

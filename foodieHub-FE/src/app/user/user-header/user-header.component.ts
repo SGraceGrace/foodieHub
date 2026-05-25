@@ -134,6 +134,8 @@ export class UserHeaderComponent implements OnInit, OnDestroy {
         this.notifications = [{ ...update, read: false }, ...this.notifications].slice(0, 20);
         // In-app toast (Web Push from service worker handles the OS notification)
         this.toaster.info(update.message, update.restaurantName, { timeOut: 6000 });
+        // Broadcast to any page currently listening (orders page updates tracker live)
+        this.orderService.emitStatusUpdate(update);
       });
     });
   }
@@ -170,7 +172,8 @@ export class UserHeaderComponent implements OnInit, OnDestroy {
 
   statusEmoji(status: string): string {
     const map: Record<string, string> = {
-      CONFIRMED: '✅', PREPARING: '👨‍🍳', READY: '🛵', DELIVERED: '🎉', CANCELLED: '❌',
+      CONFIRMED: '✅', PREPARING: '👨‍🍳', READY: '📦',
+      DRIVER_ASSIGNED: '🚗', OUT_FOR_DELIVERY: '🛵', DELIVERED: '🎉', CANCELLED: '❌',
     };
     return map[status] ?? '📦';
   }

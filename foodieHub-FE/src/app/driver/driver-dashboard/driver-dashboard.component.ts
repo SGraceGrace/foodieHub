@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { ToastrService } from 'ngx-toastr';
 import { DriverHeaderComponent } from '../driver-header/driver-header.component';
 import { DriverService, DriverProfileData, DriverOrderNotification } from '../driver.service';
+import { Order } from '../../model/order.model';
 
 export type DashboardTab = 'dashboard' | 'orders' | 'active' | 'history' | 'earnings' | 'profile';
 
@@ -78,6 +79,7 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
 
   // Available orders (loaded from API when online)
   availableOrders: DriverOrder[] = [];
+  loadingOrders = false;
   selectedOrder: DriverOrder | null = null;
   showOrderModal = false;
 
@@ -151,6 +153,7 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
       this.profile.verificationStatus = stored.status === 'ACTIVE' ? 'APPROVED' : (stored.status ?? 'PENDING');
     }
     // Load full profile from API (includes vehicleType, licenseNumber, bankAccount from driver_profile table)
+    // Available orders are loaded inside applyProfileFromApi() once online status is known.
     this.loadProfile();
   }
 
@@ -161,8 +164,12 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
 
   goTab(tab: DashboardTab) {
     this.activeTab = tab;
-    if (tab === 'orders' && !this.isOnline) {
-      this.toastr.info('Go online to see available orders.');
+    if (tab === 'orders') {
+      if (!this.isOnline) {
+        this.toastr.info('Go online to see available orders.');
+      } else {
+        this.loadAvailableOrders();
+      }
     }
     if (tab === 'history') {
       // TODO: load delivery history from API
@@ -174,6 +181,41 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
       this.loadProfile();
       this.editingProfile = false;
     }
+  }
+
+  /**
+   * Loads unassigned active orders from order-service — the real source of truth for
+   * available deliveries. This is separate from the driver notification bell which
+   * tracks alert history in notification-service.
+   */
+  loadAvailableOrders() {
+    if (!this.isOnline) return;
+    this.loadingOrders = true;
+    this.driverService.getAvailableOrders().subscribe({
+      next: res => {
+        this.loadingOrders = false;
+        const orders: Order[] = res.data ?? [];
+        // Keep any SSE-pushed orders that haven't appeared in the API response yet
+        const existingIds = new Set(this.availableOrders.map(o => o.id));
+        const fetched: DriverOrder[] = orders
+          .filter(o => !existingIds.has(o.id))
+          .map(o => ({
+            id:                o.id,
+            restaurantName:    o.restaurantName,
+            restaurantAddress: '',
+            deliveryAddress:   o.deliveryAddress ?? '',
+            distanceKm:        0,
+            estimatedMinutes:  0,
+            earnAmount:        Math.round((o.totalAmount ?? 0) * 0.15),
+            items:             o.items.map(i => `${i.name} x${i.qty}`),
+            placedAt:          new Date(o.createdAt),
+          }));
+        this.availableOrders = [...this.availableOrders, ...fetched];
+      },
+      error: () => {
+        this.loadingOrders = false;
+      },
+    });
   }
 
   goOnline() {
@@ -193,6 +235,7 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
             this.togglingAvailability = false;
             this.toastr.success('You are now online. Receiving orders...');
             this.startLocationTracking();
+            this.loadAvailableOrders();
           },
           error: () => {
             this.togglingAvailability = false;
@@ -317,8 +360,10 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     const wasOnline = this.isOnline;
     this.isOnline = d.online ?? false;
     // If driver was online (or just became online via profile load), resume location tracking
-    if (this.isOnline && !wasOnline && navigator.geolocation) {
-      this.startLocationTracking();
+    // and load the available orders list.
+    if (this.isOnline && !wasOnline) {
+      if (navigator.geolocation) this.startLocationTracking();
+      this.loadAvailableOrders();
     }
   }
 
@@ -393,13 +438,27 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
 
   acceptOrder() {
     if (!this.selectedOrder) return;
-    this.activeOrder = this.selectedOrder;
-    this.activeStep = 'pickup';
-    this.availableOrders = this.availableOrders.filter(o => o.id !== this.selectedOrder!.id);
-    this.closeOrderModal();
-    this.activeTab = 'active';
-    this.toastr.success('Order accepted! Navigate to restaurant.');
-    // TODO: call API to accept order
+    const order = this.selectedOrder;
+    this.driverService.acceptOrder(order.id).subscribe({
+      next: () => {
+        this.activeOrder = order;
+        this.activeStep = 'pickup';
+        this.availableOrders = this.availableOrders.filter(o => o.id !== order.id);
+        this.closeOrderModal();
+        this.activeTab = 'active';
+        this.toastr.success('Order accepted! Navigate to restaurant.');
+      },
+      error: (err) => {
+        if (err.status === 409) {
+          // Another driver was faster — remove from available list
+          this.availableOrders = this.availableOrders.filter(o => o.id !== order.id);
+          this.closeOrderModal();
+          this.toastr.warning('Sorry, another driver already accepted this order.');
+        } else {
+          this.toastr.error('Failed to accept order. Please try again.');
+        }
+      },
+    });
   }
 
   rejectOrder() {
@@ -409,18 +468,33 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
   }
 
   markPickedUp() {
-    this.activeStep = 'delivery';
-    this.toastr.success('Order picked up! Heading to customer.');
-    // TODO: update order status via API
+    if (!this.activeOrder) return;
+    this.driverService.updateOrderStatus(this.activeOrder.id, 'OUT_FOR_DELIVERY').subscribe({
+      next: () => {
+        this.activeStep = 'delivery';
+        this.toastr.success('Order picked up! Heading to customer.');
+      },
+      error: () => {
+        this.toastr.error('Failed to update order status. Please try again.');
+      },
+    });
   }
 
   markDelivered() {
     if (!this.activeOrder) return;
-    this.toastr.success('Order delivered! Great work.');
-    this.activeOrder = null;
-    this.activeStep = null;
-    this.activeTab = 'dashboard';
-    // TODO: update order status via API, refresh earnings
+    const order = this.activeOrder;
+    this.driverService.updateOrderStatus(order.id, 'DELIVERED').subscribe({
+      next: () => {
+        this.toastr.success('Order delivered! Great work. 🎉');
+        this.activeOrder = null;
+        this.activeStep = null;
+        this.activeTab = 'dashboard';
+        // TODO: refresh earnings
+      },
+      error: () => {
+        this.toastr.error('Failed to mark as delivered. Please try again.');
+      },
+    });
   }
 
   prevHistoryPage() {

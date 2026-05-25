@@ -194,28 +194,29 @@ public class NotificationListener {
 
     @RabbitListener(queues = RabbitMQConfig.ORDER_STATUS_UPDATED_QUEUE)
     public void onOrderStatusUpdated(OrderStatusUpdatedEvent event) {
-        String msg = statusMessage(event.getNewStatus(), event.getRestaurantName());
+        String status = event.getNewStatus();
+        String msg    = statusMessage(status, event.getRestaurantName());
 
-        // 0. Persist to customer_notifications (same pattern as restaurant & admin)
+        // 0. Persist new notification document for this status change
         CustomerNotification cn = new CustomerNotification();
         cn.setUserId(event.getUserId());
         cn.setOrderId(event.getOrderId());
         cn.setRestaurantName(event.getRestaurantName());
-        cn.setNewStatus(event.getNewStatus());
+        cn.setNewStatus(status);
         cn.setMessage(msg);
+        cn.setRead(false);
         CustomerNotification saved = customerNotificationRepo.save(cn);
         log.info("Saved customer notification for userId={} orderId={} status={}",
-                event.getUserId(), event.getOrderId(), event.getNewStatus());
+                event.getUserId(), event.getOrderId(), status);
 
         // 1. SSE — patches the order tracker in real-time if the tab is open
-        //    Include the DB id so Angular can sync without duplicates
         CustomerOrderUpdateDTO dto = new CustomerOrderUpdateDTO(
                 saved.getId(),
                 event.getOrderId(),
                 event.getRestaurantName(),
-                event.getNewStatus(),
+                status,
                 msg,
-                event.getUpdatedAt(),
+                saved.getCreatedAt(),
                 false);
         sseEmitterService.pushToCustomer(event.getUserId(), dto);
 
@@ -225,20 +226,21 @@ public class NotificationListener {
                 event.getRestaurantName(),
                 msg,
                 event.getOrderId(),
-                event.getNewStatus());
+                status);
 
-        log.info("Notified customer {} — orderId={} status={}",
-                event.getUserId(), event.getOrderId(), event.getNewStatus());
+        log.info("Notified customer {} — orderId={} status={}", event.getUserId(), event.getOrderId(), status);
     }
 
     private String statusMessage(String status, String restaurantName) {
         return switch (status) {
-            case "CONFIRMED"  -> "✅ " + restaurantName + " accepted your order!";
-            case "PREPARING"  -> "👨‍🍳 " + restaurantName + " is preparing your food!";
-            case "READY"      -> "🛵 Your order is ready and on its way!";
-            case "DELIVERED"  -> "🎉 Delivered! Tap to rate " + restaurantName + " ⭐";
-            case "CANCELLED"  -> "❌ Your order was cancelled by the restaurant.";
-            default           -> "Order status updated: " + status;
+            case "CONFIRMED"        -> "✅ " + restaurantName + " accepted your order!";
+            case "PREPARING"        -> "👨‍🍳 " + restaurantName + " is preparing your food!";
+            case "READY"            -> "📦 Your order is packed and ready for pickup!";
+            case "DRIVER_ASSIGNED"  -> "🚗 A driver has been assigned to your order!";
+            case "OUT_FOR_DELIVERY" -> "🛵 Driver picked up your food and is on the way!";
+            case "DELIVERED"        -> "🎉 Delivered! Tap to rate " + restaurantName + " ⭐";
+            case "CANCELLED"        -> "❌ Your order was cancelled by the restaurant.";
+            default                 -> "Order status updated: " + status;
         };
     }
 

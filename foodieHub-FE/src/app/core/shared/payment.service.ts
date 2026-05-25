@@ -33,7 +33,7 @@ export class PaymentService {
   /**
    * Step 3 — After customer pays, send Razorpay response to backend for verification.
    * Backend verifies HMAC signature, creates the food order, publishes RabbitMQ event.
-   * Returns the created Order — Angular navigates to /user/order-confirm/{id}.
+   * Returns the created Order — Angular navigates to /user/orders/{id} (order tracking page).
    */
   verifyPayment(req: VerifyPaymentRequest): Observable<ApiResponse<Order>> {
     return this.http.post<ApiResponse<Order>>(

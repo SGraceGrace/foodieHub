@@ -176,11 +176,25 @@ public class OrderServiceImpl implements OrderService {
         );
     }
 
+    // Statuses at which an order is visible to drivers as "available to pick up"
+    private static final List<String> AVAILABLE_STATUSES =
+            List.of("PLACED", "CONFIRMED", "PREPARING", "READY");
+
+    // Driver-originated statuses — everything else comes from the restaurant
+    private static final java.util.Set<String> DRIVER_STATUSES =
+            java.util.Set.of("OUT_FOR_DELIVERY", "DELIVERED");
+
     @Override
     public Order updateStatus(String orderId, String newStatus) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
         order.setStatus(newStatus);
+        // Keep the two display fields in sync so the tracking page can read them directly
+        if (DRIVER_STATUSES.contains(newStatus)) {
+            order.setDriverStatus(newStatus);
+        } else {
+            order.setRestaurantStatus(newStatus);
+        }
         order.setUpdatedAt(LocalDateTime.now());
         Order saved = orderRepository.save(order);
 
@@ -198,6 +212,46 @@ public class OrderServiceImpl implements OrderService {
                 RabbitMQConfig.ORDER_STATUS_UPDATED_RKEY,
                 event);
         log.info("Published order.status.updated orderId={} status={}", saved.getId(), newStatus);
+
+        return saved;
+    }
+
+    @Override
+    public List<Order> getAvailableOrders() {
+        return orderRepository.findByDriverEmailIsNullAndStatusInOrderByCreatedAtDesc(AVAILABLE_STATUSES);
+    }
+
+    @Override
+    public Order acceptOrder(String orderId, String driverEmail) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+
+        // Prevent two drivers from claiming the same order
+        if (order.getDriverEmail() != null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Order already accepted by another driver");
+        }
+
+        order.setDriverEmail(driverEmail);
+        order.setUpdatedAt(LocalDateTime.now());
+        Order saved = orderRepository.save(order);
+        log.info("Driver {} accepted orderId={}", driverEmail, orderId);
+
+        // Notify customer — "DRIVER_ASSIGNED" is a notification-only signal,
+        // it does NOT change the order status (order stays at READY).
+        OrderStatusUpdatedEvent event = OrderStatusUpdatedEvent.builder()
+                .orderId(saved.getId())
+                .userId(saved.getUserId())
+                .customerName(saved.getCustomerName())
+                .restaurantName(saved.getRestaurantName())
+                .newStatus("DRIVER_ASSIGNED")
+                .updatedAt(saved.getUpdatedAt())
+                .build();
+        rabbitTemplate.convertAndSend(
+                RabbitMQConfig.EXCHANGE,
+                RabbitMQConfig.ORDER_STATUS_UPDATED_RKEY,
+                event);
+        log.info("Published DRIVER_ASSIGNED event for orderId={}", orderId);
 
         return saved;
     }

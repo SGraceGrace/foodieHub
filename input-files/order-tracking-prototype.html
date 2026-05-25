@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoodieHub - Order Tracking</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #f9b303;
+  --text: #4e4e4e;
+  --text-dark: #2a2a2a;
+  --text-light: #888;
+  --success: #248f28;
+  --warning: #ff9800;
+  --error: #ff1100;
+  --shadow: 0 2px 10px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.14);
+  --radius: 10px;
+  --font-serif: 'Libre Baskerville', Georgia, serif;
+  --font-sans: 'DM Sans', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font-sans); color: var(--text); background: #f5f5f5; }
+
+/* HEADER */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background: white;
+  border-bottom: 1px solid #eee;
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo-area { display: flex; align-items: center; gap: 10px; }
+.logo-icon { width: 40px; height: 40px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 18px; font-family: var(--font-serif); }
+.logo-text { font-family: var(--font-serif); font-size: 1.1rem; font-weight: 700; color: var(--text-dark); }
+.header-right { display: flex; gap: 15px; align-items: center; }
+.btn-secondary { border: 1px solid #ddd; padding: 8px 16px; border-radius: 6px; background: white; cursor: pointer; font-size: 0.85rem; color: var(--text); font-family: var(--font-sans); }
+.btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+
+/* CONTAINER */
+.container { max-width: 1200px; margin: 0 auto; padding: 2rem 1rem; }
+
+/* ORDER ID */
+.order-header {
+  background: white;
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.order-info h1 { font-family: var(--font-serif); font-size: 1.8rem; margin-bottom: 0.5rem; }
+.order-info p { color: var(--text-light); font-size: 0.9rem; }
+.order-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0.8rem 1.5rem;
+  background: #e8f5e9;
+  border-radius: 8px;
+  border-left: 4px solid var(--success);
+}
+.order-status-dot { width: 12px; height: 12px; background: var(--success); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+.order-status-text { font-weight: 700; color: var(--success); }
+
+/* MAIN GRID */
+.tracking-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+/* CARDS */
+.card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 2rem;
+  box-shadow: var(--shadow);
+}
+
+.card-title {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* TIMELINE */
+.timeline {
+  position: relative;
+  padding-left: 30px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #eee;
+}
+
+.timeline-item {
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border: 3px solid #ddd;
+  border-radius: 50%;
+  left: -24px;
+  top: 2px;
+}
+
+.timeline-item.active::before {
+  background: var(--success);
+  border-color: var(--success);
+  box-shadow: 0 0 0 6px rgba(36, 143, 40, 0.1);
+}
+
+.timeline-item.completed::before {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+.timeline-label {
+  font-weight: 700;
+  color: var(--text-dark);
+  font-size: 0.95rem;
+  margin-bottom: 3px;
+}
+
+.timeline-time {
+  color: var(--text-light);
+  font-size: 0.8rem;
+}
+
+.timeline-status {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-top: 5px;
+}
+
+.status-pending { background: #fff3e0; color: var(--warning); }
+.status-active { background: #e3f2fd; color: #1565c0; }
+.status-completed { background: #e8f5e9; color: var(--success); }
+
+/* RESTAURANT STATUS */
+.restaurant-card {
+  background: linear-gradient(135deg, rgba(249,179,3,0.1) 0%, rgba(249,179,3,0.05) 100%);
+  border: 1px solid #ffe0b2;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-top: 1rem;
+}
+
+.restaurant-header {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.restaurant-icon {
+  width: 60px;
+  height: 60px;
+  background: var(--gold);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+
+.restaurant-info h3 {
+  font-size: 1rem;
+  margin-bottom: 3px;
+}
+
+.restaurant-info p {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  margin-bottom: 5px;
+}
+
+.restaurant-rating {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.85rem;
+}
+
+/* DRIVER STATUS */
+.driver-card {
+  background: linear-gradient(135deg, rgba(36, 143, 40, 0.1) 0%, rgba(36, 143, 40, 0.05) 100%);
+  border: 1px solid #c8e6c9;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-top: 1rem;
+}
+
+.driver-header {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.driver-avatar {
+  width: 70px;
+  height: 70px;
+  background: var(--success);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 2rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.driver-info h3 {
+  font-size: 1rem;
+  margin-bottom: 3px;
+}
+
+.driver-info p {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  margin-bottom: 5px;
+}
+
+.driver-contact {
+  display: flex;
+  gap: 10px;
+  margin-top: 0.8rem;
+}
+
+.contact-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: var(--font-sans);
+}
+
+.btn-call { background: #e3f2fd; color: #1565c0; }
+.btn-message { background: #f3e5f5; color: #7b1fa2; }
+
+.btn-call:hover { background: #bbdefb; }
+.btn-message:hover { background: #e1bee7; }
+
+/* MAP */
+.map-container {
+  background: white;
+  border-radius: var(--radius);
+  padding: 0;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  height: 400px;
+  position: relative;
+}
+
+.map-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: var(--text-light);
+}
+
+.map-placeholder svg {
+  width: 200px;
+  height: 150px;
+  margin-bottom: 1rem;
+}
+
+/* DETAILS */
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.detail-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.detail-label {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.detail-value {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.detail-sub {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin-top: 5px;
+}
+
+/* ITEMS */
+.items-section {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.items-section h2 {
+  font-family: var(--font-serif);
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+}
+
+.item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid #eee;
+}
+
+.item-row:last-child { border-bottom: none; }
+
+.item-name {
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.item-qty {
+  color: var(--text-light);
+  font-size: 0.9rem;
+}
+
+.item-price {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+/* BOTTOM SUMMARY */
+.summary-section {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-top: 2rem;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #eee;
+}
+
+.summary-row:last-child { border-bottom: none; margin-bottom: 0; }
+
+.summary-label { color: var(--text-light); }
+
+.summary-value { font-weight: 700; }
+
+.summary-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f5f5f5;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-top: 1rem;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+/* ACTIONS */
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.btn {
+  flex: 1;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: #1a1a1a;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #000;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid #ddd;
+  color: var(--text);
+}
+
+.btn-outline:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+  .tracking-grid { grid-template-columns: 1fr; }
+  .details-grid { grid-template-columns: repeat(2, 1fr); }
+  .order-header { flex-direction: column; gap: 1rem; }
+  .action-buttons { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo-area">
+    <div class="logo-icon">F</div>
+    <div class="logo-text">foodiehub</div>
+  </div>
+  <div class="header-right">
+    <button class="btn-secondary">← Back to Orders</button>
+  </div>
+</header>
+
+<!-- CONTAINER -->
+<div class="container">
+
+  <!-- ORDER HEADER -->
+  <div class="order-header">
+    <div class="order-info">
+      <h1>Order #4821</h1>
+      <p>Placed at 2:30 PM • Today</p>
+    </div>
+    <div class="order-status">
+      <div class="order-status-dot"></div>
+      <div class="order-status-text">Out for Delivery</div>
+    </div>
+  </div>
+
+  <!-- TRACKING TIMELINE + STATUS -->
+  <div class="tracking-grid">
+    
+    <!-- LEFT: RESTAURANT STATUS -->
+    <div class="card">
+      <div class="card-title">🍳 Restaurant Status</div>
+      
+      <div class="timeline">
+        
+        <div class="timeline-item completed">
+          <div class="timeline-label">Order Confirmed</div>
+          <div class="timeline-time">2:30 PM</div>
+          <div class="timeline-status status-completed">✓ Completed</div>
+        </div>
+
+        <div class="timeline-item completed">
+          <div class="timeline-label">Preparing Food</div>
+          <div class="timeline-time">Started at 2:32 PM</div>
+          <div class="timeline-status status-completed">✓ Completed</div>
+        </div>
+
+        <div class="timeline-item completed">
+          <div class="timeline-label">Food Ready for Pickup</div>
+          <div class="timeline-time">2:45 PM</div>
+          <div class="timeline-status status-completed">✓ Completed</div>
+        </div>
+
+      </div>
+
+      <div class="restaurant-card">
+        <div class="restaurant-header">
+          <div class="restaurant-icon">🍛</div>
+          <div class="restaurant-info">
+            <h3>Spice Garden</h3>
+            <p>North Indian • $$ • 4.8 km away</p>
+            <div class="restaurant-rating">
+              ⭐ 4.8 (247 reviews)
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: DRIVER STATUS -->
+    <div class="card">
+      <div class="card-title">🚗 Driver Status</div>
+      
+      <div class="timeline">
+        
+        <div class="timeline-item completed">
+          <div class="timeline-label">Driver Assigned</div>
+          <div class="timeline-time">2:46 PM</div>
+          <div class="timeline-status status-completed">✓ Completed</div>
+        </div>
+
+        <div class="timeline-item completed">
+          <div class="timeline-label">Picked Up Order</div>
+          <div class="timeline-time">2:50 PM</div>
+          <div class="timeline-status status-completed">✓ Completed</div>
+        </div>
+
+        <div class="timeline-item active">
+          <div class="timeline-label">On the Way</div>
+          <div class="timeline-time">Started at 2:52 PM</div>
+          <div class="timeline-status status-active">🔄 In Progress</div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-label">Arriving Soon</div>
+          <div class="timeline-time">ETA: 3:05 PM</div>
+          <div class="timeline-status status-pending">⏳ Pending</div>
+        </div>
+
+      </div>
+
+      <div class="driver-card">
+        <div class="driver-header">
+          <div class="driver-avatar">RK</div>
+          <div class="driver-info">
+            <h3>Rajesh Kumar</h3>
+            <p>⭐ 4.9 (324 deliveries)</p>
+            <p>🏍️ Bike</p>
+          </div>
+        </div>
+        <div class="driver-contact">
+          <button class="contact-btn btn-call">📞 Call</button>
+          <button class="contact-btn btn-message">💬 Message</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MAP -->
+  <div class="map-container">
+    <div class="map-placeholder">
+      <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="40" width="160" height="100" fill="#e0e0e0" stroke="#999" stroke-width="2"/>
+        <circle cx="60" cy="80" r="8" fill="#f9b303"/>
+        <text x="60" y="95" font-size="12" text-anchor="middle" fill="#666">Restaurant</text>
+        
+        <circle cx="150" cy="120" r="8" fill="#248f28"/>
+        <text x="150" y="135" font-size="12" text-anchor="middle" fill="#666">Your Location</text>
+        
+        <path d="M 70 85 Q 100 60, 140 110" stroke="#1a1a1a" stroke-width="2" fill="none" stroke-dasharray="5,5"/>
+        <text x="105" y="70" font-size="11" fill="#666">Driver Route</text>
+      </svg>
+      Live Map Coming Soon
+    </div>
+  </div>
+
+  <!-- DETAILS -->
+  <div class="details-grid">
+    <div class="detail-card">
+      <div class="detail-label">Delivery Distance</div>
+      <div class="detail-value">4.8 km</div>
+      <div class="detail-sub">From restaurant to you</div>
+    </div>
+    <div class="detail-card">
+      <div class="detail-label">Estimated Arrival</div>
+      <div class="detail-value">3:05 PM</div>
+      <div class="detail-sub">~12 minutes away</div>
+    </div>
+    <div class="detail-card">
+      <div class="detail-label">Preparation Time</div>
+      <div class="detail-value">15 min</div>
+      <div class="detail-sub">Kitchen time</div>
+    </div>
+    <div class="detail-card">
+      <div class="detail-label">Delivery Fee</div>
+      <div class="detail-value">₹40</div>
+      <div class="detail-sub">Standard delivery</div>
+    </div>
+  </div>
+
+  <!-- ORDER ITEMS -->
+  <div class="items-section">
+    <h2>📦 Order Items</h2>
+    
+    <div class="item-row">
+      <div>
+        <div class="item-name">Butter Chicken</div>
+        <div class="item-qty">Qty: 2</div>
+      </div>
+      <div class="item-price">₹520</div>
+    </div>
+
+    <div class="item-row">
+      <div>
+        <div class="item-name">Garlic Naan</div>
+        <div class="item-qty">Qty: 1</div>
+      </div>
+      <div class="item-price">₹60</div>
+    </div>
+
+    <div class="item-row">
+      <div>
+        <div class="item-name">Gulab Jamun</div>
+        <div class="item-qty">Qty: 1</div>
+      </div>
+      <div class="item-price">₹80</div>
+    </div>
+
+    <div class="item-row">
+      <div>
+        <div class="item-name">Mineral Water</div>
+        <div class="item-qty">Qty: 2</div>
+      </div>
+      <div class="item-price">₹60</div>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary-section">
+    <div class="summary-row">
+      <span class="summary-label">Subtotal</span>
+      <span class="summary-value">₹720</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">Delivery Fee</span>
+      <span class="summary-value">₹40</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">Discount (10% off)</span>
+      <span class="summary-value" style="color: var(--success);">-₹76</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">Tax (5%)</span>
+      <span class="summary-value">₹36</span>
+    </div>
+    
+    <div class="summary-total">
+      <span>Total Amount</span>
+      <span>₹720</span>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="action-buttons">
+    <button class="btn btn-outline">📱 Share Order</button>
+    <button class="btn btn-outline">🙋 Help & Support</button>
+    <button class="btn btn-primary">⭐ Rate Delivery Experience</button>
+  </div>
+
+</div>
+
+<script>
+// Real-time updates simulation
+setInterval(() => {
+  const minutes = Math.floor(Math.random() * 5) + 10;
+  document.querySelector('.detail-value:nth-of-type(2)').textContent = minutes + ' min';
+}, 3000);
+</script>
+
+</body>
+</html>

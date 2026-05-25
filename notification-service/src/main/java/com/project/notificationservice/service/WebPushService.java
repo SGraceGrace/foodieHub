@@ -130,7 +130,7 @@ public class WebPushService {
      *                  previous notification (same tag = silent update, no popup/sound).
      */
     public void sendToCustomer(String userId, String title, String body,
-                               String orderId, String newStatus) {
+                               String orderId, String orderStatus) {
         List<CustomerPushSubscription> subs = customerSubscriptionRepo.findByUserId(userId);
         if (subs.isEmpty()) return;
 
@@ -138,9 +138,9 @@ public class WebPushService {
         String safeBody  = body.replace("\\", "\\\\").replace("\"", "\\\"");
         // Tag format: order-{orderId}-{status}
         // Each status transition gets a unique tag → separate popup + sound for each one.
-        String tag     = "order-" + orderId + "-" + newStatus.toLowerCase();
+        String tag     = "order-" + orderId + "-" + orderStatus.toLowerCase();
         String payload = "{\"title\":\"" + safeTitle + "\",\"body\":\"" + safeBody
-                + "\",\"url\":\"/user/orders\",\"tag\":\"" + tag + "\"}";
+                + "\",\"url\":\"/user/orders/" + orderId + "\",\"tag\":\"" + tag + "\"}";
 
         for (CustomerPushSubscription sub : subs) {
             try {

@@ -1,4 +1,4 @@
-export type OrderStatus = 'PLACED' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'DELIVERED' | 'CANCELLED';
+export type OrderStatus = 'PLACED' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'CANCELLED';
 
 export interface OrderItem {
   name: string;
@@ -22,7 +22,12 @@ export interface Order {
   status: OrderStatus;
   paymentId?: string;
   paymentStatus?: string;   // 'PAID' | undefined (COD orders have no paymentStatus)
+  /** Last status set by the restaurant: CONFIRMED | PREPARING | READY | CANCELLED */
+  restaurantStatus?: OrderStatus;
+  /** Last status set by the driver: OUT_FOR_DELIVERY | DELIVERED */
+  driverStatus?: OrderStatus;
   rated?: boolean;
+  driverEmail?: string;
   createdAt: string;
   updatedAt?: string;
   eta?: string;
@@ -57,11 +62,11 @@ export interface RestaurantOrderNotification {
  * Having one interface means the bell component needs no conversion logic.
  */
 export interface CustomerOrderUpdate {
-  id?: string;          // MongoDB document id (set after DB save; missing only on legacy events)
+  id?: string;               // MongoDB document id (set after DB save; missing only on legacy events)
   orderId: string;
   restaurantName: string;
-  newStatus: OrderStatus;
-  message: string;      // human-readable, e.g. "👨‍🍳 Spice Garden is preparing your food!"
-  updatedAt: string;
-  read?: boolean;       // false for new SSE pushes; DB value for history loads
+  newStatus: OrderStatus;    // the order status that triggered this notification
+  message: string;           // human-readable, e.g. "👨‍🍳 Spice Garden is preparing your food!"
+  createdAt?: string;
+  read?: boolean;            // false for new SSE pushes; DB value for history loads
 }

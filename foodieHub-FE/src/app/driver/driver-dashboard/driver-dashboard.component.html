@@ -7,7 +7,10 @@
       <span>🚗</span> Driver Panel
     </div>
     <button class="nav-btn" [class.active]="activeTab === 'dashboard'"   (click)="goTab('dashboard')">  <span>🏠</span> Dashboard</button>
-    <button class="nav-btn" [class.active]="activeTab === 'orders'"      (click)="goTab('orders')">     <span>📦</span> Available Orders</button>
+    <button class="nav-btn" [class.active]="activeTab === 'orders'"      (click)="goTab('orders')">
+      <span>📦</span> Available Orders
+      <span class="nav-badge" *ngIf="availableOrders.length > 0">{{ availableOrders.length }}</span>
+    </button>
     <button class="nav-btn" [class.active]="activeTab === 'active'"      (click)="goTab('active')">     <span>🔴</span> Active Delivery</button>
     <button class="nav-btn" [class.active]="activeTab === 'history'"     (click)="goTab('history')">    <span>📜</span> Delivery History</button>
     <button class="nav-btn" [class.active]="activeTab === 'earnings'"    (click)="goTab('earnings')">   <span>💰</span> Earnings</button>
@@ -115,12 +118,17 @@
           <button class="btn btn-primary small" (click)="goOnline()">Go Online</button>
         </div>
 
-        <div *ngIf="isOnline && availableOrders.length === 0" class="empty-state">
+        <div *ngIf="isOnline && loadingOrders" class="empty-state">
+          <div class="empty-icon">⏳</div>
+          <p>Loading available orders...</p>
+        </div>
+
+        <div *ngIf="isOnline && !loadingOrders && availableOrders.length === 0" class="empty-state">
           <div class="empty-icon">📭</div>
           <p>No orders available nearby right now. Stay online — new orders will appear here.</p>
         </div>
 
-        <div class="order-card" *ngFor="let order of availableOrders" (click)="openOrderModal(order)">
+        <div class="order-card" *ngFor="let order of availableOrders" (click)="openOrderModal(order)" [hidden]="loadingOrders">
           <div class="order-header">
             <span class="order-id">#{{ order.id }}</span>
             <span class="order-time">{{ order.placedAt | date:'shortTime' }}</span>

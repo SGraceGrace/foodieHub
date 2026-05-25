@@ -3,6 +3,7 @@ import { Injectable, NgZone } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiResponse } from '../model/apiResponse.model';
+import { Order } from '../model/order.model';
 
 export interface DriverRegisterRequest {
   firstName: string;
@@ -74,6 +75,24 @@ export class DriverService {
     return this.http.patch<ApiResponse<DriverProfileData>>(`${this.base}/profile`, payload);
   }
 
+  // ── Order actions ───────────────────────────────────────────────────
+
+  /**
+   * Driver claims an order — stores their email on the order document.
+   * Returns 409 if another driver already accepted it.
+   */
+  acceptOrder(orderId: string): Observable<any> {
+    return this.http.patch(`${environment.apiBaseUrl}/api/orders/${orderId}/accept`, {});
+  }
+
+  /**
+   * Driver updates the order status.
+   * READY → OUT_FOR_DELIVERY (picked up) → DELIVERED
+   */
+  updateOrderStatus(orderId: string, status: 'OUT_FOR_DELIVERY' | 'DELIVERED'): Observable<any> {
+    return this.http.patch(`${environment.apiBaseUrl}/api/orders/${orderId}/driver-status`, { status });
+  }
+
   // ── Notifications ───────────────────────────────────────────────────
 
   getNotifications(): Observable<ApiResponse<DriverOrderNotification[]>> {
@@ -86,6 +105,15 @@ export class DriverService {
 
   clearAllNotifications(): Observable<ApiResponse<null>> {
     return this.http.delete<ApiResponse<null>>(`${this.base}/notifications`);
+  }
+
+  /**
+   * Fetches all unassigned active orders from order-service.
+   * This is the source of truth for the Available Orders tab — completely separate
+   * from the driver notification bell (which reads from notification-service).
+   */
+  getAvailableOrders(): Observable<ApiResponse<Order[]>> {
+    return this.http.get<ApiResponse<Order[]>>(`${environment.apiBaseUrl}/api/orders/available`);
   }
 
   /**

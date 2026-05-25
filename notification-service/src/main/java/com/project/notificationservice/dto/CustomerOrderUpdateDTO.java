@@ -12,11 +12,11 @@ import java.time.LocalDateTime;
  * Both paths return the same record so the Angular model needs no conversion.
  */
 public record CustomerOrderUpdateDTO(
-        String id,              // MongoDB document id — lets Angular deduplicate DB + SSE
+        String id,               // MongoDB document id — lets Angular deduplicate DB + SSE
         String orderId,
         String restaurantName,
-        String newStatus,
+        String newStatus,        // the order status that triggered this notification
         String message,
-        LocalDateTime updatedAt,
-        boolean read            // false for fresh SSE pushes; from DB for REST history
+        LocalDateTime createdAt,
+        boolean read             // false for fresh SSE pushes; from DB for REST history
 ) {}

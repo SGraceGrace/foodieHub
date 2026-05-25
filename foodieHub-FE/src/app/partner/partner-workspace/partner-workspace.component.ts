@@ -581,10 +581,11 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
     this.orderService.updateOrderStatus(order.id, newStatus).subscribe({
       next: res => {
         this.updatingOrderId = null;
-        if (newStatus === 'DELIVERED' || newStatus === 'CANCELLED') {
-          // Remove from live list once it leaves active statuses
+        if (newStatus === 'CANCELLED') {
+          // Remove cancelled orders from live list
           this.liveOrders = this.liveOrders.filter(o => o.id !== order.id);
         } else {
+          // Update status in live list — order stays visible until driver picks up
           this.liveOrders = this.liveOrders.map(o =>
             o.id === order.id ? { ...o, status: newStatus as any } : o
           );
@@ -595,11 +596,12 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   nextStatus(status: string): string | null {
+    // Restaurant handles: PLACED → CONFIRMED → PREPARING → READY
+    // Driver handles the rest: READY → OUT_FOR_DELIVERY → DELIVERED
     const flow: Record<string, string> = {
       PLACED:    'CONFIRMED',
       CONFIRMED: 'PREPARING',
       PREPARING: 'READY',
-      READY:     'DELIVERED',
     };
     return flow[status] ?? null;
   }
@@ -608,8 +610,7 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
     const labels: Record<string, string> = {
       PLACED:    '✅ Accept Order',
       CONFIRMED: '👨‍🍳 Start Preparing',
-      PREPARING: '📦 Mark Ready',
-      READY:     '✓ Mark Delivered',
+      PREPARING: '📦 Mark Ready for Pickup',
     };
     return labels[status] ?? '';
   }

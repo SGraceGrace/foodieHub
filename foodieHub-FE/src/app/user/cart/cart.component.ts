@@ -146,7 +146,7 @@ export class CartComponent implements OnInit, OnDestroy {
 
       this.placingOrder = null;
       this.cartService.loadCart();                                        // Refresh local cart state
-      this.router.navigate(['/user/order-confirm', verifyRes.data.id]);  // Navigate to order-confirm page
+      this.router.navigate(['/user/orders', verifyRes.data.id]);  // Navigate to order tracking page
 
     } catch (err: unknown) {
       this.placingOrder = null;

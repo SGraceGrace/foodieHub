@@ -26,8 +26,20 @@ public interface OrderService {
     PaginatedResponse<Order> getRestaurantAllOrders(
             String restaurantId, int page, int size, LocalDateTime from, LocalDateTime to);
 
-    /** Update order status (called by restaurant partner). */
+    /** Update order status (called by restaurant partner or driver). */
     Order updateStatus(String orderId, String newStatus);
+
+    /**
+     * Driver claims an order — stores driverEmail on the order document.
+     * Throws 409 CONFLICT if another driver has already accepted it.
+     */
+    Order acceptOrder(String orderId, String driverEmail);
+
+    /**
+     * Returns all unassigned active orders visible to drivers.
+     * Unassigned = driverEmail is null. Active = PLACED, CONFIRMED, PREPARING, READY.
+     */
+    List<Order> getAvailableOrders();
 
     /** Mark order as rated — prevents the customer from rating twice. */
     Order markRated(String orderId);

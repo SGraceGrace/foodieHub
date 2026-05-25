@@ -40,6 +40,11 @@ export const routes: Routes = [
     loadComponent: () => import('./orders/orders.component').then(module => module.OrdersComponent)
   },
   {
+    path: 'orders/:id',
+    loadComponent: () => import('./order-tracking/order-tracking.component').then(m => m.OrderTrackingComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'cart',
     loadComponent: () => import('./cart/cart.component').then(module => module.CartComponent)
   },
@@ -52,9 +57,4 @@ export const routes: Routes = [
     loadComponent: () => import('./addresses/addresses.component').then(module => module.AddressesComponent),
     canActivate: [authGuard]
   },
-  {
-    path: 'order-confirm/:id',
-    loadComponent: () => import('./order-confirm/order-confirm.component').then(m => m.OrderConfirmComponent),
-    canActivate: [authGuard]
-  }
 ];

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { CustomerOrderUpdate, Order, RestaurantOrderNotification, RestaurantStats } from '../../model/order.model';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../model/apiResponse.model';
@@ -15,8 +15,21 @@ export interface PlaceOrderPayload {
 @Injectable({ providedIn: 'root' })
 export class OrderService {
 
-  private base     = environment.apiBaseUrl;           // http://localhost:8080
-  private notifBase = environment.apiBaseUrl;          // notifications route via gateway
+  private base      = environment.apiBaseUrl;
+  private notifBase = environment.apiBaseUrl;
+
+  /**
+   * Single source of truth for real-time order status updates.
+   * The UserHeaderComponent (which owns the SSE connection) pushes here.
+   * Any page that needs live updates (orders page, order-tracking page, etc.) subscribes to this.
+   * This avoids opening multiple SSE connections from the same browser tab.
+   */
+  private _orderStatusUpdate = new Subject<CustomerOrderUpdate>();
+  orderStatusUpdate$ = this._orderStatusUpdate.asObservable();
+
+  emitStatusUpdate(update: CustomerOrderUpdate): void {
+    this._orderStatusUpdate.next(update);
+  }
 
   constructor(private http: HttpClient) {}
 

@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface CustomerNotificationRepo extends MongoRepository<CustomerNotification, String> {
 
-    /** Fetch up to N most recent notifications for a customer. */
+    /** Fetch up to N most-recent notifications for a customer (bell panel). */
     List<CustomerNotification> findByUserIdOrderByCreatedAtDesc(String userId, Pageable pageable);
 
     /** Fetch all notifications for a customer (used for mark-read / delete). */

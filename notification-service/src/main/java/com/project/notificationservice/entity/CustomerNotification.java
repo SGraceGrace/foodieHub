@@ -29,7 +29,7 @@ public class CustomerNotification {
     private String orderId;
     private String restaurantName;
 
-    /** CONFIRMED | PREPARING | READY | DELIVERED | CANCELLED */
+    /** The latest order status: CONFIRMED | PREPARING | READY | OUT_FOR_DELIVERY | DELIVERED | CANCELLED */
     private String newStatus;
 
     /** Human-readable message e.g. "🎉 Delivered! Tap to rate Spice Garden ⭐" */

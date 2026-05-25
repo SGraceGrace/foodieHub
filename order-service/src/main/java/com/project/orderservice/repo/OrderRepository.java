@@ -37,4 +37,7 @@ public interface OrderRepository extends MongoRepository<Order, String> {
 
     /** Count by status — used for pending orders badge */
     long countByRestaurantIdAndStatusIn(String restaurantId, List<String> statuses);
+
+    /** Available orders for drivers — unassigned (no driverEmail) and in an active status */
+    List<Order> findByDriverEmailIsNullAndStatusInOrderByCreatedAtDesc(List<String> statuses);
 }

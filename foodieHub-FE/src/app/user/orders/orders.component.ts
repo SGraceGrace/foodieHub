@@ -1,24 +1,25 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { CustomerOrderUpdate, Order, OrderStatus } from '../../model/order.model';
+import { Router } from '@angular/router';
+import { Order, OrderStatus } from '../../model/order.model';
 import { ToastrService } from 'ngx-toastr';
 import { OrderService } from '../../core/shared/order.service';
 import { TokenService } from '../../core/shared/token.service';
 import { HomeService } from '../../home/home.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 
-// The header component handles the global SSE connection for push notifications
-// and the bell badge. The orders page opens its OWN SSE connection solely to
-// patch the order tracker in real-time while the user is watching this page.
+// The header component owns the single SSE connection and broadcasts updates
+// via OrderService.orderStatusUpdate$. This page subscribes to that Subject
+// to update the order tracker live — no second SSE connection needed.
 
 type Tab = 'ALL' | 'ACTIVE' | 'DELIVERED' | 'CANCELLED';
 
-const ACTIVE_STATUSES: OrderStatus[] = ['PLACED', 'CONFIRMED', 'PREPARING', 'READY'];
+const ACTIVE_STATUSES: OrderStatus[] = ['PLACED', 'CONFIRMED', 'PREPARING', 'READY', 'OUT_FOR_DELIVERY'];
 
-const TRACK_STEPS = ['Placed', 'Confirmed', 'Prepared', 'Ready', 'Delivered'];
+const TRACK_STEPS = ['Placed', 'Confirmed', 'Prepared', 'Ready', 'On the Way', 'Delivered'];
 
 const STATUS_ORDER: Record<OrderStatus, number> = {
-  PLACED: 0, CONFIRMED: 1, PREPARING: 2, READY: 3, DELIVERED: 4, CANCELLED: -1,
+  PLACED: 0, CONFIRMED: 1, PREPARING: 2, READY: 3, OUT_FOR_DELIVERY: 4, DELIVERED: 5, CANCELLED: -1,
 };
 
 @Component({
@@ -49,38 +50,33 @@ export class OrdersComponent implements OnInit, OnDestroy {
   hoverStar    = 0;                    // star under cursor
   submitting   = false;
 
-  private sseController: AbortController | null = null;
+  private statusSub: Subscription | null = null;
 
   constructor(
     private toastr: ToastrService,
     private orderService: OrderService,
     private tokenService: TokenService,
-    private homeService: HomeService
+    private homeService: HomeService,
+    private router: Router
   ) {}
 
   ngOnInit() {
     this.loadOrders();
-    this.connectSSE();
+    // Subscribe to the shared Subject that the header feeds from its SSE connection.
+    // No second SSE connection needed — the header is the single SSE owner.
+    this.statusSub = this.orderService.orderStatusUpdate$.subscribe(update => {
+      // DRIVER_ASSIGNED is a notification-only signal — do not update the order status card
+      if (update.newStatus && update.newStatus !== ('DRIVER_ASSIGNED' as any)) {
+        this.allOrders = this.allOrders.map(o =>
+          o.id === update.orderId ? { ...o, status: update.newStatus } : o
+        );
+        this.applyTab(this.activeTab);
+      }
+    });
   }
 
   ngOnDestroy() {
-    this.sseController?.abort();
-    this.sseController = null;
-  }
-
-  // ── Real-time tracker update via SSE ─────────────────────────────────────────
-  // Header component handles the bell badge, toast, and browser push.
-  // This SSE connection only patches the status in the order list/tracker.
-
-  private connectSSE(): void {
-    const token = this.tokenService.getAccessToken();
-    if (!token) return;
-    this.sseController = this.orderService.connectCustomerSSE(token, (update) => {
-      this.allOrders = this.allOrders.map(o =>
-        o.id === update.orderId ? { ...o, status: update.newStatus } : o
-      );
-      this.applyTab(this.activeTab);   // keep active/delivered tabs in sync
-    });
+    this.statusSub?.unsubscribe();
   }
 
   // ── Order loading ─────────────────────────────────────────────────────────────
@@ -128,30 +124,32 @@ export class OrdersComponent implements OnInit, OnDestroy {
 
   statusBadgeClass(status: OrderStatus): string {
     const map: Record<OrderStatus, string> = {
-      PLACED:    'sb-placed',
-      CONFIRMED: 'sb-confirmed',
-      PREPARING: 'sb-preparing',
-      READY:     'sb-onway',
-      DELIVERED: 'sb-delivered',
-      CANCELLED: 'sb-cancelled',
+      PLACED:            'sb-placed',
+      CONFIRMED:         'sb-confirmed',
+      PREPARING:         'sb-preparing',
+      READY:             'sb-ready',
+      OUT_FOR_DELIVERY:  'sb-onway',
+      DELIVERED:         'sb-delivered',
+      CANCELLED:         'sb-cancelled',
     };
     return map[status] ?? '';
   }
 
   statusLabel(status: OrderStatus): string {
     const map: Record<OrderStatus, string> = {
-      PLACED:    '🕐 Placed',
-      CONFIRMED: '✅ Confirmed',
-      PREPARING: '👨‍🍳 Preparing',
-      READY:     '🛵 On the way',
-      DELIVERED: '✓ Delivered',
-      CANCELLED: '✕ Cancelled',
+      PLACED:            '🕐 Placed',
+      CONFIRMED:         '✅ Confirmed',
+      PREPARING:         '👨‍🍳 Preparing',
+      READY:             '📦 Ready for pickup',
+      OUT_FOR_DELIVERY:  '🛵 On the way',
+      DELIVERED:         '✓ Delivered',
+      CANCELLED:         '✕ Cancelled',
     };
     return map[status] ?? status;
   }
 
   trackOrder(order: Order) {
-    this.toastr.info(`Tracking order #${order.id}`);
+    this.router.navigateByUrl(`/user/orders/${order.id}`);
   }
 
   reorder(order: Order) {

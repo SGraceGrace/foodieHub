@@ -40,9 +40,9 @@
         <div class="trk-bar-step">
           <div class="trk-bar-dot" [ngClass]="stepState(order, i)">
             <span *ngIf="stepState(order, i) === 'done'">✓</span>
-            <span *ngIf="stepState(order, i) === 'curr' && i === 3">🛵</span>
-            <span *ngIf="stepState(order, i) === 'curr' && i !== 3">●</span>
-            <span *ngIf="stepState(order, i) === 'pending' && i === 4">🏠</span>
+            <span *ngIf="stepState(order, i) === 'curr' && i === 4">🛵</span>
+            <span *ngIf="stepState(order, i) === 'curr' && i !== 4">●</span>
+            <span *ngIf="stepState(order, i) === 'pending' && i === 5">🏠</span>
           </div>
           <div class="trk-bar-lbl" [ngClass]="stepState(order, i)">{{ step }}</div>
         </div>
