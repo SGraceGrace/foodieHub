@@ -111,7 +111,8 @@ public class RestaurantController {
             @RequestBody RatingRequest req) {
         try {
             return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
-                    restaurantService.addRating(id, req.rating(), customerId, req.orderId()),
+                    restaurantService.addRating(id, req.rating(), customerId,
+                            req.orderId(), req.driverEmail(), req.driverRating()),
                     HttpStatus.OK.value(), null));
         } catch (IllegalStateException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT)

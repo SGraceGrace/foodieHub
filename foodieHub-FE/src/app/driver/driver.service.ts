@@ -1,9 +1,34 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, NgZone } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiResponse } from '../model/apiResponse.model';
 import { Order } from '../model/order.model';
+import { PaginatedResponse } from '../model/restaurant.model';
+
+export interface DayEarning {
+  dayLabel:    string;   // "Mon"
+  dateLabel:   string;   // "26 May"
+  amount:      number;
+  deliveries:  number;
+  isToday:     boolean;
+}
+
+export interface DriverEarnings {
+  todayAmount:           number;
+  todayDeliveries:       number;
+  weekAmount:            number;
+  weekDeliveries:        number;
+  allTimeAmount:         number;
+  allTimeDeliveries:     number;
+  avgEarningPerDelivery: number;
+  weeklyBreakdown:       DayEarning[];
+  // Performance stats
+  cancelledDeliveries:   number;
+  completionRate:        number;  // 0-100
+  avgRating:             number;  // 0-5
+  ratingCount:           number;
+}
 
 export interface DriverRegisterRequest {
   firstName: string;
@@ -89,7 +114,7 @@ export class DriverService {
    * Driver updates the order status.
    * READY → OUT_FOR_DELIVERY (picked up) → DELIVERED
    */
-  updateOrderStatus(orderId: string, status: 'OUT_FOR_DELIVERY' | 'DELIVERED'): Observable<any> {
+  updateOrderStatus(orderId: string, status: 'PICKED_UP' | 'OUT_FOR_DELIVERY' | 'DELIVERED'): Observable<any> {
     return this.http.patch(`${environment.apiBaseUrl}/api/orders/${orderId}/driver-status`, { status });
   }
 
@@ -114,6 +139,34 @@ export class DriverService {
    */
   getAvailableOrders(): Observable<ApiResponse<Order[]>> {
     return this.http.get<ApiResponse<Order[]>>(`${environment.apiBaseUrl}/api/orders/available`);
+  }
+
+  /**
+   * Returns the driver's own current in-progress order (accepted but not yet delivered).
+   * Used to restore active delivery state after a page refresh.
+   * Returns null in data when the driver has no active delivery.
+   */
+  getActiveOrder(): Observable<ApiResponse<Order | null>> {
+    return this.http.get<ApiResponse<Order | null>>(`${environment.apiBaseUrl}/api/orders/driver/active`);
+  }
+
+  /**
+   * Paginated delivery history for the driver — DELIVERED + CANCELLED orders.
+   */
+  getDriverHistory(page: number, size: number): Observable<ApiResponse<PaginatedResponse<Order>>> {
+    const params = new HttpParams().set('page', page).set('size', size);
+    return this.http.get<ApiResponse<PaginatedResponse<Order>>>(
+      `${environment.apiBaseUrl}/api/orders/driver/history`, { params }
+    );
+  }
+
+  /**
+   * Earnings summary — today, this week, all-time, and per-day weekly breakdown.
+   */
+  getDriverEarnings(): Observable<ApiResponse<DriverEarnings>> {
+    return this.http.get<ApiResponse<DriverEarnings>>(
+      `${environment.apiBaseUrl}/api/orders/driver/earnings`
+    );
   }
 
   /**

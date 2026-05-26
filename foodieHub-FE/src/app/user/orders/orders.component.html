@@ -73,7 +73,11 @@
       </ng-container>
 
       <ng-container *ngIf="order.status === 'DELIVERED'">
-        <button class="oc-btn gold" (click)="reorder(order)">Reorder</button>
+        <button class="oc-btn gold"
+          [disabled]="reorderingId === order.id"
+          (click)="reorder(order)">
+          {{ reorderingId === order.id ? 'Adding…' : '🔁 Reorder' }}
+        </button>
         <button
           *ngIf="!order.rated && ratingTarget?.id !== order.id"
           class="oc-btn outline"
@@ -83,29 +87,48 @@
       </ng-container>
 
       <ng-container *ngIf="order.status === 'CANCELLED'">
-        <button class="oc-btn outline" (click)="reorder(order)">Reorder</button>
+        <button class="oc-btn outline"
+          [disabled]="reorderingId === order.id"
+          (click)="reorder(order)">
+          {{ reorderingId === order.id ? 'Adding…' : '🔁 Reorder' }}
+        </button>
       </ng-container>
     </div>
 
     <!-- ── Inline Rating Widget ──────────────────────────────── -->
     <div class="rating-panel" *ngIf="ratingTarget?.id === order.id">
-      <p class="rating-prompt">How was your experience at <strong>{{ order.restaurantName }}</strong>?</p>
 
-      <div class="star-row">
-        <button
-          class="star-btn"
-          *ngFor="let s of stars"
-          (mouseenter)="hoverRating(s)"
-          (mouseleave)="hoverRating(0)"
-          (click)="selectStar(s)"
-          [class.lit]="s <= activeStar()"
-          [attr.aria-label]="'Rate ' + s + ' star'"
-        >★</button>
+      <!-- Restaurant rating (required) -->
+      <div class="rating-section">
+        <p class="rating-prompt">🍛 <strong>{{ order.restaurantName }}</strong> <span class="required-hint">(required)</span></p>
+        <div class="star-row">
+          <button
+            class="star-btn"
+            *ngFor="let s of stars"
+            (mouseenter)="hoverRating(s)"
+            (mouseleave)="hoverRating(0)"
+            (click)="selectStar(s)"
+            [class.lit]="s <= activeStar()"
+          >★</button>
+        </div>
+        <p class="star-hint" *ngIf="activeStar() > 0">{{ starLabels[activeStar()] }}</p>
       </div>
 
-      <p class="star-hint" *ngIf="activeStar() > 0">
-        {{ ['', '😞 Poor', '😐 Fair', '🙂 Good', '😊 Great', '🤩 Excellent'][activeStar()] }}
-      </p>
+      <!-- Driver rating (optional — only when a driver was assigned) -->
+      <div class="rating-section rating-section--driver" *ngIf="hasDriverAssigned(order)">
+        <p class="rating-prompt">🛵 <strong>Your Delivery Driver</strong> <span class="optional-hint">(optional)</span></p>
+        <div class="star-row">
+          <button
+            class="star-btn"
+            *ngFor="let s of stars"
+            (mouseenter)="hoverDriverRating(s)"
+            (mouseleave)="hoverDriverRating(0)"
+            (click)="selectDriverStar(s)"
+            [class.lit]="s <= activeDriverStar()"
+          >★</button>
+        </div>
+        <p class="star-hint" *ngIf="activeDriverStar() > 0">{{ starLabels[activeDriverStar()] }}</p>
+      </div>
 
       <div class="rating-actions">
         <button

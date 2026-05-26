@@ -220,7 +220,8 @@ public class RestaurantServiceImpl implements RestaurantService {
     }
 
     @Override
-    public Restaurant addRating(String restaurantId, double newRating, String customerId, String orderId) {
+    public Restaurant addRating(String restaurantId, double newRating, String customerId,
+                                String orderId, String driverEmail, Integer driverRating) {
         // Duplicate guard — one rating per order (DB unique index is the real guard, this is the friendly message)
         if (ratingRepo.existsByOrderId(orderId)) {
             throw new IllegalStateException("Order has already been rated");
@@ -229,12 +230,18 @@ public class RestaurantServiceImpl implements RestaurantService {
         Restaurant r = restaurantRepo.findById(restaurantId)
                 .orElseThrow(() -> new RuntimeException("Restaurant not found"));
 
-        // Persist the individual rating document
+        // Persist the individual rating document — stores restaurant rating, driver id, and driver rating
         Rating rating = new Rating();
         rating.setRestaurantId(restaurantId);
         rating.setCustomerId(customerId);
         rating.setOrderId(orderId);
         rating.setRating(newRating);
+        if (driverEmail != null && !driverEmail.isBlank()) {
+            rating.setDriverEmail(driverEmail);
+        }
+        if (driverRating != null) {
+            rating.setDriverRating(driverRating);
+        }
         ratingRepo.save(rating);
 
         // Recalculate avg from all stored ratings — source of truth, not a rolling estimate

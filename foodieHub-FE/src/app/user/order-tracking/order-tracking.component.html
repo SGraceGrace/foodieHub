@@ -71,10 +71,32 @@
       <div class="card-title">🚗 Driver Status</div>
       <div class="timeline">
 
-        <div class="timeline-item" [ngClass]="driverStep(4)">
-          <div class="tl-label">Picked Up Order</div>
-          <div class="tl-badge" [ngClass]="driverStep(4)">
-            <ng-container [ngSwitch]="driverStep(4)">
+        <div class="timeline-item" [ngClass]="driverStep(1)">
+          <div class="tl-label">Driver Assigned</div>
+          <div class="tl-badge" [ngClass]="driverStep(1)">
+            <ng-container [ngSwitch]="driverStep(1)">
+              <span *ngSwitchCase="'completed'">✓ Completed</span>
+              <span *ngSwitchCase="'active'">🚗 Heading to Restaurant</span>
+              <span *ngSwitchDefault>⏳ Pending</span>
+            </ng-container>
+          </div>
+        </div>
+
+        <div class="timeline-item" [ngClass]="driverStep(2)">
+          <div class="tl-label">Order Picked Up</div>
+          <div class="tl-badge" [ngClass]="driverStep(2)">
+            <ng-container [ngSwitch]="driverStep(2)">
+              <span *ngSwitchCase="'completed'">✓ Completed</span>
+              <span *ngSwitchCase="'active'">📦 Picked Up</span>
+              <span *ngSwitchDefault>⏳ Pending</span>
+            </ng-container>
+          </div>
+        </div>
+
+        <div class="timeline-item" [ngClass]="driverStep(3)">
+          <div class="tl-label">Out for Delivery</div>
+          <div class="tl-badge" [ngClass]="driverStep(3)">
+            <ng-container [ngSwitch]="driverStep(3)">
               <span *ngSwitchCase="'completed'">✓ Completed</span>
               <span *ngSwitchCase="'active'">🛵 On the Way</span>
               <span *ngSwitchDefault>⏳ Pending</span>
@@ -82,10 +104,10 @@
           </div>
         </div>
 
-        <div class="timeline-item" [ngClass]="driverStep(5)">
+        <div class="timeline-item" [ngClass]="driverStep(4)">
           <div class="tl-label">Delivered</div>
-          <div class="tl-badge" [ngClass]="driverStep(5)">
-            <ng-container [ngSwitch]="driverStep(5)">
+          <div class="tl-badge" [ngClass]="driverStep(4)">
+            <ng-container [ngSwitch]="driverStep(4)">
               <span *ngSwitchCase="'completed'">🎉 Delivered</span>
               <span *ngSwitchCase="'active'">🎉 Delivered</span>
               <span *ngSwitchDefault>⏳ Pending</span>
@@ -95,15 +117,15 @@
 
       </div>
 
-      <!-- Driver card placeholder -->
-      <div class="driver-card" *ngIf="statusRank >= 4">
+      <!-- Driver card — shown as soon as any driver status is set -->
+      <div class="driver-card" *ngIf="hasDriverAssigned">
         <div class="driver-avatar">🛵</div>
         <div class="driver-info">
           <h3>Driver Assigned</h3>
-          <p>Your food is on the way!</p>
+          <p>{{ driverCardMessage }}</p>
         </div>
       </div>
-      <div class="driver-card pending-driver" *ngIf="statusRank < 4">
+      <div class="driver-card pending-driver" *ngIf="!hasDriverAssigned">
         <div class="driver-avatar grey">🕐</div>
         <div class="driver-info">
           <h3>Awaiting Driver</h3>
@@ -190,32 +212,13 @@
   <div class="action-buttons">
     <button class="btn btn-outline" (click)="goBack()">← My Orders</button>
 
-    <!-- Rate order — only shown after delivery, not yet rated -->
     <ng-container *ngIf="isDelivered">
+      <!-- Re-open rating if dismissed without rating -->
       <button class="btn btn-primary" *ngIf="!order.rated && !showRating" (click)="openRating()">
         ⭐ Rate Your Experience
       </button>
       <span class="rated-badge" *ngIf="order.rated">⭐ Rated</span>
     </ng-container>
-  </div>
-
-  <!-- RATING PANEL -->
-  <div class="rating-panel" *ngIf="showRating">
-    <p class="rating-prompt">How was your experience at <strong>{{ order.restaurantName }}</strong>?</p>
-    <div class="star-row">
-      <button class="star-btn" *ngFor="let s of stars"
-        (mouseenter)="hoverRating(s)" (mouseleave)="hoverRating(0)"
-        (click)="selectStar(s)" [class.lit]="s <= activeStar()">★</button>
-    </div>
-    <p class="star-hint" *ngIf="activeStar() > 0">
-      {{ ['','😞 Poor','😐 Fair','🙂 Good','😊 Great','🤩 Excellent'][activeStar()] }}
-    </p>
-    <div class="rating-actions">
-      <button class="btn btn-primary" [disabled]="selectedStar === 0 || submitting" (click)="submitRating()">
-        {{ submitting ? 'Submitting…' : 'Submit Rating' }}
-      </button>
-      <button class="btn btn-outline" (click)="cancelRating()">Cancel</button>
-    </div>
   </div>
 
 </div>
@@ -224,4 +227,55 @@
 <div class="loading-state" *ngIf="loading">
   <div class="loading-icon">⏳</div>
   <p>Loading order...</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     FLOATING RATING MODAL — auto-shows on DELIVERED, click backdrop to dismiss
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="rating-overlay" *ngIf="showRating && order" (click)="cancelRating()">
+  <div class="rating-modal" (click)="$event.stopPropagation()">
+
+    <!-- Close button -->
+    <button class="modal-close" (click)="cancelRating()" aria-label="Close">✕</button>
+
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="modal-icon">🎉</div>
+      <h2>Order Delivered!</h2>
+      <p>How was your experience? Your feedback helps others choose.</p>
+    </div>
+
+    <!-- Restaurant Rating (required) -->
+    <div class="rating-section">
+      <h3>🍛 {{ order.restaurantName }}</h3>
+      <p class="rating-sub">Rate your food experience <span class="required-hint">(required)</span></p>
+      <div class="star-row">
+        <button class="star-btn" *ngFor="let s of stars"
+          (mouseenter)="hoverRating(s)" (mouseleave)="hoverRating(0)"
+          (click)="selectStar(s)" [class.lit]="s <= activeStar()">★</button>
+      </div>
+      <p class="star-hint" *ngIf="activeStar() > 0">{{ starLabels[activeStar()] }}</p>
+    </div>
+
+    <!-- Driver Rating (optional — shown whenever a driver was assigned to this order) -->
+    <div class="rating-section" *ngIf="hasDriverAssigned">
+      <h3>🛵 Your Delivery Driver</h3>
+      <p class="rating-sub">Rate your delivery experience <span class="optional-hint">(optional)</span></p>
+      <div class="star-row">
+        <button class="star-btn" *ngFor="let s of stars"
+          (mouseenter)="hoverDriverRating(s)" (mouseleave)="hoverDriverRating(0)"
+          (click)="selectDriverStar(s)" [class.lit]="s <= activeDriverStar()">★</button>
+      </div>
+      <p class="star-hint" *ngIf="activeDriverStar() > 0">{{ starLabels[activeDriverStar()] }}</p>
+    </div>
+
+    <!-- Actions -->
+    <div class="modal-actions">
+      <button class="btn btn-primary" [disabled]="selectedStar === 0 || submitting" (click)="submitRating()">
+        {{ submitting ? 'Submitting…' : 'Submit Rating' }}
+      </button>
+      <button class="btn btn-outline" (click)="cancelRating()">Maybe Later</button>
+    </div>
+
+  </div>
 </div>

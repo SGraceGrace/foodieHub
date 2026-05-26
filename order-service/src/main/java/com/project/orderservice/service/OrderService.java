@@ -41,8 +41,29 @@ public interface OrderService {
      */
     List<Order> getAvailableOrders();
 
-    /** Mark order as rated — prevents the customer from rating twice. */
-    Order markRated(String orderId);
+    /**
+     * Returns the driver's current active order (the one they accepted but haven't delivered yet).
+     * Returns null if the driver has no active delivery right now.
+     */
+    Order getDriverActiveOrder(String driverEmail);
+
+    /**
+     * Mark order as rated — prevents the customer from rating twice.
+     * @param driverRating optional 1-5 driver rating; null if skipped or no driver was assigned.
+     */
+    Order markRated(String orderId, Integer driverRating);
+
+    /**
+     * Driver's completed / cancelled delivery history — paginated.
+     * Returns DELIVERED + CANCELLED orders where the driver is the one who handled them.
+     */
+    PaginatedResponse<Order> getDriverHistory(String driverEmail, int page, int size);
+
+    /**
+     * Driver earnings summary — today, this week, all-time, and per-day weekly breakdown.
+     * Earnings = 15% of totalAmount for each DELIVERED order.
+     */
+    com.project.orderservice.dto.DriverEarningsDTO getDriverEarnings(String driverEmail);
 
     /** Overview stats for the restaurant partner workspace. */
     com.project.orderservice.dto.RestaurantStatsDTO getRestaurantStats(String restaurantId);

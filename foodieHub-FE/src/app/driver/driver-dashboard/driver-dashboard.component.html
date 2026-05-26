@@ -11,7 +11,10 @@
       <span>📦</span> Available Orders
       <span class="nav-badge" *ngIf="availableOrders.length > 0">{{ availableOrders.length }}</span>
     </button>
-    <button class="nav-btn" [class.active]="activeTab === 'active'"      (click)="goTab('active')">     <span>🔴</span> Active Delivery</button>
+    <button class="nav-btn" [class.active]="activeTab === 'active'"      (click)="goTab('active')">
+      <span>🔴</span> Active Delivery
+      <span class="nav-badge" *ngIf="activeOrder">1</span>
+    </button>
     <button class="nav-btn" [class.active]="activeTab === 'history'"     (click)="goTab('history')">    <span>📜</span> Delivery History</button>
     <button class="nav-btn" [class.active]="activeTab === 'earnings'"    (click)="goTab('earnings')">   <span>💰</span> Earnings</button>
     <button class="nav-btn" [class.active]="activeTab === 'profile'"     (click)="goTab('profile')">    <span>👤</span> Profile</button>
@@ -60,48 +63,64 @@
         </div>
       </div>
 
-      <!-- Earnings summary -->
-      <div class="earnings-grid">
-        <div class="earning-box">
-          <div class="earning-label">Today's Earnings</div>
-          <div class="earning-value">₹{{ earnings.todayAmount }}</div>
-          <div class="earning-sub">{{ earnings.todayDeliveries }} deliveries completed</div>
+      <!-- Active delivery shortcut banner -->
+      <div class="active-delivery-banner" *ngIf="activeOrder" (click)="goTab('active')">
+        <span class="adb-icon">🛵</span>
+        <div class="adb-body">
+          <div class="adb-title">Active delivery in progress</div>
+          <div class="adb-detail">#{{ activeOrder.id }} · {{ activeOrder.restaurantName }}</div>
         </div>
-        <div class="earning-box">
-          <div class="earning-label">This Week</div>
-          <div class="earning-value">₹{{ earnings.weekAmount }}</div>
-          <div class="earning-sub">{{ earnings.weekDeliveries }} deliveries completed</div>
+        <span class="adb-arrow">View →</span>
+      </div>
+
+      <!-- Snapshot grid — Today / This Week / All Time -->
+      <div class="dash-snapshot-grid">
+        <div class="snap-card snap-card--today">
+          <div class="snap-label">Today's Earnings</div>
+          <div class="snap-value">₹{{ earnings.todayAmount | number:'1.0-0' }}</div>
+          <div class="snap-sub">{{ earnings.todayDeliveries }} deliver{{ earnings.todayDeliveries === 1 ? 'y' : 'ies' }} completed</div>
         </div>
-        <div class="earning-box">
-          <div class="earning-label">Rating</div>
-          <div class="earning-value">{{ stats.rating > 0 ? (stats.rating | number:'1.1-1') + ' ⭐' : '—' }}</div>
-          <div class="earning-sub">{{ stats.ratingCount > 0 ? 'Based on ' + stats.ratingCount + ' deliveries' : 'No ratings yet' }}</div>
+        <div class="snap-card snap-card--week">
+          <div class="snap-label">This Week</div>
+          <div class="snap-value">₹{{ earnings.weekAmount | number:'1.0-0' }}</div>
+          <div class="snap-sub">{{ earnings.weekDeliveries }} deliver{{ earnings.weekDeliveries === 1 ? 'y' : 'ies' }} completed</div>
+        </div>
+        <div class="snap-card snap-card--total">
+          <div class="snap-label">All Time</div>
+          <div class="snap-value">₹{{ earnings.allTimeAmount | number:'1.0-0' }}</div>
+          <div class="snap-sub">{{ earnings.allTimeDeliveries }} deliver{{ earnings.allTimeDeliveries === 1 ? 'y' : 'ies' }} total</div>
         </div>
       </div>
 
-      <!-- Quick stats -->
+      <!-- Performance grid -->
       <div class="box">
-        <h3>📊 Quick Stats</h3>
-        <div class="stats-grid">
-          <div class="stat-item">
-            <div class="stat-label">Total Deliveries</div>
-            <div class="stat-value">{{ stats.totalDeliveries }}</div>
+        <h3>📊 Performance</h3>
+        <div class="perf-grid">
+          <div class="perf-item">
+            <div class="perf-icon">⭐</div>
+            <div class="perf-value">{{ stats.rating > 0 ? (stats.rating | number:'1.1-1') : '—' }}</div>
+            <div class="perf-label">Rating</div>
+            <div class="perf-sub">{{ stats.ratingCount > 0 ? stats.ratingCount + ' ratings' : 'No ratings yet' }}</div>
           </div>
-          <div class="stat-item">
-            <div class="stat-label">Completion Rate</div>
-            <div class="stat-value" [class.green]="stats.completionRate >= 90">
-              {{ stats.completionRate > 0 ? stats.completionRate + '%' : '—' }}
+          <div class="perf-item">
+            <div class="perf-icon">📦</div>
+            <div class="perf-value">{{ stats.totalDeliveries }}</div>
+            <div class="perf-label">Deliveries</div>
+            <div class="perf-sub">All time</div>
+          </div>
+          <div class="perf-item">
+            <div class="perf-icon">✅</div>
+            <div class="perf-value" [class.green]="stats.completionRate >= 90">
+              {{ stats.completionRate > 0 ? (stats.completionRate | number:'1.0-0') + '%' : '—' }}
             </div>
+            <div class="perf-label">Completion Rate</div>
+            <div class="perf-sub">{{ stats.cancellationRate > 0 ? stats.cancellationRate + '% cancelled' : 'No cancellations' }}</div>
           </div>
-          <div class="stat-item">
-            <div class="stat-label">Cancellation Rate</div>
-            <div class="stat-value" [class.blue]="true">
-              {{ stats.cancellationRate > 0 ? stats.cancellationRate + '%' : '—' }}
-            </div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-label">Avg Delivery Time</div>
-            <div class="stat-value">{{ stats.avgDeliveryMinutes > 0 ? stats.avgDeliveryMinutes + ' min' : '—' }}</div>
+          <div class="perf-item">
+            <div class="perf-icon">💰</div>
+            <div class="perf-value">₹{{ earnings.avgEarningPerDelivery | number:'1.0-0' }}</div>
+            <div class="perf-label">Avg per Delivery</div>
+            <div class="perf-sub">15% commission</div>
           </div>
         </div>
       </div>
@@ -131,11 +150,18 @@
         <div class="order-card" *ngFor="let order of availableOrders" (click)="openOrderModal(order)" [hidden]="loadingOrders">
           <div class="order-header">
             <span class="order-id">#{{ order.id }}</span>
-            <span class="order-time">{{ order.placedAt | date:'shortTime' }}</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span class="order-status-badge"
+                    [class.badge-placed]="order.status === 'PLACED'"
+                    [class.badge-ready]="order.status !== 'PLACED'">
+                {{ order.status === 'PLACED' ? '⏳ Awaiting confirm' : '✅ Ready to accept' }}
+              </span>
+              <span class="order-time">{{ order.placedAt | date:'shortTime' }}</span>
+            </div>
           </div>
           <div class="order-body">
             <div class="order-restaurant">🍛 {{ order.restaurantName }}</div>
-            <div class="order-pickup">Pick up from: {{ order.restaurantAddress }}</div>
+            <div class="order-pickup">Pick up from: {{ order.restaurantAddress || order.restaurantName }}</div>
           </div>
           <div class="order-footer">
             <div class="order-meta">
@@ -159,16 +185,26 @@
         </div>
 
         <div *ngIf="activeOrder" class="active-delivery">
-          <!-- Progress -->
+          <!-- 3-step progress -->
           <div class="delivery-steps">
-            <div class="delivery-step" [class.done]="activeStep === 'delivery' || activeStep === null">
+            <div class="delivery-step"
+                 [class.active]="activeStep === 'pickup'"
+                 [class.done]="activeStep === 'enroute' || activeStep === 'delivery' || activeStep === null">
               <div class="step-dot">1</div>
               <div class="step-text">Go to Restaurant</div>
             </div>
             <div class="step-arrow">→</div>
-            <div class="delivery-step" [class.active]="activeStep === 'delivery'">
+            <div class="delivery-step"
+                 [class.active]="activeStep === 'enroute'"
+                 [class.done]="activeStep === 'delivery' || activeStep === null">
               <div class="step-dot">2</div>
-              <div class="step-text">Deliver to Customer</div>
+              <div class="step-text">Picked Up</div>
+            </div>
+            <div class="step-arrow">→</div>
+            <div class="delivery-step"
+                 [class.active]="activeStep === 'delivery'">
+              <div class="step-dot">3</div>
+              <div class="step-text">Out for Delivery</div>
             </div>
           </div>
 
@@ -178,8 +214,14 @@
               <strong>#{{ activeOrder.id }}</strong>
             </div>
             <div class="info-row">
-              <span class="info-label">{{ activeStep === 'pickup' ? 'Pickup from' : 'Deliver to' }}</span>
-              <strong>{{ activeStep === 'pickup' ? activeOrder.restaurantAddress : activeOrder.deliveryAddress }}</strong>
+              <span class="info-label">
+                {{ activeStep === 'pickup' ? 'Pickup from' : 'Deliver to' }}
+              </span>
+              <strong>
+                {{ activeStep === 'pickup'
+                    ? (activeOrder.restaurantAddress || activeOrder.restaurantName)
+                    : activeOrder.deliveryAddress }}
+              </strong>
             </div>
             <div class="info-row">
               <span class="info-label">Distance</span>
@@ -199,9 +241,15 @@
           </div>
 
           <div class="active-actions">
+            <!-- Step 1 → 2: driver arrived at restaurant and collected the food -->
             <button class="btn btn-primary" *ngIf="activeStep === 'pickup'" (click)="markPickedUp()">
-              ✅ Order Picked Up
+              📦 Order Picked Up
             </button>
+            <!-- Step 2 → 3: driver has left the restaurant with the food -->
+            <button class="btn btn-warning" *ngIf="activeStep === 'enroute'" (click)="markOutForDelivery()">
+              🛵 Out for Delivery
+            </button>
+            <!-- Step 3 → done: driver delivered to customer -->
             <button class="btn btn-success" *ngIf="activeStep === 'delivery'" (click)="markDelivered()">
               ✅ Order Delivered
             </button>
@@ -215,100 +263,257 @@
       <div class="page-title">📜 Delivery History</div>
 
       <div class="box">
-        <div *ngIf="deliveryHistory.length === 0" class="empty-state">
-          <div class="empty-icon">📋</div>
-          <p>No delivery history yet. Complete your first delivery to see it here.</p>
+
+        <!-- Summary strip -->
+        <div class="history-summary" *ngIf="historyPagination.totalElements > 0">
+          <div class="summary-item">
+            <div class="summary-label">Total Deliveries</div>
+            <div class="summary-value">{{ historyPagination.totalElements }}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Completed (this page)</div>
+            <div class="summary-value green">{{ historyDeliveredCount }}</div>
+          </div>
+          <div class="summary-item">
+            <div class="summary-label">Cancelled (this page)</div>
+            <div class="summary-value red">{{ historyCancelledCount }}</div>
+          </div>
         </div>
 
-        <div class="order-card history-card" *ngFor="let item of deliveryHistory"
-             [class.delivered]="item.status === 'DELIVERED'"
-             [class.cancelled]="item.status === 'CANCELLED'">
-          <div class="order-header">
-            <span class="order-id">#{{ item.id }}</span>
-            <span class="order-time">{{ item.deliveredAt | date:'MMM d, h:mm a' }}</span>
-          </div>
-          <div class="order-body">
-            <div class="order-restaurant">🍛 {{ item.restaurantName }}</div>
-            <div class="order-pickup">Delivered to: {{ item.deliveryAddress }}</div>
-          </div>
-          <div class="order-footer">
-            <div class="order-meta">
-              <span>📍 {{ item.distanceKm }} km</span>
-              <span>⏱ {{ item.timeTakenMinutes }} min</span>
+        <!-- Loading -->
+        <div *ngIf="historyLoading" class="empty-state">
+          <div class="empty-icon">⏳</div>
+          <p>Loading delivery history...</p>
+        </div>
+
+        <!-- Empty -->
+        <div *ngIf="!historyLoading && deliveryHistory.length === 0" class="empty-state">
+          <div class="empty-icon">📋</div>
+          <p>No deliveries yet. Complete your first delivery to see it here.</p>
+        </div>
+
+        <!-- Cards -->
+        <div *ngIf="!historyLoading">
+          <div class="history-card" *ngFor="let item of deliveryHistory">
+
+            <!-- Card header -->
+            <div class="hc-header">
+              <div class="hc-left">
+                <span class="hc-id">#{{ item.id }}</span>
+                <span class="hc-badge" [class.hc-delivered]="item.status === 'DELIVERED'" [class.hc-cancelled]="item.status === 'CANCELLED'">
+                  {{ item.status === 'DELIVERED' ? '✅ Delivered' : '❌ Cancelled' }}
+                </span>
+              </div>
+              <span class="hc-date">{{ item.completedAt | date:'d MMM y, h:mm a' }}</span>
             </div>
-            <div>
-              <div class="order-earn">₹{{ item.earnAmount }}</div>
-              <div class="delivery-status" [class.delivered]="item.status === 'DELIVERED'">
-                {{ item.status === 'DELIVERED' ? '✅ Delivered' : '❌ Cancelled' }}
+
+            <!-- Restaurant + address -->
+            <div class="hc-row">
+              <span class="hc-icon">🍛</span>
+              <div>
+                <div class="hc-main">{{ item.restaurantName }}</div>
+                <div class="hc-sub">Delivered to: {{ item.deliveryAddress }}</div>
               </div>
             </div>
+
+            <!-- Items -->
+            <div class="hc-items">
+              <span class="hc-item-tag" *ngFor="let it of item.items">{{ it }}</span>
+            </div>
+
+            <!-- Footer: earnings + rating -->
+            <div class="hc-footer">
+              <div class="hc-earn-block">
+                <span class="hc-earn-label">Your Earnings</span>
+                <span class="hc-earn-value">₹{{ item.earnAmount }}</span>
+              </div>
+              <div class="hc-rating-block" *ngIf="item.status === 'DELIVERED'">
+                <span *ngIf="item.driverRating" class="hc-stars">
+                  <ng-container *ngFor="let s of [1,2,3,4,5]">
+                    <span [class.lit]="s <= item.driverRating!">★</span>
+                  </ng-container>
+                  <span class="hc-rating-num">{{ item.driverRating }}/5</span>
+                </span>
+                <span *ngIf="!item.driverRating" class="hc-unrated">Not yet rated</span>
+              </div>
+            </div>
+
           </div>
         </div>
 
-        <div class="pagination" *ngIf="historyPagination.totalPages > 1">
+        <!-- Pagination -->
+        <div class="pagination" *ngIf="!historyLoading && historyPagination.totalPages > 1">
           <button (click)="prevHistoryPage()" [disabled]="historyPagination.currentPage === 0">← Prev</button>
-          <span>Page {{ historyPagination.currentPage + 1 }} of {{ historyPagination.totalPages }}</span>
+          <span>{{ historyPageInfo }}</span>
           <button (click)="nextHistoryPage()" [disabled]="historyPagination.currentPage >= historyPagination.totalPages - 1">Next →</button>
         </div>
+
       </div>
     </div>
 
     <!-- ── EARNINGS TAB ── -->
     <div *ngIf="activeTab === 'earnings'">
-      <div class="page-title">💰 Earnings & Payouts</div>
+      <div class="page-title">💰 Earnings</div>
 
-      <div class="box">
-        <h3>📊 Earnings Breakdown</h3>
-
-        <div class="earnings-grid" style="margin-top: 1.2rem;">
-          <div class="earning-box">
-            <div class="earning-label">Today</div>
-            <div class="earning-value">₹{{ earnings.todayAmount }}</div>
-            <div class="earning-sub">{{ earnings.todayDeliveries }} deliveries</div>
-          </div>
-          <div class="earning-box">
-            <div class="earning-label">This Week</div>
-            <div class="earning-value">₹{{ earnings.weekAmount }}</div>
-            <div class="earning-sub">{{ earnings.weekDeliveries }} deliveries + ₹{{ earnings.weekBonus }} bonus</div>
-          </div>
-        </div>
-
-        <div class="payout-card" *ngIf="earnings.nextPayoutAmount > 0">
-          <div class="payout-title">💵 Next Payout</div>
-          <div class="payout-amount">₹{{ earnings.nextPayoutAmount }}</div>
-          <div class="payout-date" *ngIf="earnings.nextPayoutDate">on {{ earnings.nextPayoutDate }}</div>
-        </div>
-
-        <div class="empty-state" *ngIf="earnings.weekAmount === 0">
-          <div class="empty-icon">💸</div>
-          <p>No earnings yet this week. Start delivering to see your earnings here.</p>
-        </div>
-
-        <div *ngIf="earnings.weekAmount > 0">
-          <h3 style="margin: 1.5rem 0 1rem;">📜 Breakdown</h3>
-          <div class="transaction-row">
-            <div>
-              <div class="tx-label">Base Fee ({{ earnings.weekDeliveries }} deliveries)</div>
-              <div class="tx-sub">Delivery pay per order</div>
-            </div>
-            <div class="tx-amount">₹{{ earnings.baseFeeTotal }}</div>
-          </div>
-          <div class="transaction-row">
-            <div>
-              <div class="tx-label">Customer Tips</div>
-              <div class="tx-sub">Good ratings = More tips</div>
-            </div>
-            <div class="tx-amount">₹{{ earnings.tipsTotal }}</div>
-          </div>
-          <div class="transaction-row">
-            <div>
-              <div class="tx-label">Completion Bonus</div>
-              <div class="tx-sub">{{ earnings.weekDeliveries }} deliveries completed</div>
-            </div>
-            <div class="tx-amount green">+₹{{ earnings.bonusTotal }}</div>
-          </div>
+      <!-- Loading -->
+      <div class="box" *ngIf="earningsLoading">
+        <div class="empty-state">
+          <div class="empty-icon">⏳</div>
+          <p>Loading earnings...</p>
         </div>
       </div>
+
+      <ng-container *ngIf="!earningsLoading">
+
+        <!-- ── Summary cards ──────────────────────────────────────────── -->
+        <div class="earn-summary-grid">
+
+          <div class="earn-card earn-card--today">
+            <div class="earn-card-label">Today</div>
+            <div class="earn-card-amount">₹{{ earnings.todayAmount | number:'1.0-0' }}</div>
+            <div class="earn-card-sub">
+              {{ earnings.todayDeliveries }} deliver{{ earnings.todayDeliveries === 1 ? 'y' : 'ies' }}
+            </div>
+          </div>
+
+          <div class="earn-card earn-card--week">
+            <div class="earn-card-label">This Week</div>
+            <div class="earn-card-amount">₹{{ earnings.weekAmount | number:'1.0-0' }}</div>
+            <div class="earn-card-sub">
+              {{ earnings.weekDeliveries }} deliver{{ earnings.weekDeliveries === 1 ? 'y' : 'ies' }}
+            </div>
+          </div>
+
+          <div class="earn-card earn-card--alltime">
+            <div class="earn-card-label">All Time</div>
+            <div class="earn-card-amount">₹{{ earnings.allTimeAmount | number:'1.0-0' }}</div>
+            <div class="earn-card-sub">
+              {{ earnings.allTimeDeliveries }} deliver{{ earnings.allTimeDeliveries === 1 ? 'y' : 'ies' }}
+            </div>
+          </div>
+
+          <div class="earn-card earn-card--avg">
+            <div class="earn-card-label">Avg per Delivery</div>
+            <div class="earn-card-amount">₹{{ earnings.avgEarningPerDelivery | number:'1.0-0' }}</div>
+            <div class="earn-card-sub">15% of order value</div>
+          </div>
+
+        </div>
+
+        <!-- ── Zero state ─────────────────────────────────────────────── -->
+        <div class="box" *ngIf="earnings.allTimeDeliveries === 0">
+          <div class="empty-state">
+            <div class="empty-icon">💸</div>
+            <p>No deliveries yet. Accept your first order to start earning!</p>
+          </div>
+        </div>
+
+        <!-- ── Weekly breakdown ───────────────────────────────────────── -->
+        <div class="box" *ngIf="earnings.weeklyBreakdown.length > 0">
+          <div class="earn-section-title">📅 This Week's Breakdown</div>
+
+          <div class="week-grid">
+            <div
+              class="week-day"
+              *ngFor="let day of earnings.weeklyBreakdown"
+              [class.week-day--today]="day.isToday"
+              [class.week-day--active]="day.deliveries > 0"
+            >
+              <div class="wd-label">{{ day.dayLabel }}</div>
+              <div class="wd-date">{{ day.dateLabel }}</div>
+
+              <!-- Bar -->
+              <div class="wd-bar-wrap">
+                <div
+                  class="wd-bar"
+                  [style.height.%]="weeklyBarHeight(day)"
+                ></div>
+              </div>
+
+              <div class="wd-amount">
+                {{ day.amount > 0 ? '₹' + (day.amount | number:'1.0-0') : '—' }}
+              </div>
+              <div class="wd-count">
+                {{ day.deliveries > 0 ? day.deliveries + (day.deliveries === 1 ? ' delivery' : ' deliveries') : '' }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Week total row -->
+          <div class="week-total-row">
+            <span>Week total</span>
+            <strong>₹{{ earnings.weekAmount | number:'1.0-0' }}</strong>
+            <span>·</span>
+            <strong>{{ earnings.weekDeliveries }} deliver{{ earnings.weekDeliveries === 1 ? 'y' : 'ies' }}</strong>
+          </div>
+        </div>
+
+        <!-- ── Recent Deliveries ─────────────────────────────────────── -->
+        <div class="box">
+          <div class="earn-section-title">🕐 Recent Deliveries</div>
+
+          <div class="empty-state" style="padding:1.5rem 0" *ngIf="recentLoading">
+            <div class="empty-icon" style="font-size:2rem">⏳</div>
+            <p>Loading...</p>
+          </div>
+
+          <div class="empty-state" style="padding:1.5rem 0"
+               *ngIf="!recentLoading && recentDeliveries.length === 0">
+            <div class="empty-icon" style="font-size:2rem">📋</div>
+            <p>No deliveries yet.</p>
+          </div>
+
+          <ng-container *ngIf="!recentLoading && recentDeliveries.length > 0">
+            <div
+              class="recent-row"
+              [class.recent-cancelled]="item.status === 'CANCELLED'"
+              *ngFor="let item of recentDeliveries"
+            >
+              <div class="recent-left">
+                <span class="recent-restaurant">{{ item.restaurantName }}</span>
+                <span class="recent-date">{{ item.completedAt | date:'d MMM, h:mm a' }}</span>
+              </div>
+              <div class="recent-right">
+                <span class="recent-earn">
+                  {{ item.status === 'DELIVERED' ? ('₹' + item.earnAmount) : '—' }}
+                </span>
+                <span class="recent-status">
+                  {{ item.status === 'DELIVERED' ? '✅ Delivered' : '❌ Cancelled' }}
+                </span>
+              </div>
+            </div>
+
+            <button class="view-all-btn" (click)="goTab('history')">View full history →</button>
+          </ng-container>
+        </div>
+
+        <!-- ── How earnings are calculated ───────────────────────────── -->
+        <div class="box earn-info-box">
+          <div class="earn-section-title">ℹ️ How Earnings Work</div>
+          <div class="earn-info-row">
+            <span class="earn-info-icon">💰</span>
+            <div>
+              <div class="earn-info-label">Delivery Commission</div>
+              <div class="earn-info-text">You earn <strong>15%</strong> of every order's total value.</div>
+            </div>
+          </div>
+          <div class="earn-info-row">
+            <span class="earn-info-icon">⭐</span>
+            <div>
+              <div class="earn-info-label">Ratings Boost</div>
+              <div class="earn-info-text">Higher ratings can unlock better-paying orders.</div>
+            </div>
+          </div>
+          <div class="earn-info-row">
+            <span class="earn-info-icon">🔄</span>
+            <div>
+              <div class="earn-info-label">Real-time Updates</div>
+              <div class="earn-info-text">Earnings refresh automatically after each delivery is completed.</div>
+            </div>
+          </div>
+        </div>
+
+      </ng-container>
     </div>
 
     <!-- ── PROFILE TAB ── -->
@@ -372,11 +577,15 @@
               </div>
               <div class="stat-item">
                 <div class="stat-label">Completion Rate</div>
-                <div class="stat-value">{{ stats.completionRate > 0 ? stats.completionRate + '%' : '—' }}</div>
+                <div class="stat-value" [class.green]="stats.completionRate >= 90">
+                  {{ stats.completionRate > 0 ? (stats.completionRate | number:'1.0-0') + '%' : '—' }}
+                </div>
               </div>
               <div class="stat-item">
-                <div class="stat-label">Avg Delivery Time</div>
-                <div class="stat-value">{{ stats.avgDeliveryMinutes > 0 ? stats.avgDeliveryMinutes + ' min' : '—' }}</div>
+                <div class="stat-label">Avg per Delivery</div>
+                <div class="stat-value">
+                  {{ earnings.avgEarningPerDelivery > 0 ? ('₹' + (earnings.avgEarningPerDelivery | number:'1.0-0')) : '—' }}
+                </div>
               </div>
             </div>
           </div>
@@ -492,9 +701,21 @@
       </div>
     </div>
 
+    <!-- Warning shown when restaurant hasn't confirmed the order yet -->
+    <div class="modal-warning" *ngIf="selectedOrder && selectedOrder.status === 'PLACED'">
+      ⏳ <strong>Waiting for restaurant</strong> — The restaurant hasn't confirmed this order yet. You can monitor it here, but the Accept button will be enabled once they confirm.
+    </div>
+
     <div class="modal-actions">
-      <button class="btn btn-primary" (click)="acceptOrder()">✅ Accept Order</button>
-      <button class="btn btn-outline" (click)="rejectOrder()">Reject</button>
+      <button
+        class="btn btn-primary"
+        (click)="acceptOrder()"
+        [disabled]="selectedOrder?.status === 'PLACED'"
+        [title]="selectedOrder?.status === 'PLACED' ? 'Waiting for restaurant to confirm' : ''"
+      >
+        {{ selectedOrder?.status === 'PLACED' ? '⏳ Waiting for Restaurant…' : '✅ Accept Order' }}
+      </button>
+      <button class="btn btn-outline" (click)="rejectOrder()">Skip</button>
     </div>
   </div>
 </div>

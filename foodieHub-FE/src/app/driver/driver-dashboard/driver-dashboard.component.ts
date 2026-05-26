@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { ToastrService } from 'ngx-toastr';
 import { DriverHeaderComponent } from '../driver-header/driver-header.component';
-import { DriverService, DriverProfileData, DriverOrderNotification } from '../driver.service';
+import { DriverService, DriverProfileData, DriverOrderNotification, DriverEarnings, DayEarning } from '../driver.service';
 import { Order } from '../../model/order.model';
 
 export type DashboardTab = 'dashboard' | 'orders' | 'active' | 'history' | 'earnings' | 'profile';
@@ -19,39 +19,28 @@ export interface DriverOrder {
   earnAmount: number;
   items: string[];
   placedAt: Date;
+  /** Order lifecycle status — PLACED means restaurant hasn't confirmed yet */
+  status: string;
 }
 
 export interface DeliveryHistoryItem {
   id: string;
   restaurantName: string;
   deliveryAddress: string;
-  distanceKm: number;
-  timeTakenMinutes: number;
+  items: string[];
   earnAmount: number;
-  deliveredAt: Date;
+  totalAmount: number;
+  completedAt: Date;
   status: 'DELIVERED' | 'CANCELLED';
+  driverRating?: number;
 }
 
 export interface DriverStats {
   totalDeliveries: number;
   completionRate: number;
   cancellationRate: number;
-  avgDeliveryMinutes: number;
   rating: number;
   ratingCount: number;
-}
-
-export interface DriverEarnings {
-  todayAmount: number;
-  todayDeliveries: number;
-  weekAmount: number;
-  weekDeliveries: number;
-  weekBonus: number;
-  nextPayoutAmount: number;
-  nextPayoutDate: string | null;
-  baseFeeTotal: number;
-  tipsTotal: number;
-  bonusTotal: number;
 }
 
 export interface DriverProfile {
@@ -77,7 +66,7 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
   activeTab: DashboardTab = 'dashboard';
   isOnline = false;
 
-  // Available orders (loaded from API when online)
+  // Available orders
   availableOrders: DriverOrder[] = [];
   loadingOrders = false;
   selectedOrder: DriverOrder | null = null;
@@ -85,25 +74,35 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
 
   // Active delivery
   activeOrder: DriverOrder | null = null;
-  activeStep: 'pickup' | 'delivery' | null = null;
+  activeStep: 'pickup' | 'enroute' | 'delivery' | null = null;
 
   // History
   deliveryHistory: DeliveryHistoryItem[] = [];
+  historyLoading = false;
   historyPagination = { currentPage: 0, totalPages: 0, totalElements: 0, pageSize: 10 };
+
+  // Recent deliveries — shown on earnings tab (last 5, loaded separately)
+  recentDeliveries: DeliveryHistoryItem[] = [];
+  recentLoading = false;
 
   // Earnings
   earnings: DriverEarnings = {
     todayAmount: 0, todayDeliveries: 0,
-    weekAmount: 0, weekDeliveries: 0, weekBonus: 0,
-    nextPayoutAmount: 0, nextPayoutDate: null,
-    baseFeeTotal: 0, tipsTotal: 0, bonusTotal: 0,
+    weekAmount: 0, weekDeliveries: 0,
+    allTimeAmount: 0, allTimeDeliveries: 0,
+    avgEarningPerDelivery: 0,
+    weeklyBreakdown: [],
+    cancelledDeliveries: 0,
+    completionRate: 0,
+    avgRating: 0,
+    ratingCount: 0,
   };
+  earningsLoading = false;
 
-  // Stats
+  // Stats — derived from earnings after API load
   stats: DriverStats = {
     totalDeliveries: 0, completionRate: 0,
-    cancellationRate: 0, avgDeliveryMinutes: 0,
-    rating: 0, ratingCount: 0,
+    cancellationRate: 0, rating: 0, ratingCount: 0,
   };
 
   // Profile
@@ -111,8 +110,6 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     fullName: '', firstName: '', lastName: '', phone: '', email: '',
     vehicleType: '', licenseNumber: '', bankAccount: '', verificationStatus: 'PENDING',
   };
-
-  // Profile edit
   editingProfile = false;
   savingProfile = false;
   profileSaveMsg = '';
@@ -120,15 +117,13 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
 
   togglingAvailability = false;
 
-  // ── Location tracking ─────────────────────────────────────────────
+  // Location tracking
   private locationWatchId: number | null = null;
   private lastLocationSentAt = 0;
   private lastReverseGeocodedAt = 0;
-  private readonly LOCATION_THROTTLE_MS  = 10_000;  // send to backend at most every 10s
-  private readonly GEOCODE_THROTTLE_MS   = 30_000;  // reverse-geocode at most every 30s
+  private readonly LOCATION_THROTTLE_MS = 10_000;
+  private readonly GEOCODE_THROTTLE_MS  = 30_000;
   locationError = '';
-
-  // Displayed in the dashboard card
   currentLat: number | null = null;
   currentLng: number | null = null;
   currentAddress = '';
@@ -141,7 +136,6 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    // Seed basic info from localStorage immediately (fast, no flicker)
     const info = localStorage.getItem('driverInfo');
     if (info) {
       const stored = JSON.parse(info);
@@ -152,15 +146,42 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
       this.profile.email     = stored.email  ?? '';
       this.profile.verificationStatus = stored.status === 'ACTIVE' ? 'APPROVED' : (stored.status ?? 'PENDING');
     }
-    // Load full profile from API (includes vehicleType, licenseNumber, bankAccount from driver_profile table)
-    // Available orders are loaded inside applyProfileFromApi() once online status is known.
     this.loadProfile();
+    // Always load earnings and recent deliveries on init — not just when going online
+    this.loadDriverEarnings();
+    this.loadRecentDeliveries();
   }
+
+  ngOnDestroy() {
+    this.stopLocationTracking();
+  }
+
+  // ── Computed getters ──────────────────────────────────────────────
 
   get profileInitials(): string {
     return (this.profile.fullName || 'DR')
       .split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   }
+
+  weeklyBarHeight(day: DayEarning): number {
+    const max = Math.max(...this.earnings.weeklyBreakdown.map(d => d.amount), 1);
+    return Math.round((day.amount / max) * 100);
+  }
+
+  get historyDeliveredCount(): number {
+    return this.deliveryHistory.filter(h => h.status === 'DELIVERED').length;
+  }
+  get historyCancelledCount(): number {
+    return this.deliveryHistory.filter(h => h.status === 'CANCELLED').length;
+  }
+  get historyPageInfo(): string {
+    const { currentPage, pageSize, totalElements } = this.historyPagination;
+    const from = currentPage * pageSize + 1;
+    const to   = Math.min((currentPage + 1) * pageSize, totalElements);
+    return `Showing ${from}–${to} of ${totalElements}`;
+  }
+
+  // ── Navigation ────────────────────────────────────────────────────
 
   goTab(tab: DashboardTab) {
     this.activeTab = tab;
@@ -172,10 +193,12 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
       }
     }
     if (tab === 'history') {
-      // TODO: load delivery history from API
+      this.historyPagination.currentPage = 0;
+      this.loadDriverHistory();
     }
     if (tab === 'earnings') {
-      // TODO: load earnings from API
+      this.loadDriverEarnings();
+      this.loadRecentDeliveries();
     }
     if (tab === 'profile') {
       this.loadProfile();
@@ -183,11 +206,8 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     }
   }
 
-  /**
-   * Loads unassigned active orders from order-service — the real source of truth for
-   * available deliveries. This is separate from the driver notification bell which
-   * tracks alert history in notification-service.
-   */
+  // ── Available orders ──────────────────────────────────────────────
+
   loadAvailableOrders() {
     if (!this.isOnline) return;
     this.loadingOrders = true;
@@ -195,7 +215,6 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
       next: res => {
         this.loadingOrders = false;
         const orders: Order[] = res.data ?? [];
-        // Keep any SSE-pushed orders that haven't appeared in the API response yet
         const existingIds = new Set(this.availableOrders.map(o => o.id));
         const fetched: DriverOrder[] = orders
           .filter(o => !existingIds.has(o.id))
@@ -207,28 +226,27 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
             distanceKm:        0,
             estimatedMinutes:  0,
             earnAmount:        Math.round((o.totalAmount ?? 0) * 0.15),
-            items:             o.items.map(i => `${i.name} x${i.qty}`),
+            items:             o.items.map(i => `${i.name} ×${i.qty}`),
             placedAt:          new Date(o.createdAt),
+            status:            o.status as string,
           }));
         this.availableOrders = [...this.availableOrders, ...fetched];
       },
-      error: () => {
-        this.loadingOrders = false;
-      },
+      error: () => { this.loadingOrders = false; },
     });
   }
+
+  // ── Online / offline ──────────────────────────────────────────────
 
   goOnline() {
     if (!navigator.geolocation) {
       this.toastr.error('Your browser does not support location. Cannot go online.');
       return;
     }
-    // Request location permission first — if denied, block going online
     this.togglingAvailability = true;
     this.locationError = '';
     navigator.geolocation.getCurrentPosition(
       () => {
-        // Permission granted — now mark online in backend
         this.driverService.setAvailability(true).subscribe({
           next: () => {
             this.isOnline = true;
@@ -275,25 +293,21 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ── Location ──────────────────────────────────────────────────────
+
   private startLocationTracking() {
-    this.stopLocationTracking(); // clear any existing watcher
+    this.stopLocationTracking();
     this.locationWatchId = navigator.geolocation.watchPosition(
       (pos) => {
         const now = Date.now();
         const { latitude, longitude } = pos.coords;
-
-        // Always update the displayed values immediately
-        this.currentLat       = latitude;
-        this.currentLng       = longitude;
+        this.currentLat        = latitude;
+        this.currentLng        = longitude;
         this.locationUpdatedAt = new Date();
-
-        // Reverse-geocode at most every 30s
         if (now - this.lastReverseGeocodedAt >= this.GEOCODE_THROTTLE_MS) {
           this.lastReverseGeocodedAt = now;
           this.reverseGeocode(latitude, longitude);
         }
-
-        // Send to backend at most every 10s
         if (now - this.lastLocationSentAt < this.LOCATION_THROTTLE_MS) return;
         this.lastLocationSentAt = now;
         this.driverService.updateLocation(latitude, longitude).subscribe({
@@ -310,9 +324,9 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
       navigator.geolocation.clearWatch(this.locationWatchId);
       this.locationWatchId = null;
     }
-    this.currentLat       = null;
-    this.currentLng       = null;
-    this.currentAddress   = '';
+    this.currentLat        = null;
+    this.currentLng        = null;
+    this.currentAddress    = '';
     this.locationUpdatedAt = null;
   }
 
@@ -321,12 +335,11 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     this.http.get<any>(url).subscribe({
       next: (res) => {
         if (res?.display_name) {
-          // Trim to neighbourhood + city — full address is too long
           const parts: string[] = res.display_name.split(',').map((s: string) => s.trim());
           this.currentAddress = parts.slice(0, 3).join(', ');
         }
       },
-      error: () => { /* non-critical — raw coords still shown */ }
+      error: () => {}
     });
   }
 
@@ -334,14 +347,8 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
 
   loadProfile() {
     this.driverService.getProfile().subscribe({
-      next: res => {
-        if (res.data) this.applyProfileFromApi(res.data);
-      },
+      next: res => { if (res.data) this.applyProfileFromApi(res.data); },
     });
-  }
-
-  ngOnDestroy() {
-    this.stopLocationTracking();
   }
 
   private applyProfileFromApi(d: DriverProfileData) {
@@ -356,28 +363,57 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
       bankAccount:        d.bankAccount   ?? '',
       verificationStatus: d.status === 'ACTIVE' ? 'APPROVED' : (d.status ?? 'PENDING'),
     };
-    // Restore online status from DB — so page refresh doesn't reset to offline
     const wasOnline = this.isOnline;
     this.isOnline = d.online ?? false;
-    // If driver was online (or just became online via profile load), resume location tracking
-    // and load the available orders list.
     if (this.isOnline && !wasOnline) {
       if (navigator.geolocation) this.startLocationTracking();
       this.loadAvailableOrders();
+      this.loadActiveOrder();
+      this.loadDriverEarnings();
+      this.loadRecentDeliveries();
     }
+  }
+
+  loadActiveOrder() {
+    this.driverService.getActiveOrder().subscribe({
+      next: res => {
+        const order = res.data;
+        if (!order) return;
+        this.activeOrder = {
+          id:                order.id,
+          restaurantName:    order.restaurantName,
+          restaurantAddress: '',
+          deliveryAddress:   order.deliveryAddress ?? '',
+          distanceKm:        0,
+          estimatedMinutes:  0,
+          // Use stored driverEarnings if set, fall back to 15% estimate for legacy orders
+          earnAmount:        order.driverEarnings ?? Math.round((order.totalAmount ?? 0) * 0.15),
+          items:             order.items.map(i => `${i.name} ×${i.qty}`),
+          placedAt:          new Date(order.createdAt),
+          status:            order.status as string,
+        };
+        switch (order.driverStatus as string) {
+          case 'DRIVER_ASSIGNED':  this.activeStep = 'pickup';   break;
+          case 'PICKED_UP':        this.activeStep = 'enroute';  break;
+          case 'OUT_FOR_DELIVERY': this.activeStep = 'delivery'; break;
+          default:                 this.activeStep = 'pickup';   break;
+        }
+      },
+      error: () => {}
+    });
   }
 
   openEditProfile() {
     this.profileDraft = {
-      firstName:    this.profile.firstName,
-      lastName:     this.profile.lastName,
-      phone:        this.profile.phone,
-      vehicleType:  this.profile.vehicleType,
+      firstName:     this.profile.firstName,
+      lastName:      this.profile.lastName,
+      phone:         this.profile.phone,
+      vehicleType:   this.profile.vehicleType,
       licenseNumber: this.profile.licenseNumber,
-      bankAccount:  this.profile.bankAccount,
+      bankAccount:   this.profile.bankAccount,
     };
-    this.profileSaveMsg  = '';
-    this.editingProfile  = true;
+    this.profileSaveMsg = '';
+    this.editingProfile = true;
   }
 
   cancelEditProfile() {
@@ -404,36 +440,45 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Called by the driver header when a real-time new-order SSE event arrives.
-   * Converts the notification into a DriverOrder and prepends it to availableOrders.
-   */
-  onNewOrderAlert(notification: DriverOrderNotification) {
-    // Avoid duplicates (SSE can fire more than once if the stream reconnects)
-    if (this.availableOrders.find(o => o.id === notification.orderId)) return;
+  // ── Order accept / status ─────────────────────────────────────────
 
+  onNewOrderAlert(notification: DriverOrderNotification) {
+    if (this.availableOrders.find(o => o.id === notification.orderId)) return;
     const order: DriverOrder = {
       id:                notification.orderId,
       restaurantName:    notification.restaurantName,
-      restaurantAddress: '',  // not in event — show restaurant name only
+      restaurantAddress: '',
       deliveryAddress:   notification.deliveryAddress ?? '',
-      distanceKm:        0,   // TODO: calculate from GPS
+      distanceKm:        0,
       estimatedMinutes:  0,
       earnAmount:        notification.earnAmount,
       items:             notification.itemNames ?? [],
       placedAt:          new Date(notification.createdAt),
+      status:            'PLACED',
     };
     this.availableOrders = [order, ...this.availableOrders];
   }
 
   openOrderModal(order: DriverOrder) {
-    this.selectedOrder = order;
+    this.selectedOrder  = order;
     this.showOrderModal = true;
+    // Silently refresh status — PLACED may have become CONFIRMED by now
+    this.driverService.getAvailableOrders().subscribe({
+      next: res => {
+        const fresh = (res.data ?? []).find(o => o.id === order.id);
+        if (fresh && this.selectedOrder?.id === order.id) {
+          this.selectedOrder    = { ...this.selectedOrder, status: fresh.status as string };
+          this.availableOrders  = this.availableOrders.map(o =>
+            o.id === fresh.id ? { ...o, status: fresh.status as string } : o
+          );
+        }
+      },
+    });
   }
 
   closeOrderModal() {
     this.showOrderModal = false;
-    this.selectedOrder = null;
+    this.selectedOrder  = null;
   }
 
   acceptOrder() {
@@ -442,7 +487,7 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
     this.driverService.acceptOrder(order.id).subscribe({
       next: () => {
         this.activeOrder = order;
-        this.activeStep = 'pickup';
+        this.activeStep  = 'pickup';
         this.availableOrders = this.availableOrders.filter(o => o.id !== order.id);
         this.closeOrderModal();
         this.activeTab = 'active';
@@ -450,10 +495,14 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         if (err.status === 409) {
-          // Another driver was faster — remove from available list
-          this.availableOrders = this.availableOrders.filter(o => o.id !== order.id);
-          this.closeOrderModal();
-          this.toastr.warning('Sorry, another driver already accepted this order.');
+          const msg: string = err.error?.message ?? '';
+          if (msg.toLowerCase().includes('not confirmed')) {
+            this.toastr.warning('⏳ The restaurant hasn\'t confirmed this order yet. Please wait and try again.');
+          } else {
+            this.availableOrders = this.availableOrders.filter(o => o.id !== order.id);
+            this.closeOrderModal();
+            this.toastr.warning('Sorry, another driver already accepted this order.');
+          }
         } else {
           this.toastr.error('Failed to accept order. Please try again.');
         }
@@ -464,19 +513,21 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
   rejectOrder() {
     this.closeOrderModal();
     this.toastr.info('Order skipped.');
-    // TODO: call API to reject/skip order
   }
 
   markPickedUp() {
     if (!this.activeOrder) return;
+    this.driverService.updateOrderStatus(this.activeOrder.id, 'PICKED_UP').subscribe({
+      next:  () => { this.activeStep = 'enroute'; this.toastr.success('Order picked up!'); },
+      error: () => { this.toastr.error('Failed to update status. Please try again.'); },
+    });
+  }
+
+  markOutForDelivery() {
+    if (!this.activeOrder) return;
     this.driverService.updateOrderStatus(this.activeOrder.id, 'OUT_FOR_DELIVERY').subscribe({
-      next: () => {
-        this.activeStep = 'delivery';
-        this.toastr.success('Order picked up! Heading to customer.');
-      },
-      error: () => {
-        this.toastr.error('Failed to update order status. Please try again.');
-      },
+      next:  () => { this.activeStep = 'delivery'; this.toastr.success('On the way! Customer has been notified. 🛵'); },
+      error: () => { this.toastr.error('Failed to update status. Please try again.'); },
     });
   }
 
@@ -487,12 +538,88 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
       next: () => {
         this.toastr.success('Order delivered! Great work. 🎉');
         this.activeOrder = null;
-        this.activeStep = null;
-        this.activeTab = 'dashboard';
-        // TODO: refresh earnings
+        this.activeStep  = null;
+        this.activeTab   = 'dashboard';
+        // Refresh earnings + recent deliveries after completing a delivery
+        this.loadDriverEarnings();
+        this.loadRecentDeliveries();
+      },
+      error: () => { this.toastr.error('Failed to mark as delivered. Please try again.'); },
+    });
+  }
+
+  // ── Earnings ─────────────────────────────────────────────────────
+
+  loadDriverEarnings() {
+    this.earningsLoading = true;
+    this.driverService.getDriverEarnings().subscribe({
+      next: res => {
+        if (res.data) {
+          this.earnings = res.data;
+          // Sync the stats object so the dashboard Performance grid is populated
+          this.stats.totalDeliveries  = res.data.allTimeDeliveries;
+          this.stats.completionRate   = res.data.completionRate;
+          this.stats.cancellationRate = res.data.allTimeDeliveries + res.data.cancelledDeliveries > 0
+            ? Math.round(res.data.cancelledDeliveries /
+                (res.data.allTimeDeliveries + res.data.cancelledDeliveries) * 100)
+            : 0;
+          this.stats.rating      = res.data.avgRating;
+          this.stats.ratingCount = res.data.ratingCount;
+        }
+        this.earningsLoading = false;
+      },
+      error: () => { this.earningsLoading = false; },
+    });
+  }
+
+  // ── History ───────────────────────────────────────────────────────
+
+  private mapOrderToHistory(o: Order): DeliveryHistoryItem {
+    return {
+      id:              o.id,
+      restaurantName:  o.restaurantName,
+      deliveryAddress: o.deliveryAddress ?? '—',
+      items:           o.items.map(i => `${i.name} ×${i.qty}`),
+      // Use stored driverEarnings (frozen at accept time); fall back for legacy orders
+      earnAmount:      o.driverEarnings ?? Math.round((o.totalAmount ?? 0) * 0.15),
+      totalAmount:     o.totalAmount ?? 0,
+      completedAt:     new Date(o.updatedAt ?? o.createdAt),
+      status:          o.status as 'DELIVERED' | 'CANCELLED',
+      driverRating:    o.driverRating,
+    };
+  }
+
+  loadRecentDeliveries() {
+    this.recentLoading = true;
+    this.driverService.getDriverHistory(0, 5).subscribe({
+      next: res => {
+        this.recentDeliveries = (res.data?.content ?? []).map(o => this.mapOrderToHistory(o));
+        this.recentLoading    = false;
+      },
+      error: () => { this.recentLoading = false; },
+    });
+  }
+
+  loadDriverHistory() {
+    this.historyLoading = true;
+    this.driverService.getDriverHistory(
+      this.historyPagination.currentPage,
+      this.historyPagination.pageSize
+    ).subscribe({
+      next: res => {
+        const p = res.data;
+        this.deliveryHistory = (p?.content ?? []).map(o => this.mapOrderToHistory(o));
+        this.historyPagination = {
+          currentPage:   p?.currentPage   ?? 0,
+          totalPages:    p?.totalPages    ?? 0,
+          totalElements: p?.totalElements ?? 0,
+          pageSize:      p?.pageSize      ?? 10,
+        };
+        this.historyLoading = false;
       },
       error: () => {
-        this.toastr.error('Failed to mark as delivered. Please try again.');
+        this.historyLoading = false;
+        this.toastr.error('Failed to load delivery history.');
       },
     });
   }
@@ -500,14 +627,14 @@ export class DriverDashboardComponent implements OnInit, OnDestroy {
   prevHistoryPage() {
     if (this.historyPagination.currentPage > 0) {
       this.historyPagination.currentPage--;
-      // TODO: load history page
+      this.loadDriverHistory();
     }
   }
 
   nextHistoryPage() {
     if (this.historyPagination.currentPage < this.historyPagination.totalPages - 1) {
       this.historyPagination.currentPage++;
-      // TODO: load history page
+      this.loadDriverHistory();
     }
   }
 }

@@ -40,4 +40,19 @@ public interface OrderRepository extends MongoRepository<Order, String> {
 
     /** Available orders for drivers — unassigned (no driverEmail) and in an active status */
     List<Order> findByDriverEmailIsNullAndStatusInOrderByCreatedAtDesc(List<String> statuses);
+
+    /** Driver's own active order — the one order they have claimed but not yet delivered */
+    java.util.Optional<Order> findFirstByDriverEmailAndStatusNotInOrderByCreatedAtDesc(
+            String driverEmail, List<String> terminalStatuses);
+
+    /** Driver's completed / cancelled delivery history — paginated */
+    Page<Order> findByDriverEmailAndStatusInOrderByCreatedAtDesc(
+            String driverEmail, List<String> statuses, Pageable pageable);
+
+    /** All DELIVERED orders for a driver within a date range — used for earnings aggregation */
+    List<Order> findByDriverEmailAndStatusAndCreatedAtBetween(
+            String driverEmail, String status, LocalDateTime from, LocalDateTime to);
+
+    /** All DELIVERED orders for a driver (all time) — used for all-time earnings */
+    List<Order> findByDriverEmailAndStatus(String driverEmail, String status);
 }

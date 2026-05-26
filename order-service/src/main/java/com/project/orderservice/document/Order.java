@@ -39,11 +39,27 @@ public class Order {
     /** Last status set by the driver: OUT_FOR_DELIVERY | DELIVERED */
     private String driverStatus;
 
+    /**
+     * Restaurant's earnings for this order — frozen at placement time.
+     * Equals subtotal (food value only). The restaurant does not keep the delivery fee or GST.
+     */
+    private Double restaurantEarnings;
+
     /** Email of the driver who accepted this order. Null until a driver claims it. */
     private String driverEmail;
 
+    /**
+     * Driver's earnings for this order — frozen at acceptance time (15% of totalAmount).
+     * Stored so historical earnings are accurate even if the commission rate changes later.
+     * Null until a driver claims the order.
+     */
+    private Double driverEarnings;
+
     /** True after the customer has submitted a star rating. Prevents duplicate ratings. */
     private boolean rated = false;
+
+    /** Customer's rating for the driver (1-5). Null if no driver was assigned or not yet rated. */
+    private Integer driverRating;
 
     /** Razorpay payment ID — null means COD / not yet paid */
     private String paymentId;

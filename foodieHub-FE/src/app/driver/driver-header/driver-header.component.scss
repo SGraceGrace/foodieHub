@@ -94,7 +94,9 @@
 }
 
 .bell-overlay {
-  position: fixed; inset: 0; z-index: 199;
+  position: fixed; inset: 0; z-index: 99;
+  /* Must stay below the header's stacking context (z-index: 100) so the
+     bell-panel inside the header is never blocked by this backdrop. */
 }
 
 .bell-panel-body { max-height: 340px; overflow-y: auto; }

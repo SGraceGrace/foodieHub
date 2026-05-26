@@ -22,7 +22,9 @@ public interface RestaurantService {
 
     /**
      * Records a rating for the given order and recalculates the restaurant's avg.
+     * driverEmail + driverRating are stored on the same Rating document; null when no driver or skipped.
      * Throws if orderId has already been rated (duplicate guard).
      */
-    Restaurant addRating(String restaurantId, double rating, String customerId, String orderId);
+    Restaurant addRating(String restaurantId, double rating, String customerId,
+                         String orderId, String driverEmail, Integer driverRating);
 }

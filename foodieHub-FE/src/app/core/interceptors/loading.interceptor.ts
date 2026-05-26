@@ -7,6 +7,9 @@ import { LoadingService } from '../shared/loading.service';
 const SILENT_URL_PATTERNS = [
   '/api/v1/admin/notifications',   // poll + dismiss + clear
   '/api/v1/admin/push-subscription',
+  '/api/v1/driver/location',       // GPS heartbeat every 10 s — must never flash the overlay
+  '/api/v1/driver/notifications',  // driver bell: poll + dismiss + clear
+  'nominatim.openstreetmap.org',   // reverse-geocode (driver live location, location-picker)
 ];
 
 // Pending-count calls use size=1 and are small background checks.

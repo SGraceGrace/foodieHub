@@ -1,6 +1,11 @@
-export type OrderStatus = 'PLACED' | 'CONFIRMED' | 'PREPARING' | 'READY' | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'CANCELLED';
+export type OrderStatus =
+  | 'PLACED' | 'CONFIRMED' | 'PREPARING' | 'READY'
+  | 'OUT_FOR_DELIVERY' | 'DELIVERED' | 'CANCELLED'
+  // Driver sub-statuses — stored in driverStatus field only, never in main status
+  | 'DRIVER_ASSIGNED' | 'PICKED_UP';
 
 export interface OrderItem {
+  menuItemId?: string;  // food-service menu_items ID — present on orders placed after migration
   name: string;
   qty: number;
   price: number;
@@ -24,10 +29,14 @@ export interface Order {
   paymentStatus?: string;   // 'PAID' | undefined (COD orders have no paymentStatus)
   /** Last status set by the restaurant: CONFIRMED | PREPARING | READY | CANCELLED */
   restaurantStatus?: OrderStatus;
-  /** Last status set by the driver: OUT_FOR_DELIVERY | DELIVERED */
+  /** Last status set by the driver: DRIVER_ASSIGNED | PICKED_UP | OUT_FOR_DELIVERY | DELIVERED */
   driverStatus?: OrderStatus;
   rated?: boolean;
+  /** Customer's 1-5 rating for the driver. Null until rated or no driver assigned. */
+  driverRating?: number;
   driverEmail?: string;
+  /** Driver's earnings for this order — frozen at acceptance time (15% of totalAmount). */
+  driverEarnings?: number;
   createdAt: string;
   updatedAt?: string;
   eta?: string;

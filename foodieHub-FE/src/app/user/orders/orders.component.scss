@@ -241,10 +241,22 @@ button { cursor: pointer; }
   to   { opacity: 1; transform: translateY(0); }
 }
 
+.rating-section {
+  margin-bottom: .6rem;
+  &--driver {
+    margin-top: .8rem;
+    padding-top: .8rem;
+    border-top: 1px solid #ffe082;
+  }
+}
+
+.required-hint { font-size: .75rem; color: #c62828; font-weight: 400; }
+.optional-hint { font-size: .75rem; color: $text-light; font-weight: 400; }
+
 .rating-prompt {
   font-size: .88rem;
   color: $text-dark;
-  margin-bottom: .8rem;
+  margin-bottom: .6rem;
   line-height: 1.4;
 }
 

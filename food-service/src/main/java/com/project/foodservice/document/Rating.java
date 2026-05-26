@@ -27,7 +27,13 @@ public class Rating {
     @Indexed(unique = true)
     private String orderId;
 
-    private double rating;        // 1–5 stars
+    private double rating;          // 1–5 restaurant stars
+
+    /** Email of the driver who delivered this order. Null if no driver was assigned. */
+    private String driverEmail;
+
+    /** Customer's 1–5 rating for the delivery driver. Null if no driver or customer skipped. */
+    private Integer driverRating;
 
     @CreatedDate
     private LocalDateTime createdAt;

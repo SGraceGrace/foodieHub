@@ -49,11 +49,27 @@ export class HomeService {
   /**
    * Submit a 1–5 star rating for a restaurant, tied to a specific order.
    * orderId is required — the backend enforces one rating per order via a unique index.
+   * driverRating (optional) is stored on the same Rating document in the ratings collection.
    */
-  rateRestaurant(restaurantId: string, rating: number, orderId: string): Observable<ApiResponse<Restaurant>> {
+  /**
+   * Submit a 1–5 star rating for a restaurant, tied to a specific order.
+   * orderId is required — the backend enforces one rating per order via a unique index.
+   * driverEmail + driverRating are stored on the same Rating document (null when no driver/skipped).
+   */
+  rateRestaurant(
+    restaurantId: string,
+    rating: number,
+    orderId: string,
+    driverEmail?: string,
+    driverRating?: number
+  ): Observable<ApiResponse<Restaurant>> {
+    const body: { rating: number; orderId: string; driverEmail?: string; driverRating?: number } =
+      { rating, orderId };
+    if (driverEmail)                body.driverEmail  = driverEmail;
+    if (driverRating !== undefined) body.driverRating = driverRating;
     return this.http.post<ApiResponse<Restaurant>>(
       `${this.base}/api/v1/restaurants/${restaurantId}/rating`,
-      { rating, orderId }
+      body
     );
   }
 }

@@ -23,11 +23,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.project.orderservice.dto.DriverEarningsDTO;
 import com.project.orderservice.dto.RestaurantStatsDTO;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -90,6 +95,7 @@ public class OrderServiceImpl implements OrderService {
         order.setGst(gst);
         order.setTotalAmount(total);
         order.setDeliveryAddress(req.getDeliveryAddress());
+        order.setRestaurantEarnings(subtotal);   // restaurant keeps the food value; delivery fee + GST stay with platform
         order.setStatus("PLACED");
         order.setUpdatedAt(LocalDateTime.now());
         if (req.getPaymentId() != null && !req.getPaymentId().isBlank()) {
@@ -176,24 +182,31 @@ public class OrderServiceImpl implements OrderService {
         );
     }
 
-    // Statuses at which an order is visible to drivers as "available to pick up"
+    // Statuses at which an order is visible to drivers as "available to pick up".
+    // PLACED is included so drivers can see incoming orders, but acceptOrder() blocks
+    // claiming until the restaurant confirms (status moves to CONFIRMED or beyond).
     private static final List<String> AVAILABLE_STATUSES =
             List.of("PLACED", "CONFIRMED", "PREPARING", "READY");
 
     // Driver-originated statuses — everything else comes from the restaurant
     private static final java.util.Set<String> DRIVER_STATUSES =
-            java.util.Set.of("OUT_FOR_DELIVERY", "DELIVERED");
+            java.util.Set.of("DRIVER_ASSIGNED", "PICKED_UP", "OUT_FOR_DELIVERY", "DELIVERED");
 
     @Override
     public Order updateStatus(String orderId, String newStatus) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
-        order.setStatus(newStatus);
+
         // Keep the two display fields in sync so the tracking page can read them directly
         if (DRIVER_STATUSES.contains(newStatus)) {
             order.setDriverStatus(newStatus);
+            // PICKED_UP is a driver sub-status; the customer-facing main status
+            // moves to OUT_FOR_DELIVERY (food has left the restaurant).
+            // All other driver statuses are written straight to main status.
+            order.setStatus("PICKED_UP".equals(newStatus) ? "OUT_FOR_DELIVERY" : newStatus);
         } else {
             order.setRestaurantStatus(newStatus);
+            order.setStatus(newStatus);
         }
         order.setUpdatedAt(LocalDateTime.now());
         Order saved = orderRepository.save(order);
@@ -221,6 +234,16 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findByDriverEmailIsNullAndStatusInOrderByCreatedAtDesc(AVAILABLE_STATUSES);
     }
 
+    // Statuses that mean the delivery is finished — exclude these when finding the active order
+    private static final List<String> TERMINAL_STATUSES = List.of("DELIVERED", "CANCELLED");
+
+    @Override
+    public Order getDriverActiveOrder(String driverEmail) {
+        return orderRepository
+                .findFirstByDriverEmailAndStatusNotInOrderByCreatedAtDesc(driverEmail, TERMINAL_STATUSES)
+                .orElse(null);
+    }
+
     @Override
     public Order acceptOrder(String orderId, String driverEmail) {
         Order order = orderRepository.findById(orderId)
@@ -232,7 +255,16 @@ public class OrderServiceImpl implements OrderService {
                     "Order already accepted by another driver");
         }
 
+        // Prevent driver from accepting an order the restaurant hasn't confirmed yet
+        if ("PLACED".equals(order.getStatus())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Restaurant has not confirmed this order yet");
+        }
+
         order.setDriverEmail(driverEmail);
+        order.setDriverStatus("DRIVER_ASSIGNED");
+        // Freeze the driver's earnings at acceptance time — not recomputed later
+        order.setDriverEarnings(Math.round(order.getTotalAmount() * DRIVER_COMMISSION * 100.0) / 100.0);
         order.setUpdatedAt(LocalDateTime.now());
         Order saved = orderRepository.save(order);
         log.info("Driver {} accepted orderId={}", driverEmail, orderId);
@@ -257,11 +289,122 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public Order markRated(String orderId) {
+    public Order markRated(String orderId, Integer driverRating) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
         order.setRated(true);
+        if (driverRating != null) {
+            order.setDriverRating(driverRating);
+        }
         return orderRepository.save(order);
+    }
+
+    private static final List<String> HISTORY_STATUSES = List.of("DELIVERED", "CANCELLED");
+
+    @Override
+    public PaginatedResponse<Order> getDriverHistory(String driverEmail, int page, int size) {
+        var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        return PaginatedResponse.of(
+                orderRepository.findByDriverEmailAndStatusInOrderByCreatedAtDesc(
+                        driverEmail, HISTORY_STATUSES, pageable)
+        );
+    }
+
+    private static final double DRIVER_COMMISSION = 0.15;  // 15% of order total
+
+    /**
+     * Returns the driver's earnings for an order.
+     * Uses the frozen driverEarnings field if set (orders accepted after the fix).
+     * Falls back to computing from totalAmount for legacy orders that pre-date the field.
+     */
+    private double storedEarnings(Order o) {
+        return o.getDriverEarnings() != null
+                ? o.getDriverEarnings()
+                : Math.round(o.getTotalAmount() * DRIVER_COMMISSION * 100.0) / 100.0;
+    }
+    private static final DateTimeFormatter DAY_FMT  = DateTimeFormatter.ofPattern("EEE");   // "Mon"
+    private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("d MMM"); // "26 May"
+
+    @Override
+    public DriverEarningsDTO getDriverEarnings(String driverEmail) {
+        ZoneId ist = ZoneId.of("Asia/Kolkata");
+        LocalDate todayIST = LocalDate.now(ist);
+
+        // ── Today ─────────────────────────────────────────────────────
+        LocalDateTime todayStart = todayIST.atStartOfDay();
+        LocalDateTime todayEnd   = todayIST.atTime(LocalTime.MAX);
+        List<Order> todayOrders  = orderRepository
+                .findByDriverEmailAndStatusAndCreatedAtBetween(driverEmail, "DELIVERED", todayStart, todayEnd);
+
+        double todayAmount      = todayOrders.stream().mapToDouble(o -> storedEarnings(o)).sum();
+        int    todayDeliveries  = todayOrders.size();
+
+        // ── This week (Mon → Sun) ─────────────────────────────────────
+        LocalDate weekStart = todayIST.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate weekEnd   = weekStart.plusDays(6);
+        List<Order> weekOrders = orderRepository
+                .findByDriverEmailAndStatusAndCreatedAtBetween(driverEmail, "DELIVERED",
+                        weekStart.atStartOfDay(), weekEnd.atTime(LocalTime.MAX));
+
+        double weekAmount     = weekOrders.stream().mapToDouble(o -> storedEarnings(o)).sum();
+        int    weekDeliveries = weekOrders.size();
+
+        // ── All time ──────────────────────────────────────────────────
+        List<Order> allOrders      = orderRepository.findByDriverEmailAndStatus(driverEmail, "DELIVERED");
+        double allTimeAmount       = allOrders.stream().mapToDouble(o -> storedEarnings(o)).sum();
+        int    allTimeDeliveries   = allOrders.size();
+        double avg = allTimeDeliveries > 0 ? allTimeAmount / allTimeDeliveries : 0;
+
+        // ── Performance stats ─────────────────────────────────────────
+        List<Order> cancelledOrders    = orderRepository.findByDriverEmailAndStatus(driverEmail, "CANCELLED");
+        int         cancelledDeliveries = cancelledOrders.size();
+        int         totalAttempted      = allTimeDeliveries + cancelledDeliveries;
+        double      completionRate      = totalAttempted > 0
+                ? Math.round((double) allTimeDeliveries / totalAttempted * 10000.0) / 100.0
+                : 0;
+
+        List<Order> ratedOrders = allOrders.stream()
+                .filter(o -> o.getDriverRating() != null)
+                .collect(Collectors.toList());
+        int    ratingCount = ratedOrders.size();
+        double avgRating   = ratingCount > 0
+                ? Math.round(ratedOrders.stream().mapToInt(Order::getDriverRating).average().orElse(0) * 10.0) / 10.0
+                : 0;
+
+        // ── Per-day breakdown for current week ────────────────────────
+        List<DriverEarningsDTO.DayEarning> breakdown = new ArrayList<>();
+        for (int i = 0; i < 7; i++) {
+            LocalDate day       = weekStart.plusDays(i);
+            LocalDateTime start = day.atStartOfDay();
+            LocalDateTime end   = day.atTime(LocalTime.MAX);
+            // filter weekOrders instead of hitting DB again
+            List<Order> dayOrders = weekOrders.stream()
+                    .filter(o -> !o.getCreatedAt().isBefore(start) && !o.getCreatedAt().isAfter(end))
+                    .collect(Collectors.toList());
+            double dayAmount = dayOrders.stream().mapToDouble(o -> storedEarnings(o)).sum();
+            breakdown.add(new DriverEarningsDTO.DayEarning(
+                    day.format(DAY_FMT),
+                    day.format(DATE_FMT),
+                    Math.round(dayAmount * 100.0) / 100.0,
+                    dayOrders.size(),
+                    day.isEqual(todayIST)
+            ));
+        }
+
+        return new DriverEarningsDTO(
+                Math.round(todayAmount * 100.0) / 100.0,
+                todayDeliveries,
+                Math.round(weekAmount * 100.0) / 100.0,
+                weekDeliveries,
+                Math.round(allTimeAmount * 100.0) / 100.0,
+                allTimeDeliveries,
+                Math.round(avg * 100.0) / 100.0,
+                breakdown,
+                cancelledDeliveries,
+                completionRate,
+                avgRating,
+                ratingCount
+        );
     }
 
     @Override
@@ -275,8 +418,11 @@ public class OrderServiceImpl implements OrderService {
                 .findByRestaurantIdAndCreatedAtBetween(restaurantId, startOfDay, endOfDay);
 
         long   todayCount   = todayOrders.size();
+        // Use restaurantEarnings (subtotal) — not totalAmount which includes delivery fee + GST
+        // Fall back to subtotal field for legacy orders placed before restaurantEarnings was added
         double todayRevenue = todayOrders.stream()
-                .mapToDouble(Order::getTotalAmount).sum();
+                .mapToDouble(o -> o.getRestaurantEarnings() != null ? o.getRestaurantEarnings() : o.getSubtotal())
+                .sum();
 
         long pendingOrders = orderRepository.countByRestaurantIdAndStatusIn(
                 restaurantId, List.of("PLACED", "CONFIRMED"));

@@ -77,9 +77,14 @@ export class OrderService {
     );
   }
 
-  /** Mark order as rated — called after successfully submitting a rating to food-service. */
-  markOrderRated(orderId: string): Observable<ApiResponse<Order>> {
-    return this.http.patch<ApiResponse<Order>>(`${this.base}/api/orders/${orderId}/rated`, {});
+  /**
+   * Mark order as rated — called after successfully submitting a rating to food-service.
+   * Pass driverRating (1-5) if the customer also rated the driver; omit/undefined to skip.
+   */
+  markOrderRated(orderId: string, driverRating?: number): Observable<ApiResponse<Order>> {
+    const body: { driverRating?: number } = {};
+    if (driverRating !== undefined) body.driverRating = driverRating;
+    return this.http.patch<ApiResponse<Order>>(`${this.base}/api/orders/${orderId}/rated`, body);
   }
 
   // ── Customer notification APIs ────────────────────────────────────

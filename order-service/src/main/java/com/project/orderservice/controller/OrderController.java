@@ -2,6 +2,7 @@ package com.project.orderservice.controller;
 
 import com.project.orderservice.document.Order;
 import com.project.orderservice.dto.BaseAPIResponse;
+import com.project.orderservice.dto.MarkRatedRequest;
 import com.project.orderservice.dto.PlaceOrderRequest;
 import com.project.orderservice.dto.UpdateStatusRequest;
 import com.project.orderservice.service.OrderService;
@@ -130,6 +131,48 @@ public class OrderController {
     }
 
     /**
+     * GET /api/orders/driver/active — The driver's own current in-progress delivery.
+     * Returns the order they accepted but haven't delivered yet, or null if none.
+     * Used to restore active delivery state after a page refresh.
+     */
+    @GetMapping("/driver/active")
+    public ResponseEntity<BaseAPIResponse> getDriverActiveOrder(
+            @RequestHeader("X-User-Id") String driverEmail) {
+        Order order = orderService.getDriverActiveOrder(driverEmail);
+        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", order, 200, null));
+    }
+
+    /**
+     * GET /api/orders/driver/earnings
+     * Earnings summary for the logged-in driver: today, this week, all-time, weekly breakdown.
+     * All monetary values represent 15% commission on totalAmount of DELIVERED orders.
+     */
+    @GetMapping("/driver/earnings")
+    public ResponseEntity<BaseAPIResponse> getDriverEarnings(
+            @RequestHeader("X-User-Id") String driverEmail) {
+        return ResponseEntity.ok(new BaseAPIResponse(
+                "SUCCESS",
+                orderService.getDriverEarnings(driverEmail),
+                200, null));
+    }
+
+    /**
+     * GET /api/orders/driver/history?page=0&size=10
+     * Paginated delivery history for the logged-in driver.
+     * Returns all DELIVERED and CANCELLED orders where driverEmail matches.
+     */
+    @GetMapping("/driver/history")
+    public ResponseEntity<BaseAPIResponse> getDriverHistory(
+            @RequestHeader("X-User-Id") String driverEmail,
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(new BaseAPIResponse(
+                "SUCCESS",
+                orderService.getDriverHistory(driverEmail, page, size),
+                200, null));
+    }
+
+    /**
      * PATCH /api/orders/{id}/accept — Driver claims an order.
      * Stores the driver's email on the order. Returns 409 if already taken.
      * No request body needed — driver identity comes from the X-User-Id header.
@@ -146,10 +189,14 @@ public class OrderController {
      * PATCH /api/orders/{id}/rated — Customer marks an order as rated.
      * Called immediately after successfully submitting a star rating to food-service.
      * Sets rated=true so the UI hides the rating button and prevents duplicates.
+     * Accepts an optional body: { "driverRating": 1-5 } — stored for analytics; null is fine.
      */
     @PatchMapping("/{id}/rated")
-    public ResponseEntity<BaseAPIResponse> markRated(@PathVariable String id) {
-        Order order = orderService.markRated(id);
+    public ResponseEntity<BaseAPIResponse> markRated(
+            @PathVariable String id,
+            @RequestBody(required = false) MarkRatedRequest req) {
+        Integer driverRating = (req != null) ? req.getDriverRating() : null;
+        Order order = orderService.markRated(id, driverRating);
         return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", order, 200, null));
     }
 

@@ -6,7 +6,9 @@ import { ToastrService } from 'ngx-toastr';
 import { OrderService } from '../../core/shared/order.service';
 import { TokenService } from '../../core/shared/token.service';
 import { HomeService } from '../../home/home.service';
-import { forkJoin, Subscription } from 'rxjs';
+import { CartService } from '../../core/shared/cart.service';
+import { forkJoin, Subscription, from } from 'rxjs';
+import { concatMap } from 'rxjs/operators';
 
 // The header component owns the single SSE connection and broadcasts updates
 // via OrderService.orderStatusUpdate$. This page subscribes to that Subject
@@ -18,7 +20,7 @@ const ACTIVE_STATUSES: OrderStatus[] = ['PLACED', 'CONFIRMED', 'PREPARING', 'REA
 
 const TRACK_STEPS = ['Placed', 'Confirmed', 'Prepared', 'Ready', 'On the Way', 'Delivered'];
 
-const STATUS_ORDER: Record<OrderStatus, number> = {
+const STATUS_ORDER: Partial<Record<OrderStatus, number>> = {
   PLACED: 0, CONFIRMED: 1, PREPARING: 2, READY: 3, OUT_FOR_DELIVERY: 4, DELIVERED: 5, CANCELLED: -1,
 };
 
@@ -44,11 +46,17 @@ export class OrdersComponent implements OnInit, OnDestroy {
   trackSteps = TRACK_STEPS;
   stars = [1, 2, 3, 4, 5];
 
+  // ── Reorder state ─────────────────────────────────────────────────
+  reorderingId: string | null = null;   // orderId currently being re-added to cart
+
   // ── Rating widget state ───────────────────────────────────────────
   ratingTarget: Order | null = null;   // which order's rating panel is open
-  selectedStar = 0;                    // confirmed star value (0 = none selected)
-  hoverStar    = 0;                    // star under cursor
-  submitting   = false;
+  selectedStar     = 0;                // restaurant star (0 = none selected)
+  hoverStar        = 0;
+  selectedDriverStar = 0;              // driver star (0 = none selected / skipped)
+  hoverDriverStar    = 0;
+  submitting       = false;
+  readonly starLabels = ['', '😞 Poor', '😐 Fair', '🙂 Good', '😊 Great', '🤩 Excellent'];
 
   private statusSub: Subscription | null = null;
 
@@ -57,6 +65,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     private orderService: OrderService,
     private tokenService: TokenService,
     private homeService: HomeService,
+    private cartService: CartService,
     private router: Router
   ) {}
 
@@ -115,7 +124,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
   }
 
   stepState(order: Order, stepIndex: number): 'done' | 'curr' | 'pending' {
-    const orderStep = STATUS_ORDER[order.status];
+    const orderStep = STATUS_ORDER[order.status] ?? 0;
     if (orderStep < 0) return 'pending';
     if (stepIndex < orderStep) return 'done';
     if (stepIndex === orderStep) return 'curr';
@@ -123,7 +132,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
   }
 
   statusBadgeClass(status: OrderStatus): string {
-    const map: Record<OrderStatus, string> = {
+    const map: Partial<Record<OrderStatus, string>> = {
       PLACED:            'sb-placed',
       CONFIRMED:         'sb-confirmed',
       PREPARING:         'sb-preparing',
@@ -136,7 +145,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
   }
 
   statusLabel(status: OrderStatus): string {
-    const map: Record<OrderStatus, string> = {
+    const map: Partial<Record<OrderStatus, string>> = {
       PLACED:            '🕐 Placed',
       CONFIRMED:         '✅ Confirmed',
       PREPARING:         '👨‍🍳 Preparing',
@@ -152,35 +161,75 @@ export class OrdersComponent implements OnInit, OnDestroy {
     this.router.navigateByUrl(`/user/orders/${order.id}`);
   }
 
-  reorder(order: Order) {
-    this.toastr.success(`Added items from ${order.restaurantName} to cart!`);
+  reorder(order: Order): void {
+    if (!order.restaurantId || order.items.length === 0 || this.reorderingId) return;
+
+    this.reorderingId = order.id;
+
+    // Build one addItem call per unit of qty so the cart accumulates correctly.
+    // e.g. Butter Chicken x2 → two sequential addItem calls (backend adds +1 each time).
+    const calls = order.items.flatMap(item =>
+      Array.from({ length: item.qty }, () =>
+        this.cartService.addItem(order.restaurantId!, order.restaurantName, {
+          menuItemId: item.menuItemId,
+          name:  item.name,
+          price: item.price,
+          qty:   1,
+          isVeg: item.isVeg ?? false,
+        })
+      )
+    );
+
+    from(calls).pipe(
+      concatMap(call => call)   // sequential — avoids cart race-conditions
+    ).subscribe({
+      error: () => {
+        this.toastr.error('Could not add items to cart. Please try again.');
+        this.reorderingId = null;
+      },
+      complete: () => {
+        const total = order.items.reduce((s, i) => s + i.qty, 0);
+        this.toastr.success(
+          `${total} item${total > 1 ? 's' : ''} added from ${order.restaurantName}`,
+          '🛒 Reorder successful'
+        );
+        this.reorderingId = null;
+        this.router.navigateByUrl('/user/cart');
+      },
+    });
   }
 
   // ── Rating widget ─────────────────────────────────────────────────────────────
 
   openRating(order: Order): void {
-    this.ratingTarget = order;
-    this.selectedStar = 0;
-    this.hoverStar    = 0;
+    this.ratingTarget      = order;
+    this.selectedStar      = 0;
+    this.hoverStar         = 0;
+    this.selectedDriverStar = 0;
+    this.hoverDriverStar    = 0;
   }
 
   cancelRating(): void {
-    this.ratingTarget = null;
-    this.selectedStar = 0;
-    this.hoverStar    = 0;
+    this.ratingTarget      = null;
+    this.selectedStar      = 0;
+    this.hoverStar         = 0;
+    this.selectedDriverStar = 0;
+    this.hoverDriverStar    = 0;
   }
 
-  selectStar(n: number): void {
-    this.selectedStar = n;
-  }
+  // Restaurant stars
+  selectStar(n: number):  void { this.selectedStar = n; }
+  hoverRating(n: number): void { this.hoverStar = n; }
+  activeStar(): number         { return this.hoverStar || this.selectedStar; }
 
-  hoverRating(n: number): void {
-    this.hoverStar = n;
-  }
+  // Driver stars
+  selectDriverStar(n: number):  void { this.selectedDriverStar = n; }
+  hoverDriverRating(n: number): void { this.hoverDriverStar = n; }
+  activeDriverStar(): number         { return this.hoverDriverStar || this.selectedDriverStar; }
 
-  /** Active star value — hovered star takes priority while hovering, else selected. */
-  activeStar(): number {
-    return this.hoverStar || this.selectedStar;
+  /** True if a driver was assigned to this order (driverStatus is set). */
+  hasDriverAssigned(order: Order): boolean {
+    return !!order.driverStatus;
   }
 
   submitRating(): void {
@@ -188,20 +237,27 @@ export class OrdersComponent implements OnInit, OnDestroy {
     const order = this.ratingTarget;
     this.submitting = true;
 
-    // 1. Submit rating to food-service (tied to this order's ID)
-    // 2. Mark order as rated in order-service so the button disappears on next load
+    const driverRating = (this.hasDriverAssigned(order) && this.selectedDriverStar > 0)
+      ? this.selectedDriverStar
+      : undefined;
+
     forkJoin([
-      this.homeService.rateRestaurant(order.restaurantId!, this.selectedStar, order.id),
-      this.orderService.markOrderRated(order.id),
+      // Stores restaurant rating + driverEmail + driverRating in ratings collection (food-service)
+      this.homeService.rateRestaurant(
+        order.restaurantId!, this.selectedStar, order.id,
+        order.driverEmail,
+        driverRating
+      ),
+      // Marks rated=true and stores driverRating on the order document (order-service)
+      this.orderService.markOrderRated(order.id, driverRating),
     ]).subscribe({
       next: () => {
-        // Patch the order in the local list so the button disappears immediately
         this.allOrders = this.allOrders.map(o =>
           o.id === order.id ? { ...o, rated: true } : o
         );
         this.applyTab(this.activeTab);
         this.toastr.success(
-          `Thanks for rating ${order.restaurantName}! ${this.starLabel(this.selectedStar)}`,
+          `Thanks for rating ${order.restaurantName}! ${this.starLabels[this.selectedStar]}`,
           'Rating submitted'
         );
         this.cancelRating();
@@ -212,10 +268,5 @@ export class OrdersComponent implements OnInit, OnDestroy {
         this.submitting = false;
       },
     });
-  }
-
-  private starLabel(n: number): string {
-    const labels = ['', '😞 Poor', '😐 Fair', '🙂 Good', '😊 Great', '🤩 Excellent'];
-    return labels[n] ?? '';
   }
 }

@@ -236,8 +236,9 @@ public class NotificationListener {
             case "CONFIRMED"        -> "✅ " + restaurantName + " accepted your order!";
             case "PREPARING"        -> "👨‍🍳 " + restaurantName + " is preparing your food!";
             case "READY"            -> "📦 Your order is packed and ready for pickup!";
-            case "DRIVER_ASSIGNED"  -> "🚗 A driver has been assigned to your order!";
-            case "OUT_FOR_DELIVERY" -> "🛵 Driver picked up your food and is on the way!";
+            case "DRIVER_ASSIGNED"  -> "🚗 A driver has been assigned and is heading to the restaurant!";
+            case "PICKED_UP"        -> "📦 Driver picked up your order and is on the way!";
+            case "OUT_FOR_DELIVERY" -> "🛵 Your order is out for delivery — arriving soon!";
             case "DELIVERED"        -> "🎉 Delivered! Tap to rate " + restaurantName + " ⭐";
             case "CANCELLED"        -> "❌ Your order was cancelled by the restaurant.";
             default                 -> "Order status updated: " + status;
