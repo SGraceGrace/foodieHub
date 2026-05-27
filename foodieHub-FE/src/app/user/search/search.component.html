@@ -57,7 +57,7 @@
 
         <div class="card-body">
           <h4 class="restaurant-name">{{ r.name }}</h4>
-          <p class="cuisine-tags">{{ r.cuisine?.join(', ') || '—' }}</p>
+          <p class="cuisine-tags">{{ r.cuisine.join(', ') || '—' }}</p>
           <p class="address">📍 {{ r.address || '—' }}</p>
 
           <div class="card-meta">
