@@ -419,6 +419,43 @@ $font-sans:  'DM Sans', sans-serif;
   margin-bottom: 1.5rem;
 }
 
+// ── Overview title row ────────────────────────────────────────────────────
+.overview-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+
+  .page-title { margin-bottom: 0; }
+}
+
+// ── Stats error banner ────────────────────────────────────────────────────
+.stats-error-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff3f3;
+  border: 1px solid #f5c2c2;
+  color: #c0392b;
+  font-size: 0.82rem;
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.stats-retry-btn {
+  margin-left: auto;
+  background: none;
+  border: 1px solid #c0392b;
+  color: #c0392b;
+  font-size: 0.78rem;
+  border-radius: 5px;
+  padding: 3px 10px;
+  cursor: pointer;
+  font-family: $font-sans;
+  &:hover { background: #fde8e8; }
+}
+
 // â”€â”€ Stats grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 .stats-grid {
   display: grid;

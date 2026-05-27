@@ -5,6 +5,7 @@ import { CustomerOrderUpdate, Order, RestaurantOrderNotification, RestaurantStat
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../model/apiResponse.model';
 import { PaginatedResponse } from '../../model/restaurant.model';
+import { TokenService } from './token.service';
 
 export interface PlaceOrderPayload {
   restaurantId: string;
@@ -31,7 +32,7 @@ export class OrderService {
     this._orderStatusUpdate.next(update);
   }
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private tokenService: TokenService) {}
 
   // ── Order APIs ───────────────────────────────────────────────────
 
@@ -143,43 +144,51 @@ export class OrderService {
   /**
    * Opens an authenticated SSE stream for restaurant order notifications.
    * Uses fetch() instead of EventSource so we can send the Authorization header.
+   * Reads a fresh token from TokenService on every reconnect — so an expired token
+   * is never retried after the auth interceptor has refreshed it.
    * Returns an AbortController — call .abort() to close the stream.
    */
   connectRestaurantSSE(
     restaurantId: string,
-    token: string,
     onNotification: (n: RestaurantOrderNotification) => void
   ): AbortController {
     const controller = new AbortController();
-    this._streamRestaurantSSE(restaurantId, token, onNotification, controller);
+    this._streamRestaurantSSE(restaurantId, onNotification, controller);
     return controller;
   }
 
   /**
    * Opens an authenticated SSE stream for customer order-status updates.
+   * Reads a fresh token from TokenService on every reconnect.
    * Returns an AbortController — call .abort() to close when the component is destroyed.
    */
   connectCustomerSSE(
-    token: string,
     onUpdate: (u: CustomerOrderUpdate) => void
   ): AbortController {
     const controller = new AbortController();
-    this._streamCustomerSSE(token, onUpdate, controller);
+    this._streamCustomerSSE(onUpdate, controller);
     return controller;
   }
 
   private async _streamCustomerSSE(
-    token: string,
     onUpdate: (u: CustomerOrderUpdate) => void,
     controller: AbortController
   ): Promise<void> {
     const url = `${this.base}/api/v1/customer/notifications/stream`;
+    let token = this.tokenService.getAccessToken() ?? '';
     while (!controller.signal.aborted) {
       try {
         const res = await fetch(url, {
           headers: { Authorization: token },
           signal: controller.signal,
         });
+
+        if (res.status === 401) {
+          // Token may have been refreshed by another HTTP call — pick it up and retry once
+          const fresh = this.tokenService.getAccessToken();
+          if (fresh && fresh !== token) { token = fresh; continue; }
+          return; // refresh token also dead — stop, user must re-login
+        }
 
         if (!res.ok || !res.body) {
           await new Promise(r => setTimeout(r, 5000));
@@ -206,6 +215,9 @@ export class OrderService {
             }
           }
         }
+        // Stream closed naturally (server-side SseEmitter completed or connection dropped).
+        // Wait before reconnecting to avoid a rapid-fire OPTIONS+GET storm.
+        await new Promise(r => setTimeout(r, 3000));
       } catch (e: unknown) {
         if (e instanceof DOMException && e.name === 'AbortError') return;
         await new Promise(r => setTimeout(r, 5000));
@@ -215,17 +227,24 @@ export class OrderService {
 
   private async _streamRestaurantSSE(
     restaurantId: string,
-    token: string,
     onNotification: (n: RestaurantOrderNotification) => void,
     controller: AbortController
   ): Promise<void> {
     const url = `${this.base}/api/v1/restaurant/notifications/stream/${restaurantId}`;
+    let token = this.tokenService.getAccessToken() ?? '';
     while (!controller.signal.aborted) {
       try {
         const res = await fetch(url, {
           headers: { Authorization: token },
           signal: controller.signal,
         });
+
+        if (res.status === 401) {
+          // Token may have been refreshed by another HTTP call — pick it up and retry once
+          const fresh = this.tokenService.getAccessToken();
+          if (fresh && fresh !== token) { token = fresh; continue; }
+          return; // no fresher token available — user must re-login
+        }
 
         if (!res.ok || !res.body) {
           await new Promise(r => setTimeout(r, 5000));
@@ -253,6 +272,9 @@ export class OrderService {
             }
           }
         }
+        // Stream closed naturally (server-side SseEmitter completed or connection dropped).
+        // Wait before reconnecting to avoid a rapid-fire OPTIONS+GET storm.
+        await new Promise(r => setTimeout(r, 3000));
       } catch (e: unknown) {
         if (e instanceof DOMException && e.name === 'AbortError') return;
         await new Promise(r => setTimeout(r, 5000)); // retry after 5 s

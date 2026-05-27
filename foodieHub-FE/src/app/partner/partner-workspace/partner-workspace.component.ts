@@ -84,6 +84,7 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
   // ── Overview stats ───────────────────────────────────────────────
   stats: RestaurantStats = { todayOrders: 0, todayRevenue: 0, pendingOrders: 0, totalOrders: 0 };
   statsLoading = false;
+  statsError = false;
 
   // ── All Orders tab (paginated history) ───────────────────────────
   allOrdersHistory: Order[] = [];
@@ -493,12 +494,16 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
   loadStats() {
     if (!this.restaurant) return;
     this.statsLoading = true;
+    this.statsError = false;
     this.orderService.getRestaurantStats(this.restaurant.id).subscribe({
       next: res => {
         this.stats = res.data ?? this.stats;
         this.statsLoading = false;
       },
-      error: () => { this.statsLoading = false; }
+      error: () => {
+        this.statsLoading = false;
+        this.statsError = true;
+      }
     });
   }
 
@@ -516,12 +521,9 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
 
   startSseStream() {
     if (!this.restaurant || this.sseController) return;
-    const token = this.tokenService.getAccessToken();
-    if (!token) return;
 
     this.sseController = this.orderService.connectRestaurantSSE(
       this.restaurant.id,
-      token,
       (notif) => {
         // Prepend so newest is first
         this.notifications = [notif, ...this.notifications];
@@ -632,6 +634,7 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
     // No initMenu() here — menu is loaded once in loadRestaurant() and kept in sync
     // by saveMenu() applying the PUT response directly. Re-fetching on every tab
     // click is wasteful and would wipe unsaved edits if the user switched tabs mid-edit.
+    if (tab === 'overview')   this.loadStats();
     if (tab === 'hours')      this.refreshHours();
     if (tab === 'settings')   this.loadStaff();
     if (tab === 'orders')     this.loadLiveOrders();

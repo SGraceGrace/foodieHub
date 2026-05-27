@@ -57,10 +57,7 @@ export class DriverHeaderComponent implements OnInit, OnDestroy {
   // ── SSE + push ────────────────────────────────────────────────────
 
   private connectSSE() {
-    const token = this.tokenService.getAccessToken();
-    if (!token) return;
-
-    this.sseController = this.driverService.connectDriverSSE(token, (notification) => {
+    this.sseController = this.driverService.connectDriverSSE((notification) => {
       // Prepend so newest is first; avoid duplicates by id
       if (!this.notifications.find(n => n.id === notification.id)) {
         this.notifications = [notification, ...this.notifications];

@@ -4,6 +4,9 @@ server:
 spring:
   application:
     name: notification-service
+  mvc:
+    async:
+      request-timeout: -1   # -1 = no timeout; keeps SSE connections open indefinitely
 
   data:
     mongodb:

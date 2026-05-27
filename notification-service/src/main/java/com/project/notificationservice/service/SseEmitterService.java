@@ -35,7 +35,7 @@ public class SseEmitterService {
     // ── Admin subscribe ───────────────────────────────────────────────
 
     public SseEmitter subscribe(String adminEmail, String adminRole) {
-        SseEmitter emitter = new SseEmitter(0L);
+        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
         AdminSession session = new AdminSession(adminEmail, adminRole, emitter);
         adminSessions.add(session);
 
@@ -70,7 +70,7 @@ public class SseEmitterService {
     // ── Restaurant subscribe ──────────────────────────────────────────
 
     public SseEmitter subscribeRestaurant(String restaurantId) {
-        SseEmitter emitter = new SseEmitter(0L);
+        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
         RestaurantSession session = new RestaurantSession(restaurantId, emitter);
         restaurantSessions.add(session);
 
@@ -97,7 +97,7 @@ public class SseEmitterService {
     // ── Customer subscribe ────────────────────────────────────────────
 
     public SseEmitter subscribeCustomer(String userId) {
-        SseEmitter emitter = new SseEmitter(0L);
+        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
         CustomerSession session = new CustomerSession(userId, emitter);
         customerSessions.add(session);
 
@@ -124,7 +124,7 @@ public class SseEmitterService {
     // ── Driver subscribe ──────────────────────────────────────────────
 
     public SseEmitter subscribeDriver(String driverEmail) {
-        SseEmitter emitter = new SseEmitter(0L);
+        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
         DriverSession session = new DriverSession(driverEmail, emitter);
         driverSessions.add(session);
 

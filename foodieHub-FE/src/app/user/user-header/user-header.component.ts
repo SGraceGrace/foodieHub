@@ -125,10 +125,8 @@ export class UserHeaderComponent implements OnInit, OnDestroy {
 
   private connectSSE(): void {
     if (this.sseController) return;   // already connected
-    const token = this.tokenService.getAccessToken();
-    if (!token) return;
 
-    this.sseController = this.orderService.connectCustomerSSE(token, (update) => {
+    this.sseController = this.orderService.connectCustomerSSE((update) => {
       this.ngZone.run(() => {
         // Prepend new notification (SSE always carries a fresh DB-saved record with id)
         this.notifications = [{ ...update, read: false }, ...this.notifications].slice(0, 20);

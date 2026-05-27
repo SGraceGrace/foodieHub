@@ -127,16 +127,27 @@
 
     <!-- ── Overview ─────────────────────────────────────────── -->
     <div *ngIf="activeTab === 'overview'">
-      <div class="page-title">{{ restaurant.name }}</div>
+      <div class="overview-title-row">
+        <div class="page-title">{{ restaurant.name }}</div>
+        <button class="btn-secondary btn-sm" (click)="loadStats()" [disabled]="statsLoading" title="Refresh stats">
+          {{ statsLoading ? '…' : '↻ Refresh' }}
+        </button>
+      </div>
+
+      <!-- Stats error banner -->
+      <div class="stats-error-banner" *ngIf="statsError && !statsLoading">
+        ⚠️ Could not load stats — check that the order service is running.
+        <button class="stats-retry-btn" (click)="loadStats()">Retry</button>
+      </div>
 
       <div class="stats-grid">
         <div class="stat-card" [class.stat-card--loading]="statsLoading">
           <div class="stat-label">Today's Orders</div>
           <div class="stat-value">{{ statsLoading ? '…' : stats.todayOrders }}</div>
-          <div class="stat-note" *ngIf="stats.pendingOrders > 0">
+          <div class="stat-note" *ngIf="!statsLoading && stats.pendingOrders > 0">
             <span class="stat-pending-pill">{{ stats.pendingOrders }} pending</span>
           </div>
-          <div class="stat-note" *ngIf="stats.pendingOrders === 0 && !statsLoading">All caught up ✓</div>
+          <div class="stat-note" *ngIf="!statsLoading && stats.pendingOrders === 0">All caught up ✓</div>
         </div>
         <div class="stat-card" [class.stat-card--loading]="statsLoading">
           <div class="stat-label">Today's Revenue</div>

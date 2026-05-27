@@ -5,6 +5,7 @@ import { environment } from '../../environments/environment';
 import { ApiResponse } from '../model/apiResponse.model';
 import { Order } from '../model/order.model';
 import { PaginatedResponse } from '../model/restaurant.model';
+import { TokenService } from '../core/shared/token.service';
 
 export interface DayEarning {
   dayLabel:    string;   // "Mon"
@@ -78,7 +79,7 @@ export interface DriverOrderNotification {
 export class DriverService {
   private base = `${environment.apiBaseUrl}/api/v1/driver`;
 
-  constructor(private http: HttpClient, private ngZone: NgZone) {}
+  constructor(private http: HttpClient, private ngZone: NgZone, private tokenService: TokenService) {}
 
   register(payload: DriverRegisterRequest): Observable<ApiResponse<null>> {
     return this.http.post<ApiResponse<null>>(`${this.base}/register`, payload);
@@ -170,42 +171,68 @@ export class DriverService {
   }
 
   /**
-   * Opens an SSE connection to receive real-time driver order notifications.
+   * Opens an authenticated SSE stream to receive real-time driver order notifications.
+   * Reads a fresh token from TokenService on every reconnect — never retries with an expired token.
+   * Auto-reconnects on connection drop (3s delay on natural close, 5s on error).
    * Returns an AbortController — call controller.abort() to close the stream.
-   * The callback fires inside NgZone.run() so Angular change detection triggers.
    */
-  connectDriverSSE(token: string, onMessage: (n: DriverOrderNotification) => void): AbortController {
+  connectDriverSSE(onMessage: (n: DriverOrderNotification) => void): AbortController {
     const controller = new AbortController();
-    const url = `${this.base}/notifications/stream`;
+    this._streamDriverSSE(onMessage, controller);
+    return controller;
+  }
 
-    fetch(url, {
-      headers: { Authorization: token },
-      signal: controller.signal,
-    }).then(async (res) => {
-      const reader = res.body!.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() ?? '';
-        for (const line of lines) {
-          if (line.startsWith('data:')) {
-            try {
-              const notification: DriverOrderNotification = JSON.parse(line.slice(5).trim());
-              this.ngZone.run(() => onMessage(notification));
-            } catch { /* ignore parse errors */ }
+  private async _streamDriverSSE(
+    onMessage: (n: DriverOrderNotification) => void,
+    controller: AbortController
+  ): Promise<void> {
+    const url = `${this.base}/notifications/stream`;
+    let token = this.tokenService.getAccessToken() ?? '';
+    while (!controller.signal.aborted) {
+      try {
+        const res = await fetch(url, {
+          headers: { Authorization: token },
+          signal: controller.signal,
+        });
+
+        if (res.status === 401) {
+          // Token may have been refreshed by another HTTP call — pick it up and retry once
+          const fresh = this.tokenService.getAccessToken();
+          if (fresh && fresh !== token) { token = fresh; continue; }
+          return; // no fresher token available — user must re-login
+        }
+
+        if (!res.ok || !res.body) {
+          await new Promise(r => setTimeout(r, 5000));
+          continue;
+        }
+
+        const reader  = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer    = '';
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const parts = buffer.split('\n\n');
+          buffer = parts.pop() ?? '';
+          for (const part of parts) {
+            const dataLine = part.split('\n').find(l => l.startsWith('data:'));
+            if (dataLine) {
+              try {
+                const notification: DriverOrderNotification = JSON.parse(dataLine.slice(5).trim());
+                this.ngZone.run(() => onMessage(notification));
+              } catch { /* ignore parse errors */ }
+            }
           }
         }
+        // Stream closed naturally — wait before reconnecting
+        await new Promise(r => setTimeout(r, 3000));
+      } catch (e: unknown) {
+        if (e instanceof DOMException && e.name === 'AbortError') return;
+        console.warn('[DriverSSE] stream error, retrying in 5s');
+        await new Promise(r => setTimeout(r, 5000));
       }
-    }).catch(err => {
-      if (err.name !== 'AbortError') {
-        console.warn('[DriverSSE] stream error:', err.message);
-      }
-    });
-
-    return controller;
+    }
   }
 }
