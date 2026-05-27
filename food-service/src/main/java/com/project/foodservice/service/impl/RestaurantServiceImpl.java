@@ -14,6 +14,7 @@ import com.project.foodservice.enums.RestaurantStatus;
 import com.project.foodservice.repo.OwnerApprovalRepo;
 import com.project.foodservice.repo.RatingRepo;
 import com.project.foodservice.repo.RestaurantRepo;
+import com.project.foodservice.search.service.SearchService;
 import com.project.foodservice.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -36,6 +37,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final RestaurantRepo restaurantRepo;
     private final OwnerApprovalRepo ownerApprovalRepo;
     private final RatingRepo ratingRepo;
+    private final SearchService searchService;
 
     @Override
     public PaginatedResponse<Restaurant> getAll(String cuisine, Double lat, Double lng, Double radiusKm, String sort, Pageable pageable) {
@@ -158,7 +160,9 @@ public class RestaurantServiceImpl implements RestaurantService {
         boolean approved = ownerApprovalRepo.findById(request.getOwnerId())
                 .map(OwnerApproval::isApproved).orElse(false);
         restaurant.setStatus(approved ? RestaurantStatus.ACTIVE : RestaurantStatus.PENDING);
-        return restaurantRepo.save(restaurant);
+        Restaurant saved = restaurantRepo.save(restaurant);
+        searchService.indexRestaurant(saved);
+        return saved;
     }
 
     @Override
@@ -197,7 +201,9 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .orElseThrow(() -> new RuntimeException("Restaurant not found"));
         r.setOperatingHours(hours);
         r.setOpen(computeIsOpen(r));
-        return restaurantRepo.save(r);
+        Restaurant saved = restaurantRepo.save(r);
+        searchService.indexRestaurant(saved);
+        return saved;
     }
 
     @Override
@@ -216,7 +222,9 @@ public class RestaurantServiceImpl implements RestaurantService {
             var l = req.getLocation();
             r.setLocation(new Location(l.getCity(), l.getState(), l.getCountry(), l.getLat(), l.getLng()));
         }
-        return restaurantRepo.save(r);
+        Restaurant saved = restaurantRepo.save(r);
+        searchService.indexRestaurant(saved);
+        return saved;
     }
 
     @Override
@@ -251,7 +259,9 @@ public class RestaurantServiceImpl implements RestaurantService {
         // Round to 1 decimal place (e.g. 4.2666 → 4.3)
         r.setRating(Math.round(avg * 10.0) / 10.0);
         r.setRatingCount(allRatings.size());
-        return restaurantRepo.save(r);
+        Restaurant saved = restaurantRepo.save(r);
+        searchService.indexRestaurant(saved);   // keep ES rating in sync
+        return saved;
     }
 
     public static boolean computeIsOpen(Restaurant r) {

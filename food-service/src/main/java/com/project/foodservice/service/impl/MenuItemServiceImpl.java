@@ -4,6 +4,7 @@ import com.project.foodservice.document.MenuCategory;
 import com.project.foodservice.document.MenuItem;
 import com.project.foodservice.document.MenuItemDocument;
 import com.project.foodservice.repo.MenuItemRepo;
+import com.project.foodservice.search.service.SearchService;
 import com.project.foodservice.service.MenuItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.util.function.Function;
 public class MenuItemServiceImpl implements MenuItemService {
 
     private final MenuItemRepo menuItemRepo;
+    private final SearchService searchService;
 
     // ── Reads ────────────────────────────────────────────────────────
 
@@ -47,6 +49,7 @@ public class MenuItemServiceImpl implements MenuItemService {
     public void saveFullMenu(String restaurantId, List<MenuCategory> categories) {
         if (categories == null || categories.isEmpty()) {
             menuItemRepo.deleteByRestaurantId(restaurantId);
+            searchService.indexMenuItems(restaurantId, List.of());   // clear ES too
             return;
         }
 
@@ -88,7 +91,8 @@ public class MenuItemServiceImpl implements MenuItemService {
                 .filter(d -> d.getId() != null && !processedIds.contains(d.getId()))
                 .forEach(menuItemRepo::delete);
 
-        menuItemRepo.saveAll(toSave);
+        List<MenuItemDocument> saved = menuItemRepo.saveAll(toSave);
+        searchService.indexMenuItems(restaurantId, saved);   // keep ES in sync
     }
 
     @Override
