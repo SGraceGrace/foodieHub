@@ -2,6 +2,7 @@ package com.project.foodieHub.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -19,4 +20,9 @@ public class AdminUserResponseDTO {
     private String gstNumber;
     private String vehicleType;
     private String licenseNumber;
+    // Driver-specific fields
+    private String bankAccount;
+    private Boolean online;
+    private LocalDateTime lastLocationAt;
+    private LocalDateTime joinedAt;
 }

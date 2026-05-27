@@ -311,16 +311,18 @@
 
     <!-- DRIVERS TAB -->
     <div [hidden]="activeTab !== 'drivers'">
-      <div class="page-title">Driver Approvals</div>
+      <div class="page-title">Drivers</div>
       <div class="table-box">
         <div class="table-toolbar">
+          <input class="search-input" type="text" placeholder="Search by name or email…"
+            [(ngModel)]="driverSearch" (keyup.enter)="loadDrivers(0)" />
           <select class="filter-select" [(ngModel)]="driverStatusFilter" (change)="loadDrivers(0)">
             <option value="PENDING">Pending</option>
-            <option value="ACTIVE">Approved</option>
-            <option value="INACTIVE">Rejected</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Suspended / Rejected</option>
             <option value="">All</option>
           </select>
-          <button class="btn-reset" (click)="resetDriversFilter()">Reset Filters</button>
+          <button class="btn-reset" (click)="resetDriversFilter()">Reset</button>
         </div>
         <table>
           <thead>
@@ -328,8 +330,10 @@
               <th>ID</th>
               <th>Driver</th>
               <th>Contact</th>
-              <th>Vehicle Type</th>
-              <th>License No.</th>
+              <th>Vehicle / License</th>
+              <th>Bank Account</th>
+              <th>Online</th>
+              <th>Joined</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -342,24 +346,38 @@
                 <div>{{ driver.email }}</div>
                 <div class="sub-text">{{ driver.phone || '—' }}</div>
               </td>
-              <td>{{ driver.vehicleType || '—' }}</td>
-              <td>{{ driver.licenseNumber || '—' }}</td>
+              <td>
+                <div>{{ driver.vehicleType || '—' }}</div>
+                <div class="sub-text">{{ driver.licenseNumber || '—' }}</div>
+              </td>
+              <td>{{ driver.bankAccount || '—' }}</td>
+              <td>
+                <span class="online-dot" [class.online-dot--on]="driver.online === true"
+                      [title]="driver.online ? 'Online' : (driver.lastLocationAt ? 'Last seen: ' + (driver.lastLocationAt | date:'d MMM, h:mm a') : 'Offline')">
+                  {{ driver.online ? '🟢' : '⚫' }}
+                </span>
+              </td>
+              <td>
+                <span *ngIf="driver.joinedAt">{{ driver.joinedAt | date:'d MMM yyyy' }}</span>
+                <span *ngIf="!driver.joinedAt">—</span>
+              </td>
               <td>
                 <span class="badge"
                   [class.warning]="driver.status === 'PENDING'"
                   [class.success]="driver.status === 'ACTIVE'"
                   [class.error]="driver.status === 'INACTIVE'">
-                  {{ driver.status === 'PENDING' ? 'Pending' : driver.status === 'ACTIVE' ? 'Approved' : 'Rejected' }}
+                  {{ driver.status === 'PENDING' ? 'Pending' : driver.status === 'ACTIVE' ? 'Active' : 'Suspended' }}
                 </span>
               </td>
-              <td>
+              <td class="actions-cell">
                 <button class="action-btn approve" *ngIf="driver.status === 'PENDING'" (click)="approveDriver(driver)">Approve</button>
                 <button class="action-btn suspend" *ngIf="driver.status === 'PENDING'" (click)="rejectDriver(driver)">Reject</button>
-                <button class="action-btn approve" *ngIf="driver.status === 'INACTIVE'" (click)="approveDriver(driver)">Approve</button>
+                <button class="action-btn suspend" *ngIf="driver.status === 'ACTIVE'"  (click)="suspendDriver(driver)">Suspend</button>
+                <button class="action-btn approve" *ngIf="driver.status === 'INACTIVE'" (click)="unsuspendDriver(driver)">Unsuspend</button>
               </td>
             </tr>
             <tr *ngIf="drivers.length === 0">
-              <td colspan="7" class="empty-cell">No drivers found</td>
+              <td colspan="9" class="empty-cell">No drivers found</td>
             </tr>
           </tbody>
         </table>

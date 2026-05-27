@@ -220,6 +220,15 @@ table {
   &.info    { background: #e3f2fd; color: #1565c0; }
 }
 
+// ── Online status dot ─────────────────────────────────────────────
+.online-dot {
+  font-size: 0.85rem;
+  cursor: default;
+  &--on { filter: none; }
+}
+
+.actions-cell { white-space: nowrap; }
+
 // ── Action buttons ────────────────────────────────────────────────
 .action-btn {
   padding: 4px 10px;

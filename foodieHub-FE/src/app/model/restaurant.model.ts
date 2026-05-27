@@ -72,6 +72,11 @@ export interface AdminUserResponse {
   gstNumber?: string;
   vehicleType?: string;
   licenseNumber?: string;
+  // Driver-specific
+  bankAccount?: string;
+  online?: boolean;
+  lastLocationAt?: string;
+  joinedAt?: string;
 }
 
 export interface PaginatedResponse<T> {

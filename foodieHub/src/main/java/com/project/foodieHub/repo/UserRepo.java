@@ -40,8 +40,13 @@ public interface UserRepo extends JpaRepository<User, Long> {
   List<User> findTodayPendingOwners(@Param("start") Date start, @Param("end") Date end);
 
   @Query("SELECT u FROM User u WHERE u.role.roleName = 'DRIVER' " +
-         "AND (:status IS NULL OR u.status = :status)")
-  Page<User> findDrivers(@Param("status") UserStatus status, Pageable pageable);
+         "AND (:status IS NULL OR u.status = :status) " +
+         "AND (:search IS NULL OR (LOWER(u.firstName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+         "OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :search, '%')) " +
+         "OR LOWER(u.email) LIKE LOWER(CONCAT('%', :search, '%'))))")
+  Page<User> findDrivers(@Param("status") UserStatus status,
+                         @Param("search") String search,
+                         Pageable pageable);
 
   @Query("SELECT u FROM User u WHERE u.role.roleName = 'DRIVER' " +
          "AND u.status = 'PENDING' AND u.createdDate >= :start AND u.createdDate < :end " +

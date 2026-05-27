@@ -83,10 +83,11 @@ public class AdminUserController {
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<BaseAPIResponse> getDrivers(
             @RequestParam(required = false) String status,
+            @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
-                adminUserService.getDrivers(status, page, size), HttpStatus.OK.value(), null));
+                adminUserService.getDrivers(status, search, page, size), HttpStatus.OK.value(), null));
     }
 
     @PutMapping("api/v1/admin/drivers/{id}/approve")
@@ -101,5 +102,19 @@ public class AdminUserController {
     public ResponseEntity<BaseAPIResponse> rejectDriver(@PathVariable Long id) {
         return ResponseEntity.ok(new BaseAPIResponse("Driver rejected",
                 adminUserService.rejectDriver(id), HttpStatus.OK.value(), null));
+    }
+
+    @PutMapping("api/v1/admin/drivers/{id}/suspend")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<BaseAPIResponse> suspendDriver(@PathVariable Long id) {
+        return ResponseEntity.ok(new BaseAPIResponse("Driver suspended",
+                adminUserService.suspendDriver(id), HttpStatus.OK.value(), null));
+    }
+
+    @PutMapping("api/v1/admin/drivers/{id}/unsuspend")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<BaseAPIResponse> unsuspendDriver(@PathVariable Long id) {
+        return ResponseEntity.ok(new BaseAPIResponse("Driver unsuspended",
+                adminUserService.unsuspendDriver(id), HttpStatus.OK.value(), null));
     }
 }

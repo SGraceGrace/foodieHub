@@ -46,6 +46,7 @@ export class AdminComponent implements OnInit {
   // Drivers
   drivers: AdminUserResponse[] = [];
   driverStatusFilter = 'PENDING';
+  driverSearch = '';
   driverPagination = { currentPage: 0, totalPages: 0, totalElements: 0, pageSize: 10 };
   pendingDriverCount = 0;
 
@@ -228,7 +229,12 @@ export class AdminComponent implements OnInit {
   // ── Drivers ───────────────────────────────────────────────────────
 
   loadDrivers(page = 0) {
-    this.adminService.getDrivers(this.driverStatusFilter || undefined, page, this.driverPagination.pageSize).subscribe({
+    this.adminService.getDrivers(
+      this.driverStatusFilter || undefined,
+      this.driverSearch || undefined,
+      page,
+      this.driverPagination.pageSize
+    ).subscribe({
       next: (res) => {
         const p: PaginatedResponse<AdminUserResponse> = res.data;
         this.drivers = p.content ?? [];
@@ -273,6 +279,29 @@ export class AdminComponent implements OnInit {
         this.loadPendingDriverCount();
       },
       error: () => this.toastr.error('Failed to reject driver.'),
+    });
+  }
+
+  suspendDriver(driver: AdminUserResponse) {
+    if (!confirm(`Suspend driver ${driver.firstName} ${driver.lastName}?`)) return;
+    this.adminService.suspendDriver(driver.id).subscribe({
+      next: (res) => {
+        const idx = this.drivers.findIndex((d) => d.id === driver.id);
+        if (idx !== -1) this.drivers[idx] = res.data;
+        this.toastr.success('Driver suspended.');
+      },
+      error: () => this.toastr.error('Failed to suspend driver.'),
+    });
+  }
+
+  unsuspendDriver(driver: AdminUserResponse) {
+    this.adminService.unsuspendDriver(driver.id).subscribe({
+      next: (res) => {
+        const idx = this.drivers.findIndex((d) => d.id === driver.id);
+        if (idx !== -1) this.drivers[idx] = res.data;
+        this.toastr.success('Driver unsuspended.');
+      },
+      error: () => this.toastr.error('Failed to unsuspend driver.'),
     });
   }
 
@@ -353,6 +382,7 @@ export class AdminComponent implements OnInit {
 
   resetDriversFilter() {
     this.driverStatusFilter = '';
+    this.driverSearch = '';
     this.loadDrivers(0);
   }
 
@@ -414,6 +444,8 @@ export class AdminComponent implements OnInit {
       REJECT_OWNER: 'Rejected Owner',
       APPROVE_DRIVER: 'Approved Driver',
       REJECT_DRIVER: 'Rejected Driver',
+      SUSPEND_DRIVER: 'Suspended Driver',
+      UNSUSPEND_DRIVER: 'Unsuspended Driver',
     };
     return labels[action] ?? action;
   }
@@ -426,6 +458,8 @@ export class AdminComponent implements OnInit {
     if (action === 'REJECT_OWNER') return 'log-badge suspend';
     if (action === 'APPROVE_DRIVER') return 'log-badge create';
     if (action === 'REJECT_DRIVER') return 'log-badge suspend';
+    if (action === 'SUSPEND_DRIVER') return 'log-badge suspend';
+    if (action === 'UNSUSPEND_DRIVER') return 'log-badge restore';
     return 'log-badge';
   }
 

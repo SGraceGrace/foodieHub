@@ -146,15 +146,16 @@ export class AdminService {
   // Drivers
   private driversBase = `${environment.apiBaseUrl}/api/v1/admin/drivers`;
 
-  getDrivers(status?: string, page = 0, size = 10): Observable<ApiResponse<PaginatedResponse<AdminUserResponse>>> {
+  getDrivers(status?: string, search?: string, page = 0, size = 10): Observable<ApiResponse<PaginatedResponse<AdminUserResponse>>> {
     let params = new HttpParams();
     if (status) params = params.set('status', status);
+    if (search) params = params.set('search', search);
     params = params.set('page', page.toString()).set('size', size.toString());
     return this.http.get<ApiResponse<PaginatedResponse<AdminUserResponse>>>(this.driversBase, { params });
   }
 
   getPendingDriverCount(): Observable<number> {
-    return this.getDrivers('PENDING', 0, 1).pipe(
+    return this.getDrivers('PENDING', undefined, 0, 1).pipe(
       map(res => res.data?.totalElements ?? 0)
     );
   }
@@ -165,6 +166,14 @@ export class AdminService {
 
   rejectDriver(id: number): Observable<ApiResponse<AdminUserResponse>> {
     return this.http.put<ApiResponse<AdminUserResponse>>(`${this.driversBase}/${id}/reject`, {});
+  }
+
+  suspendDriver(id: number): Observable<ApiResponse<AdminUserResponse>> {
+    return this.http.put<ApiResponse<AdminUserResponse>>(`${this.driversBase}/${id}/suspend`, {});
+  }
+
+  unsuspendDriver(id: number): Observable<ApiResponse<AdminUserResponse>> {
+    return this.http.put<ApiResponse<AdminUserResponse>>(`${this.driversBase}/${id}/unsuspend`, {});
   }
 
   // Contact Messages

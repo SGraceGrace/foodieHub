@@ -137,10 +137,11 @@ public class AdminUserServiceImpl implements AdminUserService {
     }
 
     @Override
-    public PaginatedResponse<AdminUserResponseDTO> getDrivers(String status, int page, int size) {
+    public PaginatedResponse<AdminUserResponseDTO> getDrivers(String status, String search, int page, int size) {
         UserStatus userStatus = (status != null && !status.isBlank()) ? UserStatus.valueOf(status) : null;
+        String searchTerm = (search != null && !search.isBlank()) ? search : null;
         Page<User> result = userRepo.findDrivers(
-                userStatus, PageRequest.of(page, size, Sort.by("id").descending()));
+                userStatus, searchTerm, PageRequest.of(page, size, Sort.by("id").descending()));
         List<AdminUserResponseDTO> content = result.getContent().stream().map(this::toDTO).toList();
         return new PaginatedResponse<>(content, result.getNumber(), result.getTotalPages(),
                 result.getTotalElements(), result.getSize());
@@ -161,6 +162,24 @@ public class AdminUserServiceImpl implements AdminUserService {
         user.setStatus(UserStatus.INACTIVE);
         User saved = userRepo.save(user);
         activityLogService.log("REJECT_DRIVER", "User", id, "email: " + user.getEmail());
+        return toDTO(saved);
+    }
+
+    @Override
+    public AdminUserResponseDTO suspendDriver(Long id) {
+        User user = findUser(id);
+        user.setStatus(UserStatus.INACTIVE);
+        User saved = userRepo.save(user);
+        activityLogService.log("SUSPEND_DRIVER", "User", id, "email: " + user.getEmail());
+        return toDTO(saved);
+    }
+
+    @Override
+    public AdminUserResponseDTO unsuspendDriver(Long id) {
+        User user = findUser(id);
+        user.setStatus(UserStatus.ACTIVE);
+        User saved = userRepo.save(user);
+        activityLogService.log("UNSUSPEND_DRIVER", "User", id, "email: " + user.getEmail());
         return toDTO(saved);
     }
 
@@ -190,6 +209,11 @@ public class AdminUserServiceImpl implements AdminUserService {
             var loc = partnerProfile.getRestaurantLocation();
             locationDTO = new LocationDTO(loc.getCity(), loc.getState(), loc.getCountry(), loc.getLat(), loc.getLng());
         }
+        java.time.LocalDateTime joinedAt = user.getCreatedDate() != null
+                ? user.getCreatedDate().toInstant()
+                        .atZone(java.time.ZoneId.systemDefault())
+                        .toLocalDateTime()
+                : null;
         return new AdminUserResponseDTO(
                 user.getId(),
                 user.getFirstName(),
@@ -203,7 +227,11 @@ public class AdminUserServiceImpl implements AdminUserService {
                 partnerProfile != null ? partnerProfile.getFssaiNumber() : null,
                 partnerProfile != null ? partnerProfile.getGstNumber() : null,
                 driverProfile != null ? driverProfile.getVehicleType() : null,
-                driverProfile != null ? driverProfile.getLicenseNumber() : null
+                driverProfile != null ? driverProfile.getLicenseNumber() : null,
+                driverProfile != null ? driverProfile.getBankAccount() : null,
+                driverProfile != null ? driverProfile.isOnline() : null,
+                driverProfile != null ? driverProfile.getLastLocationAt() : null,
+                joinedAt
         );
     }
 }

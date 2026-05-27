@@ -16,7 +16,9 @@ public interface AdminUserService {
     PaginatedResponse<AdminUserResponseDTO> getRestaurantOwners(String status, int page, int size);
     AdminUserResponseDTO approveOwner(Long id);
     AdminUserResponseDTO rejectOwner(Long id);
-    PaginatedResponse<AdminUserResponseDTO> getDrivers(String status, int page, int size);
+    PaginatedResponse<AdminUserResponseDTO> getDrivers(String status, String search, int page, int size);
     AdminUserResponseDTO approveDriver(Long id);
     AdminUserResponseDTO rejectDriver(Long id);
+    AdminUserResponseDTO suspendDriver(Long id);
+    AdminUserResponseDTO unsuspendDriver(Long id);
 }
