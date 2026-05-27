@@ -106,15 +106,73 @@ curl "http://localhost:8080/api/search?q=biryani"
 
 ## Environment Variables
 
-Create a `.env` or set these before starting each service:
+Set these as environment variables (or in IntelliJ Run Configurations → Environment Variables) before starting each service.
 
-| Variable | Used by | Example |
+### api-gateway
+
+| Variable | Description | Example |
 |---|---|---|
-| `JWT_KEY` | api-gateway, user-service | any long random string |
-| `SPRING_DATASOURCE_URL` | user-service | `jdbc:mysql://localhost:3306/foodiehub` |
-| `SPRING_DATA_MONGODB_URI` | food-service, order-service | `mongodb://localhost:27017/foodiehub_food` |
-| `VAPID_PUBLIC_KEY` | notification-service | generated VAPID key pair |
-| `VAPID_PRIVATE_KEY` | notification-service | generated VAPID key pair |
+| `JWT_KEY` | Secret key used to verify JWT tokens (must match user-service) | any long random string, e.g. `mySuperSecretKey123!` |
+
+---
+
+### user-service
+
+| Variable | Description | Example |
+|---|---|---|
+| `JWT_KEY` | Secret key used to sign JWT tokens (must match api-gateway) | same value as api-gateway |
+| `JWT_EXPIRATION` | Access token TTL in milliseconds | `3600000` (1 hour) |
+| `REFRESH_TOKEN_EXPIRATION` | Refresh token TTL in milliseconds | `86400000` (24 hours) |
+| `GOOGLE_CLIENT_ID` | Google OAuth2 client ID | from Google Cloud Console → Credentials |
+| `GOOGLE_SECRET` | Google OAuth2 client secret | from Google Cloud Console → Credentials |
+| `RABBITMQ_HOST` | RabbitMQ host _(optional, defaults to localhost)_ | `localhost` |
+| `RABBITMQ_PORT` | RabbitMQ port _(optional, defaults to 5672)_ | `5672` |
+| `RABBITMQ_USERNAME` | RabbitMQ username _(optional, defaults to guest)_ | `guest` |
+| `RABBITMQ_PASSWORD` | RabbitMQ password _(optional, defaults to guest)_ | `guest` |
+
+> **Google OAuth setup:**
+> 1. Go to [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials
+> 2. Create an OAuth 2.0 Client ID (Web application)
+> 3. Add `http://localhost:8081/login/oauth2/code/google` as an Authorized Redirect URI
+> 4. Copy the Client ID → `GOOGLE_CLIENT_ID` and Client Secret → `GOOGLE_SECRET`
+
+---
+
+### order-service
+
+| Variable | Description | Example |
+|---|---|---|
+| `RAZORPAY_KEY_ID` | Razorpay API key ID | from Razorpay Dashboard → API Keys |
+| `RAZORPAY_KEY_SECRET` | Razorpay API key secret | from Razorpay Dashboard → API Keys |
+
+---
+
+### notification-service
+
+| Variable | Description | Example |
+|---|---|---|
+| `MAIL_USERNAME` | Gmail address used to send emails | `yourapp@gmail.com` |
+| `MAIL_PASSWORD` | Gmail App Password (not your regular Gmail password) | 16-char app password from Google Account → Security → App Passwords |
+| `VAPID_PUBLIC_KEY` | VAPID public key for Web Push notifications | generate with `npx web-push generate-vapid-keys` |
+| `VAPID_PRIVATE_KEY` | VAPID private key for Web Push notifications | generate with `npx web-push generate-vapid-keys` |
+| `ADMIN_EMAIL` | Email address for admin alerts _(optional)_ | `admin@foodiehub.com` |
+| `USER_SERVICE_URL` | URL of user-service _(optional, defaults to localhost:8081)_ | `http://localhost:8081` |
+| `RABBITMQ_HOST` | RabbitMQ host _(optional, defaults to localhost)_ | `localhost` |
+| `RABBITMQ_PORT` | RabbitMQ port _(optional, defaults to 5672)_ | `5672` |
+| `RABBITMQ_USERNAME` | RabbitMQ username _(optional, defaults to guest)_ | `guest` |
+| `RABBITMQ_PASSWORD` | RabbitMQ password _(optional, defaults to guest)_ | `guest` |
+
+> **Gmail App Password setup:**
+> 1. Enable 2-Step Verification on your Google Account
+> 2. Go to Google Account → Security → App Passwords
+> 3. Create a new app password for "Mail"
+> 4. Use that 16-character password as `MAIL_PASSWORD`
+
+> **VAPID key generation:**
+> ```bash
+> npx web-push generate-vapid-keys
+> ```
+> Copy the output `Public Key` → `VAPID_PUBLIC_KEY` and `Private Key` → `VAPID_PRIVATE_KEY`
 
 ---
 
