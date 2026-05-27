@@ -82,7 +82,7 @@ export class PartnerWorkspaceComponent implements OnInit, OnDestroy {
   }
 
   // ── Overview stats ───────────────────────────────────────────────
-  stats: RestaurantStats = { todayOrders: 0, todayRevenue: 0, pendingOrders: 0, totalOrders: 0 };
+  stats: RestaurantStats = { todayOrders: 0, todayRevenue: 0, pendingOrders: 0, totalOrders: 0, totalRevenue: 0 };
   statsLoading = false;
   statsError = false;
 

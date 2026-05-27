@@ -427,8 +427,15 @@ public class OrderServiceImpl implements OrderService {
         long pendingOrders = orderRepository.countByRestaurantIdAndStatusIn(
                 restaurantId, List.of("PLACED", "CONFIRMED"));
 
-        long totalOrders = orderRepository.countByRestaurantId(restaurantId);
+        // Load all orders once — derive both count and total revenue in one DB call
+        List<Order> allOrders  = orderRepository.findByRestaurantId(restaurantId);
+        long   totalOrders     = allOrders.size();
+        double totalRevenue    = allOrders.stream()
+                .mapToDouble(o -> o.getRestaurantEarnings() != null
+                        ? o.getRestaurantEarnings()
+                        : o.getSubtotal())
+                .sum();
 
-        return new RestaurantStatsDTO(todayCount, todayRevenue, pendingOrders, totalOrders);
+        return new RestaurantStatsDTO(todayCount, todayRevenue, pendingOrders, totalOrders, totalRevenue);
     }
 }

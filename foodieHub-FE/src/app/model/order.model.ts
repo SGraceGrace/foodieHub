@@ -48,6 +48,7 @@ export interface RestaurantStats {
   todayRevenue:  number;
   pendingOrders: number;
   totalOrders:   number;
+  totalRevenue:  number;
 }
 
 export interface RestaurantOrderNotification {

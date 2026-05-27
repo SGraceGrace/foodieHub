@@ -147,12 +147,14 @@
           <div class="stat-note" *ngIf="!statsLoading && stats.pendingOrders > 0">
             <span class="stat-pending-pill">{{ stats.pendingOrders }} pending</span>
           </div>
-          <div class="stat-note" *ngIf="!statsLoading && stats.pendingOrders === 0">All caught up ✓</div>
+          <div class="stat-note" *ngIf="!statsLoading && stats.pendingOrders === 0">
+            {{ stats.totalOrders }} orders all time
+          </div>
         </div>
         <div class="stat-card" [class.stat-card--loading]="statsLoading">
           <div class="stat-label">Today's Revenue</div>
           <div class="stat-value">{{ statsLoading ? '…' : ('₹' + (stats.todayRevenue | number:'1.0-0')) }}</div>
-          <div class="stat-note">{{ statsLoading ? '' : (stats.totalOrders + ' orders all time') }}</div>
+          <div class="stat-note">{{ statsLoading ? '' : ('₹' + (stats.totalRevenue | number:'1.0-0') + ' all time') }}</div>
         </div>
         <div class="stat-card">
           <div class="stat-label">Rating</div>

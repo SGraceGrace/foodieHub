@@ -32,6 +32,9 @@ public interface OrderRepository extends MongoRepository<Order, String> {
     List<Order> findByRestaurantIdAndCreatedAtBetween(
             String restaurantId, LocalDateTime from, LocalDateTime to);
 
+    /** All orders for a restaurant — used for all-time revenue aggregation */
+    List<Order> findByRestaurantId(String restaurantId);
+
     /** Total order count for a restaurant (all time) */
     long countByRestaurantId(String restaurantId);
 

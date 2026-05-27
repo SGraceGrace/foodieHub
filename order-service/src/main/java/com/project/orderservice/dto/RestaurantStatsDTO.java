@@ -6,7 +6,8 @@ package com.project.orderservice.dto;
  */
 public record RestaurantStatsDTO(
         long   todayOrders,     // orders placed today (IST)
-        double todayRevenue,    // sum of totalAmount for today's orders
+        double todayRevenue,    // sum of restaurantEarnings for today's orders
         long   pendingOrders,   // PLACED + CONFIRMED — needs action
-        long   totalOrders      // all-time order count
+        long   totalOrders,     // all-time order count
+        double totalRevenue     // all-time sum of restaurantEarnings (subtotal fallback for legacy orders)
 ) {}
