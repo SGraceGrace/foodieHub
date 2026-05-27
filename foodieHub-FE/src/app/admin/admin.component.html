@@ -317,10 +317,10 @@
           <input class="search-input" type="text" placeholder="Search by name or email…"
             [(ngModel)]="driverSearch" (keyup.enter)="loadDrivers(0)" />
           <select class="filter-select" [(ngModel)]="driverStatusFilter" (change)="loadDrivers(0)">
+            <option value="">All</option>
             <option value="PENDING">Pending</option>
             <option value="ACTIVE">Active</option>
             <option value="INACTIVE">Suspended / Rejected</option>
-            <option value="">All</option>
           </select>
           <button class="btn-reset" (click)="resetDriversFilter()">Reset</button>
         </div>

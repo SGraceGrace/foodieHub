@@ -45,7 +45,7 @@ export class AdminComponent implements OnInit {
 
   // Drivers
   drivers: AdminUserResponse[] = [];
-  driverStatusFilter = 'PENDING';
+  driverStatusFilter = '';
   driverSearch = '';
   driverPagination = { currentPage: 0, totalPages: 0, totalElements: 0, pageSize: 10 };
   pendingDriverCount = 0;
