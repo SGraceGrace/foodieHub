@@ -1,5 +1,7 @@
 package com.project.orderservice.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.orderservice.document.Cart;
 import com.project.orderservice.document.CartItem;
 import com.project.orderservice.document.Order;
@@ -11,6 +13,8 @@ import com.project.orderservice.messaging.OrderItemEvent;
 import com.project.orderservice.messaging.OrderPlacedEvent;
 import com.project.orderservice.messaging.OrderStatusUpdatedEvent;
 import com.project.orderservice.messaging.RabbitMQConfig;
+import com.project.orderservice.outbox.OutboxEvent;
+import com.project.orderservice.outbox.OutboxEventRepository;
 import com.project.orderservice.repo.CartRepository;
 import com.project.orderservice.repo.OrderRepository;
 import com.project.orderservice.service.OrderService;
@@ -45,9 +49,11 @@ public class OrderServiceImpl implements OrderService {
     private static final double FREE_DELIVERY_ABOVE = 500.0;
     private static final double GST_RATE            = 0.05;
 
-    private final CartRepository   cartRepository;
-    private final OrderRepository  orderRepository;
-    private final RabbitTemplate   rabbitTemplate;
+    private final CartRepository       cartRepository;
+    private final OrderRepository      orderRepository;
+    private final RabbitTemplate       rabbitTemplate;
+    private final OutboxEventRepository outboxEventRepository;
+    private final ObjectMapper          objectMapper;
 
     @Override
     public Order placeOrder(String userId, PlaceOrderRequest req) {
@@ -138,8 +144,22 @@ public class OrderServiceImpl implements OrderService {
                 .placedAt(saved.getCreatedAt())
                 .build();
 
-        rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ORDER_PLACED_RKEY, event);
-        log.info("Published order.placed for orderId={} restaurantId={}", saved.getId(), saved.getRestaurantId());
+        // Write to outbox instead of publishing directly — guarantees the event survives
+        // even if RabbitMQ is temporarily down. OutboxPoller delivers it within 5 seconds.
+        try {
+            OutboxEvent outbox = new OutboxEvent();
+            outbox.setAggregateId(saved.getId());
+            outbox.setEventType("order.placed");
+            outbox.setExchange(RabbitMQConfig.EXCHANGE);
+            outbox.setRoutingKey(RabbitMQConfig.ORDER_PLACED_RKEY);
+            outbox.setPayloadClass(OrderPlacedEvent.class.getName());
+            outbox.setPayloadJson(objectMapper.writeValueAsString(event));
+            outbox.setSent(false);
+            outboxEventRepository.save(outbox);
+            log.info("Outbox event saved for orderId={}", saved.getId());
+        } catch (JsonProcessingException e) {
+            log.error("Failed to serialize OrderPlacedEvent for orderId={}", saved.getId(), e);
+        }
 
         return saved;
     }
