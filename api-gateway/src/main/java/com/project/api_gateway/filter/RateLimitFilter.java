@@ -106,8 +106,10 @@ public class RateLimitFilter implements Filter {
         HttpServletRequest  req = (HttpServletRequest)  request;
         HttpServletResponse res = (HttpServletResponse) response;
 
-        // Skip CORS preflight and health checks — these must not be rate-limited
-        if ("OPTIONS".equalsIgnoreCase(req.getMethod()) || req.getRequestURI().startsWith("/actuator")) {
+        // Skip CORS preflight, health checks, and circuit breaker fallback forwards
+        if ("OPTIONS".equalsIgnoreCase(req.getMethod())
+                || req.getRequestURI().startsWith("/actuator")
+                || req.getRequestURI().startsWith("/fallback/")) {
             chain.doFilter(request, response);
             return;
         }

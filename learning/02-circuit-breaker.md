@@ -10,63 +10,104 @@ Without a circuit breaker, one slow/down service causes all upstream threads to 
 ```
 CLOSED (normal) → too many failures → OPEN (fail fast)
                                           ↓
-                              after timeout → HALF-OPEN (try one request)
+                              after timeout → HALF-OPEN (try a few requests)
                                           ↓
                          success → CLOSED again | failure → OPEN again
 ```
 
 ## How it works in FoodieHub
 ```
-API Gateway
-    ↓
-Circuit Breaker (wraps food-service call)
-    ↓ (if food-service is down)
-Return fallback: { "message": "Restaurant data temporarily unavailable" }
+Client → API Gateway → CircuitBreaker filter → Microservice
+                              ↓ (if circuit is OPEN)
+                        FallbackController → 503 JSON
 ```
 
 Without circuit breaker: user waits 30 seconds then gets a 500.
-With circuit breaker: user gets a friendly fallback in milliseconds.
+With circuit breaker: user gets a clear 503 in milliseconds.
 
-## Implementation with Resilience4j
+## Implementation — Spring Cloud Gateway + Resilience4j
+
+### 1. Dependency (pom.xml)
 ```xml
-<!-- pom.xml -->
 <dependency>
     <groupId>org.springframework.cloud</groupId>
     <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
 </dependency>
 ```
 
+### 2. Filter on each route (application.yaml)
 ```yaml
-# application.yaml
+- id: food-service-restaurants
+  uri: http://localhost:8082
+  predicates:
+    - Path=/api/v1/restaurants/**
+  filters:
+    - name: CircuitBreaker
+      args:
+        name: food-service              # matches the instance name below
+        fallbackUri: forward:/fallback/food-service
+```
+The `fallbackUri: forward:` sends the request to a local Spring MVC controller inside the gateway — no external call.
+
+### 3. Circuit breaker configuration
+```yaml
 resilience4j:
   circuitbreaker:
     instances:
       food-service:
-        slidingWindowSize: 10           # last 10 calls
-        failureRateThreshold: 50        # open if 50% fail
-        waitDurationInOpenState: 10s    # wait 10s before half-open
-        permittedNumberOfCallsInHalfOpenState: 3
+        sliding-window-size: 10                      # track last 10 calls
+        failure-rate-threshold: 50                   # open if ≥50% fail
+        wait-duration-in-open-state: 10s             # stay open for 10s
+        permitted-number-of-calls-in-half-open-state: 3   # test with 3 calls
+        register-health-indicator: true              # visible in /actuator/health
 ```
 
+### 4. Fallback controller (FallbackController.java)
 ```java
-// In a service or gateway filter
-@CircuitBreaker(name = "food-service", fallbackMethod = "restaurantFallback")
-public List<Restaurant> getRestaurants() {
-    return foodServiceClient.getRestaurants();
-}
-
-public List<Restaurant> restaurantFallback(Exception e) {
-    return Collections.emptyList(); // or cached data from Redis
+@RequestMapping("/fallback/food-service")
+public ResponseEntity<Map<String, Object>> foodServiceFallback() {
+    return ResponseEntity.status(503).body(Map.of(
+        "status", 503,
+        "error", "Service Unavailable",
+        "message", "Restaurant data is temporarily unavailable."
+    ));
 }
 ```
+
+### 5. Health endpoint — see circuit state live
+```
+GET http://localhost:8080/actuator/health
+
+{
+  "components": {
+    "circuitBreakers": {
+      "details": {
+        "food-service": { "status": "UP", "state": "CLOSED" },
+        "order-service": { "status": "UP", "state": "CLOSED" }
+      }
+    }
+  }
+}
+```
+When a service goes down, `"state"` flips to `"OPEN"` here — you can see it in real time.
+
+## What triggers the circuit to open?
+Any exception thrown while calling the downstream service:
+- `ConnectException` — service is down (port refused)
+- `SocketTimeoutException` — service is too slow
+- Any 5xx response the gateway receives back
+
+## Configuration explained
+| Setting | Value | Meaning |
+|---|---|---|
+| `sliding-window-size` | 10 | Evaluate last 10 calls — not a full minute, just a rolling count |
+| `failure-rate-threshold` | 50 | Open when 5 out of last 10 calls fail |
+| `wait-duration-in-open-state` | 10s | Don't hammer a struggling service — wait 10s before retrying |
+| `permitted-number-of-calls-in-half-open-state` | 3 | Send 3 test calls; if they pass → CLOSED, if they fail → OPEN again |
 
 ## Interview talking points
-- "If food-service goes down, the circuit breaker opens and users get a cached or empty response instead of a 30-second timeout — the order flow still works"
-- "I set a 50% failure threshold over a 10-request sliding window, with 10 seconds before retrying — this prevents hammering a struggling service"
-- "In the half-open state, only 3 test requests go through — if they succeed the circuit closes, if not it stays open"
-
-## What to implement in FoodieHub
-- [ ] Add Resilience4j dependency to api-gateway or order-service
-- [ ] Wrap food-service calls (restaurant lookup during order) with circuit breaker
-- [ ] Return Redis-cached restaurant data as fallback if available
-- [ ] Add `/actuator/circuitbreakers` endpoint to monitor state
+- "I added circuit breakers at the gateway so a single down service can't cascade failures to the whole system — all 4 services are protected in one place"
+- "If food-service goes down, the circuit opens and users immediately get a 503 instead of a 30-second timeout — the gateway itself stays healthy"
+- "I can see each circuit's state live at `/actuator/health` — useful for debugging in a real on-call situation"
+- "The sliding window tracks the last 10 calls — not time-based, so even a burst of failures triggers it immediately"
+- "In half-open state, only 3 test requests go through — this prevents thundering herd when a service restarts"
