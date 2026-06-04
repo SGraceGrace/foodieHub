@@ -1,5 +1,6 @@
 package com.project.orderservice.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.orderservice.config.RazorpayProperties;
 import com.project.orderservice.document.Cart;
 import com.project.orderservice.document.Order;
@@ -16,6 +17,7 @@ import com.razorpay.RazorpayException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -23,6 +25,7 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 @Slf4j
 @Service
@@ -33,10 +36,14 @@ public class PaymentServiceImpl implements PaymentService {
     private static final double FREE_DELIVERY_ABOVE = 500.0;
     private static final double GST_RATE            = 0.05;
 
+    private static final String IDEM_PREFIX = "idempotency:razorpay:";
+
     private final RazorpayClient      razorpayClient;
     private final RazorpayProperties  props;
     private final CartRepository      cartRepository;
     private final OrderService        orderService;
+    private final StringRedisTemplate redisTemplate;
+    private final ObjectMapper        objectMapper;
 
     // ── Initiate ─────────────────────────────────────────────────────
 
@@ -92,6 +99,21 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public Order verifyAndPlace(String userId, VerifyPaymentRequest req) {
 
+        // 0. Idempotency check — razorpayOrderId is unique per checkout session
+        //    If this verify request is a retry (network drop after payment succeeded),
+        //    return the original order without creating a duplicate.
+        String idemKey = IDEM_PREFIX + req.getRazorpayOrderId();
+        String cached  = redisTemplate.opsForValue().get(idemKey);
+        if (cached != null) {
+            try {
+                Order existing = objectMapper.readValue(cached, Order.class);
+                log.info("Idempotent replay for razorpayOrderId={} → returning orderId={}", req.getRazorpayOrderId(), existing.getId());
+                return existing;
+            } catch (Exception e) {
+                log.warn("Cached order deserialization failed for key={}, re-processing", idemKey);
+            }
+        }
+
         // 1. Verify Razorpay HMAC-SHA256 signature
         if (!verifySignature(req.getRazorpayOrderId(), req.getRazorpayPaymentId(), req.getRazorpaySignature())) {
             log.warn("Payment signature mismatch for paymentId={}", req.getRazorpayPaymentId());
@@ -108,6 +130,14 @@ public class PaymentServiceImpl implements PaymentService {
         // 3. Delegate to OrderService — saves order, clears cart, publishes RabbitMQ event
         Order order = orderService.placeOrder(userId, placeReq);
         log.info("Payment verified → order placed. orderId={} paymentId={}", order.getId(), req.getRazorpayPaymentId());
+
+        // 4. Store result so retries return the same order (TTL 24h)
+        try {
+            redisTemplate.opsForValue().set(idemKey, objectMapper.writeValueAsString(order), Duration.ofHours(24));
+        } catch (Exception e) {
+            log.warn("Failed to cache idempotency result for key={}", idemKey);
+        }
+
         return order;
     }
 
