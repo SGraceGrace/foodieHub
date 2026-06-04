@@ -102,7 +102,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   selectCuisine(cuisine?: string) {
     this.selectedCuisine = cuisine ?? 'All';
-    this.homeService.getRestaurants(cuisine).subscribe({
+    this.homeService.getRestaurants(cuisine, this.userLat, this.userLng).subscribe({
       next: (res) => {
         this.restaurants = res.data?.content ?? [];
         this.buildPopularDishes(this.restaurants);
@@ -112,7 +112,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   loadRestaurants(cuisine?: string) {
     this.selectedCuisine = cuisine ?? 'All';
-    this.homeService.getRestaurants(cuisine).subscribe({
+    this.homeService.getRestaurants(cuisine, this.userLat, this.userLng).subscribe({
       next: (res) => {
         this.restaurants = res.data?.content ?? [];
         if (!cuisine) this.buildPopularDishes(this.restaurants);

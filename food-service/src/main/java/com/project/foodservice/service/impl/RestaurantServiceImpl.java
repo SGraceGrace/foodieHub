@@ -20,6 +20,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.geo.Metrics;
+import org.springframework.data.geo.Point;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.NearQuery;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
@@ -38,6 +45,7 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final OwnerApprovalRepo ownerApprovalRepo;
     private final RatingRepo ratingRepo;
     private final SearchService searchService;
+    private final MongoTemplate mongoTemplate;
 
     @Override
     public PaginatedResponse<Restaurant> getAll(String cuisine, Double lat, Double lng, Double radiusKm, String sort, Pageable pageable) {
@@ -57,19 +65,28 @@ public class RestaurantServiceImpl implements RestaurantService {
             return PaginatedResponse.of(restaurantRepo.findByStatus(RestaurantStatus.ACTIVE, sortedPageable));
         }
 
-        // Location provided — fetch candidates, filter by proximity, then sort
-        // Use original pageable (no sort) for fetching; sorting happens in-memory after proximity filter
-        List<Restaurant> candidates = hasCuisine
-            ? restaurantRepo.findByStatusAndCuisineContainingIgnoreCase(RestaurantStatus.ACTIVE, cuisine, pageable).getContent()
-            : restaurantRepo.findByStatus(RestaurantStatus.ACTIVE, pageable).getContent();
+        // Location provided — use MongoDB $near so the database does the radius filter.
+        // This fixes the pagination-then-filter bug: $near returns only restaurants within
+        // the radius, correctly paginated, with exact distances for the distance badge.
+        Criteria statusFilter = hasCuisine
+            ? Criteria.where("status").is(RestaurantStatus.ACTIVE).and("cuisine").regex(cuisine, "i")
+            : Criteria.where("status").is(RestaurantStatus.ACTIVE);
 
-        Comparator<Restaurant> comparator = toComparator(sort, lat, lng);
-        List<Restaurant> nearby = candidates.stream()
-            .filter(r -> r.getLocation() != null
-                      && r.getLocation().getLat() != null
-                      && r.getLocation().getLng() != null)
-            .filter(r -> haversineKm(lat, lng, r.getLocation().getLat(), r.getLocation().getLng()) <= radius)
-            .sorted(comparator)
+        // Point is (longitude, latitude) — GeoJSON convention
+        NearQuery nearQuery = NearQuery
+            .near(new Point(lng, lat), Metrics.KILOMETERS)
+            .maxDistance(radius)
+            .spherical(true)
+            .query(Query.query(statusFilter));
+
+        List<Restaurant> nearby = mongoTemplate.geoNear(nearQuery, Restaurant.class)
+            .getContent().stream()
+            .map(gr -> {
+                Restaurant r = gr.getContent();
+                r.setDistanceKm(Math.round(gr.getDistance().getValue() * 10.0) / 10.0);
+                return r;
+            })
+            .sorted(toComparator(sort))
             .collect(Collectors.toList());
 
         return PaginatedResponse.ofList(nearby, pageable);
@@ -87,37 +104,20 @@ public class RestaurantServiceImpl implements RestaurantService {
         };
     }
 
-    /** Maps the frontend sort token to an in-memory Comparator for the proximity path. */
-    private Comparator<Restaurant> toComparator(String sort, Double lat, Double lng) {
-        // Sort by actual distance — used for "deliveryTime" (closest = fastest delivery)
-        Comparator<Restaurant> byDistance = Comparator.comparingDouble(r ->
-            haversineKm(lat, lng, r.getLocation().getLat(), r.getLocation().getLng()));
-
-        // No-op comparator — preserves the fetch order from DB (used for "relevance")
-        // Proximity filter still applies (only nearby restaurants are included),
-        // but we don't impose any ordering on top of that
-        Comparator<Restaurant> noSort = (a, b) -> 0;
+    /** In-memory sort for the geo path — $near already set distanceKm on each restaurant. */
+    private Comparator<Restaurant> toComparator(String sort) {
+        Comparator<Restaurant> byDistance =
+            Comparator.comparingDouble(r -> r.getDistanceKm() != null ? r.getDistanceKm() : Double.MAX_VALUE);
+        Comparator<Restaurant> noSort = (a, b) -> 0; // preserve $near distance order
 
         if (sort == null || sort.equals("relevance")) return noSort;
-
         return switch (sort) {
-            // deliveryTime = sort ascending by actual distance (closest = fastest delivery)
             case "deliveryTime" -> byDistance;
             case "priceLow"     -> Comparator.comparingInt(Restaurant::getMinOrder);
             case "priceHigh"    -> Comparator.comparingInt(Restaurant::getMinOrder).reversed();
             case "rating"       -> Comparator.comparingDouble(Restaurant::getRating).reversed();
             default             -> noSort;
         };
-    }
-
-    private double haversineKm(double lat1, double lng1, double lat2, double lng2) {
-        final double R = 6371.0;
-        double dLat = Math.toRadians(lat2 - lat1);
-        double dLng = Math.toRadians(lng2 - lng1);
-        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                 + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
-                 * Math.sin(dLng / 2) * Math.sin(dLng / 2);
-        return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
     @Override
@@ -148,6 +148,9 @@ public class RestaurantServiceImpl implements RestaurantService {
         if (request.getLocation() != null) {
             var l = request.getLocation();
             restaurant.setLocation(new Location(l.getCity(), l.getState(), l.getCountry(), l.getLat(), l.getLng()));
+            if (l.getLat() != null && l.getLng() != null) {
+                restaurant.setGeoPoint(new GeoJsonPoint(l.getLng(), l.getLat())); // GeoJSON: lng first
+            }
         }
         if (request.getCuisine() != null)       restaurant.setCuisine(request.getCuisine());
         if (request.getMinOrder() > 0)          restaurant.setMinOrder(request.getMinOrder());
@@ -221,6 +224,9 @@ public class RestaurantServiceImpl implements RestaurantService {
         if (req.getLocation()     != null) {
             var l = req.getLocation();
             r.setLocation(new Location(l.getCity(), l.getState(), l.getCountry(), l.getLat(), l.getLng()));
+            if (l.getLat() != null && l.getLng() != null) {
+                r.setGeoPoint(new GeoJsonPoint(l.getLng(), l.getLat())); // GeoJSON: lng first
+            }
         }
         Restaurant saved = restaurantRepo.save(r);
         searchService.indexRestaurant(saved);
