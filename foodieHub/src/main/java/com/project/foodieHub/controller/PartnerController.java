@@ -1,5 +1,6 @@
 package com.project.foodieHub.controller;
 
+import com.project.foodieHub.constants.CommonConstants;
 import com.project.foodieHub.dto.BaseAPIResponse;
 import com.project.foodieHub.dto.CreateRestaurantStaffRequestDTO;
 import com.project.foodieHub.dto.PartnerRegisterRequestDTO;
@@ -27,7 +28,7 @@ public class PartnerController {
     @GetMapping("api/v1/partner/restaurants/{restaurantId}/staff")
     @PreAuthorize("hasRole('RESTAURANT_OWNER')")
     public ResponseEntity<BaseAPIResponse> getStaff(@PathVariable String restaurantId) {
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS,
                 partnerService.getStaff(restaurantId), HttpStatus.OK.value(), null));
     }
 

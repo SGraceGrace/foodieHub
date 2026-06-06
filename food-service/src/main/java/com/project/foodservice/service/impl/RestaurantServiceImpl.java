@@ -14,6 +14,7 @@ import com.project.foodservice.enums.RestaurantStatus;
 import com.project.foodservice.repo.OwnerApprovalRepo;
 import com.project.foodservice.repo.RatingRepo;
 import com.project.foodservice.repo.RestaurantRepo;
+import com.project.foodservice.exception.DuplicateRatingException;
 import com.project.foodservice.search.service.SearchService;
 import com.project.foodservice.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
@@ -238,7 +239,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                                 String orderId, String driverEmail, Integer driverRating) {
         // Duplicate guard — one rating per order (DB unique index is the real guard, this is the friendly message)
         if (ratingRepo.existsByOrderId(orderId)) {
-            throw new IllegalStateException("Order has already been rated");
+            throw new DuplicateRatingException("Order has already been rated");
         }
 
         Restaurant r = restaurantRepo.findById(restaurantId)

@@ -1,6 +1,7 @@
 package com.project.orderservice.controller;
 
 import com.project.orderservice.document.Order;
+import com.project.orderservice.constants.CommonConstants;
 import com.project.orderservice.dto.BaseAPIResponse;
 import com.project.orderservice.dto.MarkRatedRequest;
 import com.project.orderservice.dto.PlaceOrderRequest;
@@ -32,7 +33,7 @@ public class OrderController {
             @Valid @RequestBody PlaceOrderRequest req) {
 
         Order order = orderService.placeOrder(userId, req);
-        return ResponseEntity.ok(new BaseAPIResponse("ORDER_PLACED", order, 200, null));
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.ORDER_PLACED, order, 200, null));
     }
 
     /** GET /api/orders — Order history for the logged-in user */
@@ -41,7 +42,7 @@ public class OrderController {
             @RequestHeader("X-User-Id") String userId) {
 
         List<Order> orders = orderService.getOrderHistory(userId);
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", orders, 200, null));
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS, orders, 200, null));
     }
 
     /** GET /api/orders/{id} — Single order detail */
@@ -51,7 +52,7 @@ public class OrderController {
             @PathVariable String id) {
 
         Order order = orderService.getOrder(userId, id);
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", order, 200, null));
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS, order, 200, null));
     }
 
     /**
@@ -69,7 +70,7 @@ public class OrderController {
                 : Collections.emptyList();
 
         List<Order> orders = orderService.getRestaurantOrders(restaurantId, statusList);
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", orders, 200, null));
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS, orders, 200, null));
     }
 
     /**
@@ -91,7 +92,7 @@ public class OrderController {
                 ? LocalDate.parse(to).atTime(LocalTime.MAX) : null;
 
         return ResponseEntity.ok(new BaseAPIResponse(
-                "SUCCESS",
+                CommonConstants.SUCCESS,
                 orderService.getRestaurantAllOrders(restaurantId, page, size, fromDt, toDt),
                 200, null));
     }
@@ -106,7 +107,7 @@ public class OrderController {
             @Valid @RequestBody UpdateStatusRequest req) {
 
         Order order = orderService.updateStatus(id, req.getStatus());
-        return ResponseEntity.ok(new BaseAPIResponse("STATUS_UPDATED", order, 200, null));
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.STATUS_UPDATED, order, 200, null));
     }
 
     /**
@@ -117,7 +118,7 @@ public class OrderController {
     public ResponseEntity<BaseAPIResponse> getRestaurantStats(
             @PathVariable String restaurantId) {
         return ResponseEntity.ok(new BaseAPIResponse(
-                "SUCCESS", orderService.getRestaurantStats(restaurantId), 200, null));
+                CommonConstants.SUCCESS, orderService.getRestaurantStats(restaurantId), 200, null));
     }
 
     /**
@@ -127,7 +128,7 @@ public class OrderController {
     @GetMapping("/available")
     public ResponseEntity<BaseAPIResponse> getAvailableOrders() {
         return ResponseEntity.ok(
-                new BaseAPIResponse("SUCCESS", orderService.getAvailableOrders(), 200, null));
+                new BaseAPIResponse(CommonConstants.SUCCESS, orderService.getAvailableOrders(), 200, null));
     }
 
     /**
@@ -139,7 +140,7 @@ public class OrderController {
     public ResponseEntity<BaseAPIResponse> getDriverActiveOrder(
             @RequestHeader("X-User-Id") String driverEmail) {
         Order order = orderService.getDriverActiveOrder(driverEmail);
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", order, 200, null));
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS, order, 200, null));
     }
 
     /**
@@ -151,7 +152,7 @@ public class OrderController {
     public ResponseEntity<BaseAPIResponse> getDriverEarnings(
             @RequestHeader("X-User-Id") String driverEmail) {
         return ResponseEntity.ok(new BaseAPIResponse(
-                "SUCCESS",
+                CommonConstants.SUCCESS,
                 orderService.getDriverEarnings(driverEmail),
                 200, null));
     }
@@ -167,7 +168,7 @@ public class OrderController {
             @RequestParam(defaultValue = "0")  int page,
             @RequestParam(defaultValue = "10") int size) {
         return ResponseEntity.ok(new BaseAPIResponse(
-                "SUCCESS",
+                CommonConstants.SUCCESS,
                 orderService.getDriverHistory(driverEmail, page, size),
                 200, null));
     }
@@ -182,7 +183,7 @@ public class OrderController {
             @PathVariable String id,
             @RequestHeader("X-User-Id") String driverEmail) {
         Order order = orderService.acceptOrder(id, driverEmail);
-        return ResponseEntity.ok(new BaseAPIResponse("ORDER_ACCEPTED", order, 200, null));
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.ORDER_ACCEPTED, order, 200, null));
     }
 
     /**
@@ -197,7 +198,7 @@ public class OrderController {
             @RequestBody(required = false) MarkRatedRequest req) {
         Integer driverRating = (req != null) ? req.getDriverRating() : null;
         Order order = orderService.markRated(id, driverRating);
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", order, 200, null));
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS, order, 200, null));
     }
 
     /**
@@ -210,6 +211,6 @@ public class OrderController {
             @PathVariable String id,
             @Valid @RequestBody UpdateStatusRequest req) {
         Order order = orderService.updateStatus(id, req.getStatus());
-        return ResponseEntity.ok(new BaseAPIResponse("STATUS_UPDATED", order, 200, null));
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.STATUS_UPDATED, order, 200, null));
     }
 }

@@ -1,6 +1,7 @@
 package com.project.foodservice.controller;
 
 import com.project.foodservice.document.Restaurant;
+import com.project.foodservice.constants.CommonConstants;
 import com.project.foodservice.dto.BaseAPIResponse;
 import com.project.foodservice.repo.RestaurantRepo;
 import com.project.foodservice.service.MenuItemService;
@@ -30,7 +31,7 @@ public class AdminRestaurantController {
             @RequestParam(required = false) String cuisine,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS,
                 restaurantService.getAllForAdmin(status, cuisine, PageRequest.of(page, size)),
                 HttpStatus.OK.value(), null));
     }
@@ -69,6 +70,6 @@ public class AdminRestaurantController {
         result.put("itemsMigrated",       itemsMigrated);
         result.put("restaurantsSkipped",  restaurantsSkipped);
 
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", result, HttpStatus.OK.value(), null));
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS, result, HttpStatus.OK.value(), null));
     }
 }

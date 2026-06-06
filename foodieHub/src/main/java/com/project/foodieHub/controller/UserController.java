@@ -1,5 +1,6 @@
 package com.project.foodieHub.controller;
 
+import com.project.foodieHub.constants.CommonConstants;
 import com.project.foodieHub.dto.BaseAPIResponse;
 import com.project.foodieHub.dto.UpdateProfileRequestDTO;
 import com.project.foodieHub.service.UserService;
@@ -32,7 +33,7 @@ public class UserController {
   @GetMapping
   public ResponseEntity<BaseAPIResponse> getUserInfo() {
     var username = currentUserService.getCurrentUsername();
-    var apiResponse = new BaseAPIResponse("SUCCESS", userService.getUser(username), HttpStatus.OK.value(), null);
+    var apiResponse = new BaseAPIResponse(CommonConstants.SUCCESS, userService.getUser(username), HttpStatus.OK.value(), null);
     return new ResponseEntity<>(apiResponse, HttpStatus.OK);
   }
 

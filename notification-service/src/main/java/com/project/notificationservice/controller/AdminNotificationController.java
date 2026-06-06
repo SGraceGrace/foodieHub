@@ -1,5 +1,6 @@
 package com.project.notificationservice.controller;
 
+import com.project.notificationservice.constants.CommonConstants;
 import com.project.notificationservice.dto.BaseAPIResponse;
 import com.project.notificationservice.dto.PushSubscriptionRequest;
 import com.project.notificationservice.service.AdminNotificationService;
@@ -32,7 +33,7 @@ public class AdminNotificationController {
             @RequestHeader("X-User-Id") String adminEmail,
             @RequestHeader("X-User-Role") String adminRole) {
         return ResponseEntity.ok(new BaseAPIResponse(
-                "SUCCESS",
+                CommonConstants.SUCCESS,
                 notificationService.getNotifications(adminEmail, adminRole),
                 HttpStatus.OK.value(), null));
     }
@@ -43,7 +44,7 @@ public class AdminNotificationController {
             @RequestHeader("X-User-Id") String adminEmail) {
         notificationService.dismiss(id, adminEmail);
         return ResponseEntity.ok(new BaseAPIResponse(
-                "Notification dismissed", null, HttpStatus.OK.value(), null));
+                CommonConstants.NOTIFICATION_DISMISSED, null, HttpStatus.OK.value(), null));
     }
 
     @DeleteMapping("/api/v1/admin/notifications")

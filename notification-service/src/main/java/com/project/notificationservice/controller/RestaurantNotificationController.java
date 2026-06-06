@@ -1,5 +1,6 @@
 package com.project.notificationservice.controller;
 
+import com.project.notificationservice.constants.CommonConstants;
 import com.project.notificationservice.dto.BaseAPIResponse;
 import com.project.notificationservice.entity.RestaurantNotification;
 import com.project.notificationservice.repo.RestaurantNotificationRepo;
@@ -38,7 +39,7 @@ public class RestaurantNotificationController {
     public ResponseEntity<BaseAPIResponse> getNotifications(@PathVariable String restaurantId) {
         List<RestaurantNotification> list =
                 restaurantNotificationRepo.findByRestaurantIdOrderByCreatedAtDesc(restaurantId);
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", list, HttpStatus.OK.value(), null));
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS, list, HttpStatus.OK.value(), null));
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.project.notificationservice.controller;
 
+import com.project.notificationservice.constants.CommonConstants;
 import com.project.notificationservice.dto.BaseAPIResponse;
 import com.project.notificationservice.dto.CustomerOrderUpdateDTO;
 import com.project.notificationservice.dto.PushSubscriptionRequest;
@@ -62,7 +63,7 @@ public class CustomerNotificationController {
                         n.isRead()))
                 .toList();
 
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", dtos, HttpStatus.OK.value(), null));
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS, dtos, HttpStatus.OK.value(), null));
     }
 
     // ── Mark all read — called when the bell panel opens ─────────────

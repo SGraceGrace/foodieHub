@@ -2,6 +2,7 @@ package com.project.foodservice.controller;
 
 import com.project.foodservice.document.DaySchedule;
 import com.project.foodservice.document.MenuCategory;
+import com.project.foodservice.constants.CommonConstants;
 import com.project.foodservice.dto.BaseAPIResponse;
 import com.project.foodservice.dto.RatingRequest;
 import com.project.foodservice.dto.RestaurantCreateRequestDTO;
@@ -14,8 +15,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("api/v1/restaurants")
@@ -34,25 +33,25 @@ public class RestaurantController {
             @RequestParam(defaultValue = "relevance") String sort,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS,
                 restaurantService.getAll(cuisine, lat, lng, radiusKm, sort, PageRequest.of(page, size)),
                 HttpStatus.OK.value(), null));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<BaseAPIResponse> getById(@PathVariable String id) {
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", restaurantService.getById(id), HttpStatus.OK.value(), null));
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS, restaurantService.getById(id), HttpStatus.OK.value(), null));
     }
 
     @GetMapping("/cuisines")
     public ResponseEntity<BaseAPIResponse> getCuisines() {
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", restaurantService.getCuisines(), HttpStatus.OK.value(), null));
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS, restaurantService.getCuisines(), HttpStatus.OK.value(), null));
     }
 
     @PostMapping
     public ResponseEntity<BaseAPIResponse> create(@RequestBody RestaurantCreateRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new BaseAPIResponse("SUCCESS", restaurantService.create(request), HttpStatus.CREATED.value(), null));
+                .body(new BaseAPIResponse(CommonConstants.SUCCESS, restaurantService.create(request), HttpStatus.CREATED.value(), null));
     }
 
     @GetMapping("/owner/{ownerId}")
@@ -60,7 +59,7 @@ public class RestaurantController {
             @PathVariable String ownerId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS,
                 restaurantService.getByOwner(ownerId, PageRequest.of(page, size)),
                 HttpStatus.OK.value(), null));
     }
@@ -69,7 +68,7 @@ public class RestaurantController {
     public ResponseEntity<BaseAPIResponse> updateDetails(
             @PathVariable String id,
             @RequestBody RestaurantUpdateRequestDTO request) {
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS,
                 restaurantService.updateDetails(id, request),
                 HttpStatus.OK.value(), null));
     }
@@ -78,7 +77,7 @@ public class RestaurantController {
     public ResponseEntity<BaseAPIResponse> updateHours(
             @PathVariable String id,
             @RequestBody List<DaySchedule> hours) {
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS,
                 restaurantService.updateHours(id, hours),
                 HttpStatus.OK.value(), null));
     }
@@ -93,7 +92,7 @@ public class RestaurantController {
             @PathVariable String id,
             @RequestBody List<MenuCategory> menu) {
         menuItemService.saveFullMenu(id, menu);
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS,
                 menuItemService.getMenu(id),
                 HttpStatus.OK.value(), null));
     }
@@ -109,14 +108,9 @@ public class RestaurantController {
             @PathVariable String id,
             @RequestHeader("X-User-Id") String customerId,
             @RequestBody RatingRequest req) {
-        try {
-            return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
-                    restaurantService.addRating(id, req.rating(), customerId,
-                            req.orderId(), req.driverEmail(), req.driverRating()),
-                    HttpStatus.OK.value(), null));
-        } catch (IllegalStateException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(new BaseAPIResponse("ERROR", null, HttpStatus.CONFLICT.value(), List.of(e.getMessage())));
-        }
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS,
+                restaurantService.addRating(id, req.rating(), customerId,
+                        req.orderId(), req.driverEmail(), req.driverRating()),
+                HttpStatus.OK.value(), null));
     }
 }

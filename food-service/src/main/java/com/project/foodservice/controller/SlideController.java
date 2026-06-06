@@ -1,5 +1,6 @@
 package com.project.foodservice.controller;
 
+import com.project.foodservice.constants.CommonConstants;
 import com.project.foodservice.dto.BaseAPIResponse;
 import com.project.foodservice.dto.SlideRequestDTO;
 import com.project.foodservice.service.SlideService;
@@ -16,12 +17,12 @@ public class SlideController {
 
     @GetMapping("api/v1/slides")
     public ResponseEntity<BaseAPIResponse> getActiveSlides() {
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", slideService.getActiveSlides(), HttpStatus.OK.value(), null));
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS, slideService.getActiveSlides(), HttpStatus.OK.value(), null));
     }
 
     @GetMapping("api/v1/admin/slides")
     public ResponseEntity<BaseAPIResponse> getAllSlides() {
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", slideService.getAllSlides(), HttpStatus.OK.value(), null));
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS, slideService.getAllSlides(), HttpStatus.OK.value(), null));
     }
 
     @PostMapping("api/v1/admin/slides")

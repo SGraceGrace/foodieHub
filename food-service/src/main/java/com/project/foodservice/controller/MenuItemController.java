@@ -1,6 +1,7 @@
 package com.project.foodservice.controller;
 
 import com.project.foodservice.document.MenuItemDocument;
+import com.project.foodservice.constants.CommonConstants;
 import com.project.foodservice.dto.BaseAPIResponse;
 import com.project.foodservice.service.MenuItemService;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class MenuItemController {
      */
     @GetMapping("api/v1/restaurants/{restaurantId}/menu")
     public ResponseEntity<BaseAPIResponse> getMenu(@PathVariable String restaurantId) {
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS,
                 menuItemService.getMenu(restaurantId),
                 HttpStatus.OK.value(), null));
     }
@@ -42,7 +43,7 @@ public class MenuItemController {
             @RequestParam String category,
             @RequestBody MenuItemDocument item) {
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new BaseAPIResponse("SUCCESS",
+                .body(new BaseAPIResponse(CommonConstants.SUCCESS,
                         menuItemService.addItem(restaurantId, category, item),
                         HttpStatus.CREATED.value(), null));
     }
@@ -53,7 +54,7 @@ public class MenuItemController {
             @PathVariable String restaurantId,
             @PathVariable String itemId,
             @RequestBody MenuItemDocument update) {
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS,
                 menuItemService.updateItem(restaurantId, itemId, update),
                 HttpStatus.OK.value(), null));
     }
@@ -64,6 +65,6 @@ public class MenuItemController {
             @PathVariable String restaurantId,
             @PathVariable String itemId) {
         menuItemService.deleteItem(restaurantId, itemId);
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", null, HttpStatus.OK.value(), null));
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS, null, HttpStatus.OK.value(), null));
     }
 }

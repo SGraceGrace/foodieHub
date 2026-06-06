@@ -1,5 +1,6 @@
 package com.project.foodieHub.controller;
 
+import com.project.foodieHub.constants.CommonConstants;
 import com.project.foodieHub.dto.BaseAPIResponse;
 import com.project.foodieHub.dto.UserAddressRequestDTO;
 import com.project.foodieHub.service.UserAddressService;
@@ -22,7 +23,7 @@ public class UserAddressController {
     public ResponseEntity<BaseAPIResponse> getAddresses() {
         var username = currentUserService.getCurrentUsername();
         var data = userAddressService.getAddresses(username);
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS", data, HttpStatus.OK.value(), null));
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS, data, HttpStatus.OK.value(), null));
     }
 
     @PostMapping

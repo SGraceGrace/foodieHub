@@ -1,5 +1,6 @@
 package com.project.foodieHub.controller;
 
+import com.project.foodieHub.constants.CommonConstants;
 import com.project.foodieHub.dto.BaseAPIResponse;
 import com.project.foodieHub.dto.CreateAdminRequestDTO;
 import com.project.foodieHub.service.AdminUserService;
@@ -23,7 +24,7 @@ public class AdminUserController {
             @RequestParam(required = false) String role,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS,
                 adminUserService.getUsers(status, search, role, page, size), HttpStatus.OK.value(), null));
     }
 
@@ -51,7 +52,7 @@ public class AdminUserController {
     @GetMapping("api/v1/admin/activity-logs")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<BaseAPIResponse> getActivityLogs() {
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS,
                 adminUserService.getActivityLogs(), HttpStatus.OK.value(), null));
     }
 
@@ -61,7 +62,7 @@ public class AdminUserController {
             @RequestParam(required = false) String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS,
                 adminUserService.getRestaurantOwners(status, page, size), HttpStatus.OK.value(), null));
     }
 
@@ -86,7 +87,7 @@ public class AdminUserController {
             @RequestParam(required = false) String search,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS,
                 adminUserService.getDrivers(status, search, page, size), HttpStatus.OK.value(), null));
     }
 

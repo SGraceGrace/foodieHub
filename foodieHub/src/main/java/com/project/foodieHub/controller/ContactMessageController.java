@@ -1,5 +1,6 @@
 package com.project.foodieHub.controller;
 
+import com.project.foodieHub.constants.CommonConstants;
 import com.project.foodieHub.dto.BaseAPIResponse;
 import com.project.foodieHub.dto.ContactMessageRequestDTO;
 import com.project.foodieHub.service.ContactMessageService;
@@ -27,14 +28,14 @@ public class ContactMessageController {
     public ResponseEntity<BaseAPIResponse> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS,
                 contactMessageService.getAll(PageRequest.of(page, size)),
                 HttpStatus.OK.value(), null));
     }
 
     @GetMapping("/admin/contact-messages/unread-count")
     public ResponseEntity<BaseAPIResponse> getUnreadCount() {
-        return ResponseEntity.ok(new BaseAPIResponse("SUCCESS",
+        return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS,
                 contactMessageService.getUnreadCount(), HttpStatus.OK.value(), null));
     }
 

@@ -17,7 +17,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: user-service
+                  id: user-service
                   fallbackUri: forward:/fallback/user-service
 
           - id: user-service-users
@@ -27,7 +27,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: user-service
+                  id: user-service
                   fallbackUri: forward:/fallback/user-service
 
           - id: user-service-refresh
@@ -37,7 +37,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: user-service
+                  id: user-service
                   fallbackUri: forward:/fallback/user-service
 
           - id: user-service-oauth2
@@ -47,7 +47,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: user-service
+                  id: user-service
                   fallbackUri: forward:/fallback/user-service
 
           - id: user-service-contact
@@ -57,7 +57,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: user-service
+                  id: user-service
                   fallbackUri: forward:/fallback/user-service
 
           - id: user-service-admin-contact-messages
@@ -67,7 +67,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: user-service
+                  id: user-service
                   fallbackUri: forward:/fallback/user-service
 
           - id: food-service-slides-public
@@ -77,7 +77,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: food-service
+                  id: food-service
                   fallbackUri: forward:/fallback/food-service
 
           - id: food-service-slides-admin
@@ -87,7 +87,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: food-service
+                  id: food-service
                   fallbackUri: forward:/fallback/food-service
 
           - id: food-service-admin-restaurants
@@ -97,7 +97,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: food-service
+                  id: food-service
                   fallbackUri: forward:/fallback/food-service
 
           - id: user-service-admin-users
@@ -107,7 +107,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: user-service
+                  id: user-service
                   fallbackUri: forward:/fallback/user-service
 
           - id: user-service-activity-logs
@@ -117,7 +117,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: user-service
+                  id: user-service
                   fallbackUri: forward:/fallback/user-service
 
           - id: user-service-restaurant-owners
@@ -127,7 +127,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: user-service
+                  id: user-service
                   fallbackUri: forward:/fallback/user-service
 
           - id: user-service-drivers
@@ -137,7 +137,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: user-service
+                  id: user-service
                   fallbackUri: forward:/fallback/user-service
 
           - id: notification-service-notifications
@@ -147,7 +147,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: notification-service
+                  id: notification-service
                   fallbackUri: forward:/fallback/notification-service
 
           - id: notification-service-push-subscription
@@ -157,7 +157,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: notification-service
+                  id: notification-service
                   fallbackUri: forward:/fallback/notification-service
 
           - id: user-service-partner
@@ -167,7 +167,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: user-service
+                  id: user-service
                   fallbackUri: forward:/fallback/user-service
 
           - id: notification-service-driver-notifications
@@ -177,7 +177,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: notification-service
+                  id: notification-service
                   fallbackUri: forward:/fallback/notification-service
 
           - id: notification-service-driver-push-subscription
@@ -187,7 +187,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: notification-service
+                  id: notification-service
                   fallbackUri: forward:/fallback/notification-service
 
           - id: user-service-driver-register
@@ -197,7 +197,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: user-service
+                  id: user-service
                   fallbackUri: forward:/fallback/user-service
 
           - id: food-service-restaurants
@@ -207,7 +207,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: food-service
+                  id: food-service
                   fallbackUri: forward:/fallback/food-service
 
           - id: food-service-cuisines
@@ -217,7 +217,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: food-service
+                  id: food-service
                   fallbackUri: forward:/fallback/food-service
 
           - id: food-service-search
@@ -227,7 +227,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: food-service
+                  id: food-service
                   fallbackUri: forward:/fallback/food-service
 
           - id: order-service-cart
@@ -237,7 +237,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: order-service
+                  id: order-service
                   fallbackUri: forward:/fallback/order-service
 
           - id: order-service-orders
@@ -247,7 +247,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: order-service
+                  id: order-service
                   fallbackUri: forward:/fallback/order-service
 
           - id: order-service-payments
@@ -257,7 +257,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: order-service
+                  id: order-service
                   fallbackUri: forward:/fallback/order-service
 
           - id: notification-service-restaurant
@@ -267,7 +267,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: notification-service
+                  id: notification-service
                   fallbackUri: forward:/fallback/notification-service
 
           - id: notification-service-customer
@@ -277,7 +277,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  name: notification-service
+                  id: notification-service
                   fallbackUri: forward:/fallback/notification-service
 
 

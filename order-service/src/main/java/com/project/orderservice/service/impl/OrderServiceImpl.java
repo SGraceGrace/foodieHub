@@ -23,9 +23,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
+import com.project.orderservice.exception.AccessDeniedException;
+import com.project.orderservice.exception.CartEmptyException;
+import com.project.orderservice.exception.OrderConflictException;
+import com.project.orderservice.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.project.orderservice.dto.DriverEarningsDTO;
 import com.project.orderservice.dto.RestaurantStatsDTO;
@@ -60,17 +62,17 @@ public class OrderServiceImpl implements OrderService {
 
         // 1. Fetch cart
         Cart cart = cartRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart is empty"));
+                .orElseThrow(() -> new CartEmptyException("Cart is empty"));
 
         // 2. Find the restaurant bucket
         RestaurantCart rc = cart.getRestaurants().stream()
                 .filter(r -> r.getRestaurantId().equals(req.getRestaurantId()))
                 .findFirst()
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST, "No items found for restaurant: " + req.getRestaurantId()));
+                .orElseThrow(() -> new CartEmptyException(
+                        "No items found for restaurant: " + req.getRestaurantId()));
 
         if (rc.getItems().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cart is empty for this restaurant");
+            throw new CartEmptyException("Cart is empty for this restaurant");
         }
 
         // 3. Map cart items → order items & compute bill
@@ -172,9 +174,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order getOrder(String userId, String orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
         if (!order.getUserId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+            throw new AccessDeniedException("Access denied");
         }
         return order;
     }
@@ -215,7 +217,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order updateStatus(String orderId, String newStatus) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         // Keep the two display fields in sync so the tracking page can read them directly
         if (DRIVER_STATUSES.contains(newStatus)) {
@@ -267,18 +269,16 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order acceptOrder(String orderId, String driverEmail) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
 
         // Prevent two drivers from claiming the same order
         if (order.getDriverEmail() != null) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Order already accepted by another driver");
+            throw new OrderConflictException("Order already accepted by another driver");
         }
 
         // Prevent driver from accepting an order the restaurant hasn't confirmed yet
         if ("PLACED".equals(order.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT,
-                    "Restaurant has not confirmed this order yet");
+            throw new OrderConflictException("Restaurant has not confirmed this order yet");
         }
 
         order.setDriverEmail(driverEmail);
@@ -311,7 +311,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public Order markRated(String orderId, Integer driverRating) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
         order.setRated(true);
         if (driverRating != null) {
             order.setDriverRating(driverRating);
