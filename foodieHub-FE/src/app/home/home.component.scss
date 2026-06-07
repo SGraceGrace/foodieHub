@@ -1,0 +1,546 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+$gold:       #f9b303;
+$gold-dark:  #e0a000;
+$gold-light: #fff8e1;
+$text:       #4e4e4e;
+$text-dark:  #2a2a2a;
+$text-light: #888;
+$bg-warm:    #fffaf2;
+$border:     #e8e8e8;
+$shadow:     0 2px 10px rgba(0,0,0,.08);
+$shadow-lg:  0 8px 30px rgba(0,0,0,.12);
+$font-serif: 'Libre Baskerville', Georgia, serif;
+$font-sans:  'DM Sans', sans-serif;
+
+* { font-family: $font-sans; box-sizing: border-box; }
+
+:host { --bg-warm: #{$bg-warm}; --border: #{$border}; }
+
+.rest-distance { color: $gold; font-weight: 600; }
+
+// ── Delivery Address Bar ──────────────────────────────────────────
+.delivery-bar {
+  background: white;
+  border-bottom: 1px solid $border;
+  padding: .6rem 2.5rem;
+
+  @media (max-width: 600px) { padding: .55rem 1rem; }
+}
+
+.delivery-bar-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.delivery-bar-pin { font-size: 1rem; flex-shrink: 0; }
+
+.delivery-bar-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.delivery-bar-label {
+  font-size: .76rem;
+  color: $text-light;
+  white-space: nowrap;
+}
+
+.delivery-bar-address {
+  font-size: .84rem;
+  color: $text-dark;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  strong { color: $gold; }
+}
+
+.delivery-bar-prompt {
+  flex: 1;
+  font-size: .84rem;
+  color: $text-light;
+}
+
+.delivery-bar-change {
+  flex-shrink: 0;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1.5px solid $gold;
+  background: transparent;
+  color: $gold;
+  font-size: .78rem;
+  font-weight: 600;
+  font-family: $font-sans;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all .2s;
+  white-space: nowrap;
+
+  &:hover { background: $gold; color: $text-dark; }
+}
+
+// ── Slideshow ─────────────────────────────────────────────────────
+.slideshow-container {
+  position: relative;
+  background: linear-gradient(135deg, rgba(249,179,3,.15) 0%, rgba(249,179,3,.05) 100%), $bg-warm;
+  padding: 2rem;
+  border-radius: 16px;
+  margin: 2rem;
+  overflow: hidden;
+}
+
+.slide {
+  display: none;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 3rem;
+  padding: 2rem;
+  animation: fadeIn 0.5s ease;
+  &.active { display: grid; }
+}
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.slide-content { padding: 1rem; }
+
+.slide-title {
+  font-family: $font-serif;
+  font-size: 3rem;
+  font-weight: 700;
+  color: $text-dark;
+  margin-bottom: 1rem;
+  line-height: 1.2;
+  .highlight { color: $gold; }
+}
+
+.slide-desc {
+  font-size: 1rem;
+  color: $text;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.slide-buttons { display: flex; gap: 12px; margin-bottom: 1.5rem; }
+
+.slide-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: white;
+  width: fit-content;
+  padding: 8px 16px;
+  border-radius: 8px;
+  box-shadow: $shadow;
+  font-size: .85rem;
+}
+
+.badge-icon-lg { font-size: 1.2rem; }
+
+.slide-image { text-align: center; }
+
+.slide-emoji {
+  font-size: 150px;
+  text-align: center;
+  line-height: 1;
+}
+
+.slide-indicators {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 2rem;
+}
+
+.indicator {
+  width: 12px; height: 12px;
+  background: #ddd; border-radius: 50%;
+  cursor: pointer; transition: all .2s;
+  &.active { background: $gold; width: 30px; border-radius: 6px; }
+}
+
+.slide-nav {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: rgba(255,255,255,.8); border: none;
+  width: 50px; height: 50px; border-radius: 50%;
+  cursor: pointer; display: flex; align-items: center;
+  justify-content: center; font-size: 1.5rem;
+  transition: all .2s; z-index: 10;
+  &:hover { background: $gold; color: white; }
+  &.prev { left: 20px; }
+  &.next { right: 20px; }
+}
+
+// ── Hero ──────────────────────────────────────────────────────────
+.hero {
+  padding: 4.5rem 2.5rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 78vh;
+}
+
+.hero-text {
+  h1 {
+    font-family: $font-serif;
+    font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    color: $text-dark;
+    line-height: 1.2;
+    margin-bottom: .9rem;
+    em { font-style: normal; color: $gold; }
+  }
+  p {
+    font-size: .97rem;
+    color: $text-light;
+    line-height: 1.7;
+    margin-bottom: 1.8rem;
+    max-width: 400px;
+  }
+}
+
+.hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.hero-visual {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+}
+
+.hero-circle {
+  width: 340px; height: 340px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(249,179,3,.18), rgba(249,179,3,.04));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 170px;
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-16px); }
+}
+
+.hero-badge {
+  position: absolute;
+  background: white;
+  border-radius: 12px;
+  padding: 9px 14px;
+  box-shadow: $shadow-lg;
+  display: flex; align-items: center; gap: 8px;
+  font-size: .8rem; font-weight: 600;
+  &.tl { top: 28px; left: -8px; }
+  &.br { bottom: 48px; right: -8px; }
+}
+
+.badge-icon { font-size: 1.3rem; }
+.badge-label { font-size: .72rem; color: $text-light; }
+
+// ── Buttons ───────────────────────────────────────────────────────
+.btn {
+  padding: 11px 24px; border-radius: 8px;
+  font-size: .9rem; font-weight: 600; cursor: pointer;
+  border: none; font-family: $font-sans; transition: all .2s;
+}
+.btn-gold {
+  background: $gold; color: $text-dark;
+  &:hover { background: $gold-dark; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(249,179,3,.35); }
+}
+.btn-outline {
+  background: transparent; color: $text-dark; border: 1.5px solid $border;
+  &:hover { border-color: $gold; color: $gold; }
+}
+
+// ── Stats Bar ─────────────────────────────────────────────────────
+.stats-bar {
+  background: $bg-warm;
+  padding: 1.8rem 2.5rem;
+  border-top: 1px solid $border;
+  border-bottom: 1px solid $border;
+}
+.stats-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 1rem; text-align: center;
+}
+.stat-item {
+  h3 { font-family: $font-serif; font-size: 1.7rem; color: $gold; margin: 0 0 .2rem; }
+  p  { font-size: .84rem; color: $text-light; margin: 0; }
+}
+
+// ── Section ───────────────────────────────────────────────────────
+.section { padding: 2.5rem 2.5rem; max-width: 1200px; margin: 0 auto; }
+.section-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.8rem;
+  h2 { font-family: $font-serif; font-size: 1.7rem; color: $text-dark; margin: 0; }
+}
+.see-all {
+  color: $gold; font-size: .88rem; font-weight: 600; cursor: pointer;
+  border: none; background: none; font-family: $font-sans;
+}
+
+// ── Cuisine Cards ─────────────────────────────────────────────────
+.cuisine-grid {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.cuisine-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  user-select: none;
+
+  .cuisine-card-emoji {
+    width: 70px; height: 70px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.8rem;
+    transition: all .2s;
+    line-height: 1;
+  }
+
+  .cuisine-card-label {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: $text;
+    text-align: center;
+    transition: color .2s;
+  }
+
+  &:hover .cuisine-card-emoji {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,.10);
+  }
+
+  &--active {
+    .cuisine-card-emoji {
+      transform: translateY(-3px);
+    }
+    .cuisine-card-label { color: $gold; font-weight: 700; }
+  }
+}
+
+.rest-empty { color: #888; font-size: 0.9rem; padding: 1rem 0; }
+
+// ── Food Cards ────────────────────────────────────────────────────
+.food-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 18px;
+
+  @media (max-width: 1100px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 480px)  { grid-template-columns: 1fr; }
+}
+.food-card {
+  background: white; border-radius: 12px; overflow: hidden;
+  box-shadow: $shadow; cursor: pointer; transition: all .3s;
+  &:hover { transform: translateY(-5px); box-shadow: $shadow-lg; }
+}
+.food-card-img {
+  height: 150px; display: flex; align-items: center;
+  justify-content: center; font-size: 68px; position: relative;
+  overflow: hidden;
+
+  .food-card-cover {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+.food-badge {
+  position: absolute; top: 10px; left: 10px;
+  background: #4caf50; color: white;
+  font-size: 11px; font-weight: 700;
+  padding: 3px 9px; border-radius: 20px;
+}
+.food-card-body { padding: 13px; }
+.food-card-body h3 { font-size: .95rem; color: $text-dark; font-weight: 700; margin: 0 0 4px; }
+.food-rating {
+  display: flex; align-items: center; gap: 4px;
+  font-size: .78rem; color: $text-light; margin-bottom: 7px;
+}
+.stars { color: $gold; }
+.food-footer { display: flex; align-items: center; justify-content: space-between; }
+.food-price { font-family: $font-serif; font-size: 1.05rem; color: $text-dark; font-weight: 700; }
+.add-btn {
+  padding: 5px 13px; background: $gold; border: none;
+  border-radius: 6px; font-size: .8rem; font-weight: 700;
+  cursor: pointer; color: $text-dark; transition: all .2s;
+  font-family: $font-sans;
+  &:hover { background: $gold-dark; }
+}
+
+// ── Qty controls (popular dishes) ─────────────────────────────────
+.qty-ctrl {
+  display: flex; align-items: center; gap: 6px;
+}
+.qty-btn {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: $gold; border: none; font-size: 1rem; font-weight: 700;
+  cursor: pointer; color: $text-dark; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .2s;
+  &:hover { background: $gold-dark; }
+}
+.qty-num {
+  min-width: 18px; text-align: center;
+  font-size: .9rem; font-weight: 700; color: $text-dark;
+}
+
+// ── Restaurant Cards ──────────────────────────────────────────────
+.rest-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 18px;
+
+  @media (max-width: 1100px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 480px)  { grid-template-columns: 1fr; }
+}
+
+.rest-card {
+  background: white; border-radius: 14px; overflow: hidden;
+  box-shadow: $shadow; cursor: pointer; transition: all .3s;
+  &:hover { transform: translateY(-4px); box-shadow: $shadow-lg; }
+}
+
+.rest-img {
+  position: relative;
+  height: 160px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+
+.rest-cover {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+
+.rest-emoji { font-size: 56px; line-height: 1; }
+
+.rest-badge-status {
+  position: absolute; top: 10px; left: 10px;
+  padding: 3px 9px; border-radius: 20px;
+  font-size: 11px; font-weight: 700;
+  background: #4caf50; color: white;
+  &.closed { background: #e53935; }
+}
+
+.rest-badge-dist {
+  position: absolute; top: 10px; right: 10px;
+  padding: 3px 9px; border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+  background: rgba(0,0,0,.45); color: white;
+  backdrop-filter: blur(4px);
+}
+
+.rest-body { padding: 13px; }
+
+.rest-body-top {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 6px;
+  margin-bottom: 5px;
+  h3 { font-size: .95rem; color: $text-dark; font-weight: 700; margin: 0; flex: 1; }
+}
+
+.rest-rating {
+  font-size: .8rem; font-weight: 700;
+  color: $text-dark; white-space: nowrap;
+  background: $gold-light; padding: 2px 8px;
+  border-radius: 20px;
+}
+
+.rest-meta {
+  display: flex; align-items: center; gap: 6px;
+  font-size: .78rem; color: $text-light;
+  margin-top: 7px; flex-wrap: wrap;
+}
+
+.meta-dot { color: #ccc; }
+
+.rtags { display: flex; gap: 5px; flex-wrap: wrap; }
+.rtag {
+  font-size: 11px; padding: 3px 9px;
+  background: $bg-warm; border-radius: 20px; color: $text-light;
+}
+
+// ── Driver CTA Banner ─────────────────────────────────────────────
+.driver-banner {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2e2e2e 100%);
+  padding: 3.5rem 2.5rem;
+  color: white;
+}
+.driver-banner-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr auto;
+  align-items: center; gap: 3rem;
+}
+.driver-banner-text {
+  h2 {
+    font-family: $font-serif; font-size: 2rem; font-weight: 700;
+    margin: 0 0 .75rem; color: white;
+    span { color: $gold; }
+  }
+  p { color: rgba(255,255,255,.7); font-size: .95rem; line-height: 1.7; margin: 0 0 1.8rem; max-width: 520px; }
+}
+.driver-banner-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.btn-outline-white {
+  padding: 11px 24px; border: 1.5px solid rgba(255,255,255,.4); border-radius: 8px;
+  background: transparent; color: white; font-weight: 600; cursor: pointer;
+  font-size: .9rem; font-family: $font-sans; transition: all .2s;
+  &:hover { border-color: $gold; color: $gold; }
+}
+.driver-stats {
+  display: flex; flex-direction: column; gap: 1.2rem;
+}
+.dstat {
+  display: flex; flex-direction: column; gap: 2px;
+  background: rgba(255,255,255,.07); border-radius: 10px;
+  padding: .9rem 1.4rem; min-width: 160px;
+}
+.dstat-val {
+  font-family: $font-serif; font-size: 1.5rem; font-weight: 700; color: $gold;
+}
+.dstat-lbl { font-size: .78rem; color: rgba(255,255,255,.6); }
+
+// ── Promo Banner ──────────────────────────────────────────────────
+.promo-banner-strip {
+  background: linear-gradient(135deg, #2a1a00, #4a2e00);
+  padding: 2.5rem 2.5rem; color: white; text-align: center;
+  h2 { font-family: $font-serif; font-size: 1.6rem; margin: 0 0 .5rem; }
+  p  { color: rgba(255,255,255,.7); margin: 0 0 1.4rem; font-size: .93rem; }
+}
+
+// ── Responsive ───────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .hero { grid-template-columns: 1fr; min-height: auto; padding: 2.5rem 1.5rem; }
+  .hero-visual { height: 260px; }
+  .hero-circle { width: 220px; height: 220px; font-size: 110px; }
+  .stats-inner { grid-template-columns: repeat(2,1fr); }
+  .section { padding: 2rem 1.5rem; }
+  .driver-banner-inner { grid-template-columns: 1fr; }
+  .driver-stats { flex-direction: row; flex-wrap: wrap; }
+  .dstat { min-width: 120px; }
+}

@@ -1,0 +1,114 @@
+<!-- Loading -->
+<div class="rd-loading" *ngIf="loading">Loading restaurant…</div>
+<div class="rd-error" *ngIf="error">Restaurant not found.</div>
+
+<ng-container *ngIf="!loading && !error && restaurant">
+
+  <!-- ── Hero ───────────────────────────────────────────────────────── -->
+  <div class="rd-hero" [style.background]="restaurant.imageUrl ? 'none' : getBg()">
+    <img *ngIf="restaurant.imageUrl" [src]="restaurant.imageUrl" [alt]="restaurant.name" class="rd-hero-img" />
+    <span *ngIf="!restaurant.imageUrl" class="rd-hero-emoji">{{ getEmoji() }}</span>
+  </div>
+
+  <!-- ── Info bar ────────────────────────────────────────────────────── -->
+  <div class="rd-info-wrap">
+    <div class="rd-info">
+      <div class="rd-info-top">
+        <div>
+          <h1 class="rd-name">{{ restaurant.name }}</h1>
+          <div class="rd-tags">
+            <span class="rd-tag" *ngFor="let c of (restaurant.cuisine ?? [])">{{ c }}</span>
+          </div>
+          <div class="rd-address" *ngIf="restaurant.address">
+            📍 {{ restaurant.address }}
+          </div>
+        </div>
+        <div class="rd-rating-box">
+          <span class="rd-rating-val">⭐ {{ restaurant.rating ?? '—' }}</span>
+        </div>
+      </div>
+
+      <div class="rd-meta-row">
+        <div class="rd-meta-item">
+          <span class="rd-meta-icon">⏱</span>
+          <span>{{ restaurant.deliveryTime ?? '—' }} min</span>
+        </div>
+        <div class="rd-meta-item">
+          <span class="rd-meta-icon">🛒</span>
+          <span>Min ₹{{ restaurant.minOrder ?? 0 }}</span>
+        </div>
+        <div class="rd-meta-item">
+          <span class="rd-meta-icon">💰</span>
+          <span>{{ restaurant.priceRange ?? '₹₹' }}</span>
+        </div>
+        <div class="rd-meta-item">
+          <span class="rd-status" [class.closed]="restaurant.open === false">
+            {{ restaurant.open === false ? '🔴 Closed' : '🟢 Open now' }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Menu ───────────────────────────────────────────────────────── -->
+  <div class="rd-menu-wrap" *ngIf="categories.length > 0">
+
+    <!-- Category tabs -->
+    <div class="rd-cat-tabs" *ngIf="categories.length > 1">
+      <button class="rd-cat-tab"
+              *ngFor="let cat of categories"
+              [class.active]="activeCategory === cat.category"
+              (click)="setCategory(cat.category)">
+        {{ cat.category }}
+      </button>
+    </div>
+
+    <!-- Items -->
+    <div class="rd-items">
+      <h3 class="rd-category-heading">{{ activeCategory }}</h3>
+      <div class="rd-item" *ngFor="let item of activeItems()">
+        <div class="rd-item-info">
+          <div class="rd-item-veg">
+            <span class="veg-dot" [class.non-veg]="!item.isVeg">{{ item.isVeg ? '🟢' : '🔴' }}</span>
+          </div>
+          <div>
+            <div class="rd-item-name">{{ item.name }}</div>
+            <div class="rd-item-desc" *ngIf="item.description">{{ item.description }}</div>
+            <div class="rd-item-price">₹{{ item.price }}</div>
+          </div>
+        </div>
+
+        <!-- Right: image + add controls -->
+        <div class="rd-item-right">
+          <img *ngIf="item.imageUrl" [src]="item.imageUrl" [alt]="item.name" class="rd-item-img" />
+
+          <!-- Unavailable -->
+          <button class="rd-add-btn" disabled *ngIf="!item.available">Unavailable</button>
+
+          <!-- Available + not in cart -->
+          <button class="rd-add-btn"
+                  *ngIf="item.available && getQty(item) === 0"
+                  (click)="onAdd(item)">
+            Add +
+          </button>
+
+          <!-- Available + in cart: qty controls -->
+          <div class="rd-qty-ctrl" *ngIf="item.available && getQty(item) > 0">
+            <button class="rd-qty-btn" (click)="onRemove(item)">−</button>
+            <span class="rd-qty-val">{{ getQty(item) }}</span>
+            <button class="rd-qty-btn" (click)="onAdd(item)">+</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="rd-empty" *ngIf="activeItems().length === 0">
+        No items in this category.
+      </div>
+    </div>
+  </div>
+
+  <div class="rd-no-menu" *ngIf="categories.length === 0">
+    Menu not available yet.
+  </div>
+
+</ng-container>

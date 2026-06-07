@@ -1,0 +1,793 @@
+<app-admin-header
+  (navigateTab)="goTab($any($event))"
+  (pendingOwnerCountChange)="pendingOwnerCount = $event"
+  (pendingDriverCountChange)="pendingDriverCount = $event"
+  (contactMessageCountChange)="contactMessageCount = $event">
+</app-admin-header>
+
+<div class="dashboard">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-title">Admin Panel</div>
+
+    <button class="nav-btn" [class.active]="activeTab === 'dashboard'" (click)="goTab('dashboard')">
+      <span>📊</span> Dashboard
+    </button>
+    <button class="nav-btn" [class.active]="activeTab === 'users'" (click)="goTab('users')">
+      <span>👥</span> Users
+    </button>
+    <button class="nav-btn" [class.active]="activeTab === 'restaurants'" (click)="goTab('restaurants')">
+      <span>🍛</span> Restaurants
+    </button>
+    <button class="nav-btn" [class.active]="activeTab === 'restaurant-owners'" (click)="goTab('restaurant-owners')">
+      <span>🤝</span> Restaurant Owners
+      <span class="pending-badge" *ngIf="pendingOwnerCount > 0">{{ pendingOwnerCount }}</span>
+    </button>
+    <button class="nav-btn" [class.active]="activeTab === 'drivers'" (click)="goTab('drivers')">
+      <span>🛵</span> Drivers
+      <span class="pending-badge" *ngIf="pendingDriverCount > 0">{{ pendingDriverCount }}</span>
+    </button>
+    <button class="nav-btn" [class.active]="activeTab === 'orders'" (click)="goTab('orders')">
+      <span>📦</span> Orders
+    </button>
+    <button class="nav-btn" [class.active]="activeTab === 'payments'" (click)="goTab('payments')">
+      <span>💳</span> Payments
+    </button>
+    <button class="nav-btn" [class.active]="activeTab === 'support'" (click)="goTab('support')">
+      <span>💬</span> Support Tickets
+    </button>
+    <button class="nav-btn" [class.active]="activeTab === 'contact-messages'" (click)="goTab('contact-messages')">
+      <span>📩</span> Contact Messages
+      <span class="pending-badge" *ngIf="contactMessageCount > 0">{{ contactMessageCount }}</span>
+    </button>
+    <button class="nav-btn" [class.active]="activeTab === 'reports'" (click)="goTab('reports')">
+      <span>📈</span> Reports
+    </button>
+    <button class="nav-btn" [class.active]="activeTab === 'slides'" (click)="goTab('slides')">
+      <span>🖼️</span> Slideshow
+    </button>
+    <button class="nav-btn" [class.active]="activeTab === 'activity-log'" (click)="goTab('activity-log')">
+      <span>📋</span> Activity Log
+    </button>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main">
+
+    <!-- DASHBOARD TAB -->
+    <div [hidden]="activeTab !== 'dashboard'">
+      <div class="page-title">Platform Overview</div>
+
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-label">Total Orders Today</div>
+          <div class="stat-value">—</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Total Revenue</div>
+          <div class="stat-value">—</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Active Users</div>
+          <div class="stat-value">—</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Active Restaurants</div>
+          <div class="stat-value">—</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="table-box">
+          <h3>Recent Orders</h3>
+          <table>
+            <thead><tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td colspan="4" class="empty-cell">No data available</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="table-box">
+          <h3>Pending Approvals</h3>
+          <table>
+            <thead><tr><th>Type</th><th>Name</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td colspan="3" class="empty-cell">No pending approvals</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- USERS TAB -->
+    <div [hidden]="activeTab !== 'users'">
+      <div class="page-title">User Management</div>
+      <div class="table-box">
+        <div class="table-toolbar">
+          <input class="search-input" type="text" placeholder="Search by name or email..."
+            [(ngModel)]="userSearch" (keyup.enter)="loadUsers(0)" />
+          <select class="filter-select" [(ngModel)]="userRoleFilter" (change)="loadUsers(0)">
+            <option value="">All Roles</option>
+            <option value="ADMIN">Admin</option>
+            <option value="END_USERS">End User</option>
+          </select>
+          <select class="filter-select" [(ngModel)]="userStatusFilter" (change)="loadUsers(0)">
+            <option value="">All Status</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Suspended</option>
+          </select>
+          <button class="btn-reset" (click)="resetUsersFilter()">Reset Filters</button>
+          <button class="btn-inline-primary" (click)="openCreateAdmin()">+ Create Admin</button>
+        </div>
+        <table>
+          <thead>
+            <tr><th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Status</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of users">
+              <td>#{{ user.id }}</td>
+              <td>{{ user.firstName }} {{ user.lastName }}</td>
+              <td>{{ user.email }}</td>
+              <td>{{ user.phone || '—' }}</td>
+              <td>
+                <span class="badge" [class.info]="user.roleName === 'ADMIN'" [class.success]="user.roleName !== 'ADMIN'">
+                  {{ user.roleName === 'ADMIN' ? 'Admin' : 'End User' }}
+                </span>
+              </td>
+              <td>
+                <span class="badge" [class.success]="user.status === 'ACTIVE'" [class.warning]="user.status === 'INACTIVE'">
+                  {{ user.status === 'ACTIVE' ? 'Active' : 'Suspended' }}
+                </span>
+              </td>
+              <td>
+                <button class="action-btn suspend" *ngIf="user.status === 'ACTIVE'" (click)="suspendUser(user)">Suspend</button>
+                <button class="action-btn approve" *ngIf="user.status === 'INACTIVE'" (click)="unsuspendUser(user)">Unsuspend</button>
+              </td>
+            </tr>
+            <tr *ngIf="users.length === 0">
+              <td colspan="7" class="empty-cell">No users found</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="table-footer" *ngIf="pagination.totalElements > 0">
+          <div class="pagination-info">
+            Showing {{ pagingStart() }}–{{ pagingEnd() }} of {{ pagination.totalElements }} users
+          </div>
+          <div class="pagination" *ngIf="pagination.totalPages > 1">
+            <button class="page-btn" [disabled]="pagination.currentPage === 0"
+              (click)="loadUsers(pagination.currentPage - 1)">&#8249;</button>
+            <button class="page-btn" *ngFor="let p of pageNumbers"
+              [class.active]="p === pagination.currentPage"
+              (click)="loadUsers(p)">{{ p + 1 }}</button>
+            <button class="page-btn" [disabled]="pagination.currentPage === pagination.totalPages - 1"
+              (click)="loadUsers(pagination.currentPage + 1)">&#8250;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESTAURANTS TAB -->
+    <div [hidden]="activeTab !== 'restaurants'">
+      <div class="page-title">Restaurant Management</div>
+      <div class="table-box">
+        <div class="table-toolbar">
+          <input class="search-input" type="text" placeholder="Filter by cuisine..."
+            [(ngModel)]="restaurantCuisineFilter" (keyup.enter)="loadRestaurants(0)" />
+          <select class="filter-select" [(ngModel)]="restaurantStatusFilter" (change)="loadRestaurants(0)">
+            <option value="">All Status</option>
+            <option value="PENDING">Pending</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
+          <button class="btn-reset" (click)="resetRestaurantsFilter()">Reset Filters</button>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Restaurant</th><th>Address</th><th>Cuisine</th><th>Rating</th><th>Delivery Time</th><th>FSSAI</th><th>GST</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let r of restaurants">
+              <td>{{ r.name }}</td>
+              <td class="address-cell">{{ r.address || '—' }}</td>
+              <td>{{ r.cuisine?.join(', ') || '—' }}</td>
+              <td>{{ r.rating ?? '—' }}</td>
+              <td>{{ r.deliveryTime ? r.deliveryTime + ' min' : '—' }}</td>
+              <td>{{ r.fssaiNumber || '—' }}</td>
+              <td>{{ r.gstNumber || '—' }}</td>
+              <td>
+                <span class="badge"
+                  [class.warning]="r.status === 'PENDING'"
+                  [class.success]="r.status === 'ACTIVE'"
+                  [class.error]="r.status === 'INACTIVE'">
+                  {{ r.status === 'PENDING' ? 'Pending' : r.status === 'ACTIVE' ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+            </tr>
+            <tr *ngIf="restaurants.length === 0">
+              <td colspan="8" class="empty-cell">No restaurants found</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="table-footer" *ngIf="restaurantPagination.totalElements > 0">
+          <div class="pagination-info">
+            Showing {{ restaurantPagingStart() }}–{{ restaurantPagingEnd() }} of {{ restaurantPagination.totalElements }} restaurants
+          </div>
+          <div class="pagination" *ngIf="restaurantPagination.totalPages > 1">
+            <button class="page-btn" [disabled]="restaurantPagination.currentPage === 0"
+              (click)="loadRestaurants(restaurantPagination.currentPage - 1)">&#8249;</button>
+            <button class="page-btn" *ngFor="let p of restaurantPageNumbers"
+              [class.active]="p === restaurantPagination.currentPage"
+              (click)="loadRestaurants(p)">{{ p + 1 }}</button>
+            <button class="page-btn" [disabled]="restaurantPagination.currentPage === restaurantPagination.totalPages - 1"
+              (click)="loadRestaurants(restaurantPagination.currentPage + 1)">&#8250;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESTAURANT OWNERS TAB -->
+    <div [hidden]="activeTab !== 'restaurant-owners'">
+      <div class="page-title">Restaurant Owner Approvals</div>
+      <div class="table-box">
+        <div class="table-toolbar">
+          <select class="filter-select" [(ngModel)]="ownerStatusFilter" (change)="loadOwners(0)">
+            <option value="PENDING">Pending</option>
+            <option value="ACTIVE">Approved</option>
+            <option value="INACTIVE">Rejected</option>
+            <option value="">All</option>
+          </select>
+          <button class="btn-reset" (click)="resetOwnersFilter()">Reset Filters</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Owner</th>
+              <th>Contact</th>
+              <th>Restaurant</th>
+              <th>FSSAI / GST</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let owner of owners">
+              <td>#{{ owner.id }}</td>
+              <td>{{ owner.firstName }} {{ owner.lastName }}</td>
+              <td>
+                <div>{{ owner.email }}</div>
+                <div class="sub-text">{{ owner.phone || '—' }}</div>
+              </td>
+              <td>
+                <div>{{ owner.restaurantName || '—' }}</div>
+                <div class="sub-text" *ngIf="owner.restaurantLocation">
+                  📍 {{ owner.restaurantLocation.city }}, {{ owner.restaurantLocation.state }}
+                </div>
+              </td>
+              <td>
+                <div>{{ owner.fssaiNumber || '—' }}</div>
+                <div class="sub-text" *ngIf="owner.gstNumber">GST: {{ owner.gstNumber }}</div>
+              </td>
+              <td>
+                <span class="badge"
+                  [class.warning]="owner.status === 'PENDING'"
+                  [class.success]="owner.status === 'ACTIVE'"
+                  [class.error]="owner.status === 'INACTIVE'">
+                  {{ owner.status === 'PENDING' ? 'Pending' : owner.status === 'ACTIVE' ? 'Approved' : 'Rejected' }}
+                </span>
+              </td>
+              <td>
+                <button class="action-btn approve" *ngIf="owner.status === 'PENDING'" (click)="approveOwner(owner)">Approve</button>
+                <button class="action-btn suspend" *ngIf="owner.status === 'PENDING'" (click)="rejectOwner(owner)">Reject</button>
+                <button class="action-btn approve" *ngIf="owner.status === 'INACTIVE'" (click)="approveOwner(owner)">Approve</button>
+              </td>
+            </tr>
+            <tr *ngIf="owners.length === 0">
+              <td colspan="7" class="empty-cell">No restaurant owners found</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="table-footer" *ngIf="ownerPagination.totalElements > 0">
+          <div class="pagination-info">
+            Showing {{ ownerPagingStart() }}–{{ ownerPagingEnd() }} of {{ ownerPagination.totalElements }} owners
+          </div>
+          <div class="pagination" *ngIf="ownerPagination.totalPages > 1">
+            <button class="page-btn" [disabled]="ownerPagination.currentPage === 0"
+              (click)="loadOwners(ownerPagination.currentPage - 1)">&#8249;</button>
+            <button class="page-btn" *ngFor="let p of ownerPageNumbers"
+              [class.active]="p === ownerPagination.currentPage"
+              (click)="loadOwners(p)">{{ p + 1 }}</button>
+            <button class="page-btn" [disabled]="ownerPagination.currentPage === ownerPagination.totalPages - 1"
+              (click)="loadOwners(ownerPagination.currentPage + 1)">&#8250;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DRIVERS TAB -->
+    <div [hidden]="activeTab !== 'drivers'">
+      <div class="page-title">Drivers</div>
+      <div class="table-box">
+        <div class="table-toolbar">
+          <input class="search-input" type="text" placeholder="Search by name or email…"
+            [(ngModel)]="driverSearch" (keyup.enter)="loadDrivers(0)" />
+          <select class="filter-select" [(ngModel)]="driverStatusFilter" (change)="loadDrivers(0)">
+            <option value="">All</option>
+            <option value="PENDING">Pending</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Suspended / Rejected</option>
+          </select>
+          <button class="btn-reset" (click)="resetDriversFilter()">Reset</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Driver</th>
+              <th>Contact</th>
+              <th>Vehicle / License</th>
+              <th>Bank Account</th>
+              <th>Online</th>
+              <th>Joined</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let driver of drivers">
+              <td>#{{ driver.id }}</td>
+              <td>{{ driver.firstName }} {{ driver.lastName }}</td>
+              <td>
+                <div>{{ driver.email }}</div>
+                <div class="sub-text">{{ driver.phone || '—' }}</div>
+              </td>
+              <td>
+                <div>{{ driver.vehicleType || '—' }}</div>
+                <div class="sub-text">{{ driver.licenseNumber || '—' }}</div>
+              </td>
+              <td>{{ driver.bankAccount || '—' }}</td>
+              <td>
+                <span class="online-dot" [class.online-dot--on]="driver.online === true"
+                      [title]="driver.online ? 'Online' : (driver.lastLocationAt ? 'Last seen: ' + (driver.lastLocationAt | date:'d MMM, h:mm a') : 'Offline')">
+                  {{ driver.online ? '🟢' : '⚫' }}
+                </span>
+              </td>
+              <td>
+                <span *ngIf="driver.joinedAt">{{ driver.joinedAt | date:'d MMM yyyy' }}</span>
+                <span *ngIf="!driver.joinedAt">—</span>
+              </td>
+              <td>
+                <span class="badge"
+                  [class.warning]="driver.status === 'PENDING'"
+                  [class.success]="driver.status === 'ACTIVE'"
+                  [class.error]="driver.status === 'INACTIVE'">
+                  {{ driver.status === 'PENDING' ? 'Pending' : driver.status === 'ACTIVE' ? 'Active' : 'Suspended' }}
+                </span>
+              </td>
+              <td class="actions-cell">
+                <button class="action-btn approve" *ngIf="driver.status === 'PENDING'" (click)="approveDriver(driver)">Approve</button>
+                <button class="action-btn suspend" *ngIf="driver.status === 'PENDING'" (click)="rejectDriver(driver)">Reject</button>
+                <button class="action-btn suspend" *ngIf="driver.status === 'ACTIVE'"  (click)="suspendDriver(driver)">Suspend</button>
+                <button class="action-btn approve" *ngIf="driver.status === 'INACTIVE'" (click)="unsuspendDriver(driver)">Unsuspend</button>
+              </td>
+            </tr>
+            <tr *ngIf="drivers.length === 0">
+              <td colspan="9" class="empty-cell">No drivers found</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="table-footer" *ngIf="driverPagination.totalElements > 0">
+          <div class="pagination-info">
+            Showing {{ driverPagingStart() }}–{{ driverPagingEnd() }} of {{ driverPagination.totalElements }} drivers
+          </div>
+          <div class="pagination" *ngIf="driverPagination.totalPages > 1">
+            <button class="page-btn" [disabled]="driverPagination.currentPage === 0"
+              (click)="loadDrivers(driverPagination.currentPage - 1)">&#8249;</button>
+            <button class="page-btn" *ngFor="let p of driverPageNumbers"
+              [class.active]="p === driverPagination.currentPage"
+              (click)="loadDrivers(p)">{{ p + 1 }}</button>
+            <button class="page-btn" [disabled]="driverPagination.currentPage === driverPagination.totalPages - 1"
+              (click)="loadDrivers(driverPagination.currentPage + 1)">&#8250;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDERS TAB -->
+    <div [hidden]="activeTab !== 'orders'">
+      <div class="page-title">Order Management</div>
+      <div class="filter-btns">
+        <button class="filter-btn active">All</button>
+        <button class="filter-btn">Placed</button>
+        <button class="filter-btn">Confirmed</button>
+        <button class="filter-btn">Delivered</button>
+        <button class="filter-btn">Cancelled</button>
+      </div>
+      <div class="table-box">
+        <div class="table-toolbar">
+          <input class="search-input" type="text" placeholder="Search by order ID..." />
+        </div>
+        <table>
+          <thead><tr><th>Order ID</th><th>Customer</th><th>Restaurant</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr><td colspan="7" class="empty-cell">No orders found</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PAYMENTS TAB -->
+    <div [hidden]="activeTab !== 'payments'">
+      <div class="page-title">Payment Management</div>
+      <div class="table-box">
+        <div class="table-toolbar">
+          <input class="search-input" type="text" placeholder="Search by transaction ID..." />
+          <select class="filter-select">
+            <option>All</option>
+            <option>Success</option>
+            <option>Pending</option>
+            <option>Failed</option>
+          </select>
+        </div>
+        <table>
+          <thead><tr><th>Transaction ID</th><th>Order ID</th><th>Customer</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody>
+            <tr><td colspan="7" class="empty-cell">No transactions found</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SUPPORT TAB -->
+    <div [hidden]="activeTab !== 'support'">
+      <div class="page-title">Support Tickets</div>
+      <div class="filter-btns">
+        <button class="filter-btn active">Open</button>
+        <button class="filter-btn">In Progress</button>
+        <button class="filter-btn">Resolved</button>
+      </div>
+      <div class="table-box">
+        <table>
+          <thead><tr><th>Ticket ID</th><th>Customer</th><th>Category</th><th>Issue</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+          <tbody>
+            <tr><td colspan="7" class="empty-cell">No tickets found</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CONTACT MESSAGES TAB -->
+    <div [hidden]="activeTab !== 'contact-messages'">
+      <div class="page-title">Contact Messages</div>
+      <div class="table-box">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Subject</th>
+              <th>Received</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let msg of contactMessages" [class.unread-row]="!msg.read">
+              <td>
+                {{ msg.id }}
+                <span class="unread-dot" *ngIf="!msg.read" title="Unread"></span>
+              </td>
+              <td><strong *ngIf="!msg.read">{{ msg.name }}</strong><span *ngIf="msg.read">{{ msg.name }}</span></td>
+              <td>{{ msg.email }}</td>
+              <td><strong *ngIf="!msg.read">{{ msg.subject }}</strong><span *ngIf="msg.read">{{ msg.subject }}</span></td>
+              <td style="white-space:nowrap">{{ msg.createdDate | date:'dd MMM yyyy, HH:mm' }}</td>
+              <td>
+                <button class="action-btn approve" (click)="openContactMessage(msg)">View</button>
+              </td>
+            </tr>
+            <tr *ngIf="contactMessages.length === 0">
+              <td colspan="6" class="empty-cell">No contact messages yet</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="table-footer" *ngIf="contactPagination.totalElements > 0">
+          <div class="pagination-info">
+            Showing {{ contactPagingStart() }}–{{ contactPagingEnd() }} of {{ contactPagination.totalElements }} messages
+          </div>
+          <div class="pagination" *ngIf="contactPagination.totalPages > 1">
+            <button class="page-btn" [disabled]="contactPagination.currentPage === 0"
+              (click)="loadContactMessages(contactPagination.currentPage - 1)">&#8249;</button>
+            <button class="page-btn" *ngFor="let p of contactPageNumbers"
+              [class.active]="p === contactPagination.currentPage"
+              (click)="loadContactMessages(p)">{{ p + 1 }}</button>
+            <button class="page-btn" [disabled]="contactPagination.currentPage === contactPagination.totalPages - 1"
+              (click)="loadContactMessages(contactPagination.currentPage + 1)">&#8250;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORTS TAB -->
+    <div [hidden]="activeTab !== 'reports'">
+      <div class="page-title">Reports & Analytics</div>
+      <div class="two-col">
+        <div class="table-box">
+          <h3>Generate Reports</h3>
+          <div class="form-group">
+            <label>Report Type</label>
+            <select class="filter-select" style="width:100%">
+              <option>Daily Revenue</option>
+              <option>Weekly Summary</option>
+              <option>Restaurant Performance</option>
+              <option>User Activity</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>From</label>
+            <input type="date" class="search-input" />
+          </div>
+          <div class="form-group">
+            <label>To</label>
+            <input type="date" class="search-input" />
+          </div>
+          <button class="btn-primary" style="margin-top:.5rem">Generate Report</button>
+        </div>
+
+        <div class="table-box">
+          <h3>Export Data</h3>
+          <button class="btn-export">📊 Export Orders (CSV)</button>
+          <button class="btn-export">👥 Export Users (CSV)</button>
+          <button class="btn-export">🍛 Export Restaurants (CSV)</button>
+          <button class="btn-export">💳 Export Payments (CSV)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDES TAB -->
+    <div [hidden]="activeTab !== 'slides'">
+      <div class="page-title">Slideshow Management</div>
+
+      <h3 class="section-label">Current Slides</h3>
+      <div class="slides-list">
+        <div class="slide-item" *ngFor="let slide of slides">
+          <div class="slide-preview">{{ slide.emoji }}</div>
+          <div class="slide-info">
+            <h3>{{ slide.title }} <span class="highlight">{{ slide.highlightWord }}</span></h3>
+            <p>{{ slide.description }}</p>
+          </div>
+          <div class="slide-actions">
+            <button class="slide-btn toggle" [class.active]="slide.active" (click)="toggle(slide)">
+              {{ slide.active ? 'Active' : 'Inactive' }}
+            </button>
+            <button class="slide-btn edit" (click)="openEdit(slide)">Edit</button>
+            <button class="slide-btn delete" (click)="deleteSlide(slide)">Delete</button>
+          </div>
+        </div>
+        <p class="empty-msg" *ngIf="slides.length === 0">No slides yet.</p>
+      </div>
+
+      <h3 class="section-label">Add New Slide</h3>
+      <div class="add-slide-form">
+        <div class="form-group">
+          <label>Title</label>
+          <input type="text" placeholder="e.g., Delicious Food Delivered to" [(ngModel)]="form.title" />
+        </div>
+        <div class="form-group">
+          <label>Highlight Word</label>
+          <input type="text" placeholder="e.g., Your Door" [(ngModel)]="form.highlightWord" />
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea placeholder="Brief description..." [(ngModel)]="form.description"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Button 1 Text</label>
+            <input type="text" placeholder="e.g., 🍽️ Explore Food" [(ngModel)]="form.btn1Text" />
+          </div>
+          <div class="form-group">
+            <label>Button 2 Text</label>
+            <input type="text" placeholder="e.g., 🔍 Search Dishes" [(ngModel)]="form.btn2Text" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Emoji</label>
+            <input type="text" [(ngModel)]="form.emoji" maxlength="2" />
+          </div>
+          <div class="form-group">
+            <label>Badge Icon</label>
+            <input type="text" [(ngModel)]="form.badgeIcon" maxlength="2" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Badge Text</label>
+            <input type="text" placeholder="e.g., Delivery · 30 min avg" [(ngModel)]="form.badgeText" />
+          </div>
+          <div class="form-group">
+            <label>Display Order</label>
+            <input type="number" [(ngModel)]="form.displayOrder" />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-primary" (click)="addSlide()">Add Slide</button>
+          <button class="btn-outline" (click)="clearForm()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY LOG TAB -->
+    <div [hidden]="activeTab !== 'activity-log'">
+      <div class="page-title">Activity Log</div>
+      <div class="table-box">
+        <table>
+          <thead>
+            <tr><th>Time</th><th>Actor</th><th>Action</th><th>Target</th><th>Details</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let log of activityLogs">
+              <td style="white-space:nowrap">{{ log.createdAt | date:'yyyy-MM-dd HH:mm' }}</td>
+              <td>{{ log.actorEmail }}</td>
+              <td><span [class]="actionClass(log.action)">{{ actionLabel(log.action) }}</span></td>
+              <td>{{ log.targetEntity }} #{{ log.targetId }}</td>
+              <td>{{ log.details }}</td>
+            </tr>
+            <tr *ngIf="activityLogs.length === 0">
+              <td colspan="5" class="empty-cell">No activity recorded yet</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Create Admin Modal -->
+<div class="modal" [class.show]="showCreateAdminModal">
+  <div class="modal-content">
+    <button class="modal-close" (click)="showCreateAdminModal = false">✕</button>
+    <div class="modal-title">Create Admin User</div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>First Name <span class="required">*</span></label>
+        <input type="text" placeholder="First name" [(ngModel)]="createAdminForm.firstName"
+          [class.input-error]="adminFormErrors.firstName" />
+        <div class="field-error" *ngIf="adminFormErrors.firstName">{{ adminFormErrors.firstName }}</div>
+      </div>
+      <div class="form-group">
+        <label>Last Name</label>
+        <input type="text" placeholder="Last name" [(ngModel)]="createAdminForm.lastName" />
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Email <span class="required">*</span></label>
+      <input type="email" placeholder="admin@example.com" [(ngModel)]="createAdminForm.email"
+        [class.input-error]="adminFormErrors.email" />
+      <div class="field-error" *ngIf="adminFormErrors.email">{{ adminFormErrors.email }}</div>
+    </div>
+
+    <div class="form-group">
+      <label>Password <span class="required">*</span></label>
+      <div class="password-wrapper">
+        <input [type]="showAdminPassword ? 'text' : 'password'"
+          placeholder="Min 8 chars, 1 uppercase, 1 number"
+          [(ngModel)]="createAdminForm.password"
+          [class.input-error]="adminFormErrors.password" />
+        <button type="button" class="eye-btn" (click)="showAdminPassword = !showAdminPassword"
+          [title]="showAdminPassword ? 'Hide password' : 'Show password'">
+          <svg *ngIf="!showAdminPassword" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+          <svg *ngIf="showAdminPassword" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+            <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+            <line x1="1" y1="1" x2="23" y2="23"/>
+          </svg>
+        </button>
+      </div>
+      <div class="field-error" *ngIf="adminFormErrors.password">{{ adminFormErrors.password }}</div>
+      <div class="pw-hints">
+        <span [class.hint-ok]="pwHasLength">8+ characters</span>
+        <span [class.hint-ok]="pwHasUppercase">Uppercase</span>
+        <span [class.hint-ok]="pwHasNumber">Number</span>
+      </div>
+    </div>
+
+    <div class="form-actions" style="margin-top:1.5rem">
+      <button class="btn-primary" (click)="submitCreateAdmin()">Create Admin</button>
+      <button class="btn-outline" (click)="showCreateAdminModal = false">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Slide Modal -->
+<div class="modal" [class.show]="showEditModal">
+  <div class="modal-content">
+    <button class="modal-close" (click)="showEditModal = false">✕</button>
+    <div class="modal-title">Edit Slide</div>
+    <div class="form-group">
+      <label>Title</label>
+      <input type="text" [(ngModel)]="editForm.title" />
+    </div>
+    <div class="form-group">
+      <label>Highlight Word</label>
+      <input type="text" [(ngModel)]="editForm.highlightWord" />
+    </div>
+    <div class="form-group">
+      <label>Description</label>
+      <textarea [(ngModel)]="editForm.description"></textarea>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Button 1</label>
+        <input type="text" [(ngModel)]="editForm.btn1Text" />
+      </div>
+      <div class="form-group">
+        <label>Button 2</label>
+        <input type="text" [(ngModel)]="editForm.btn2Text" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Emoji</label>
+        <input type="text" [(ngModel)]="editForm.emoji" maxlength="2" />
+      </div>
+      <div class="form-group">
+        <label>Badge Icon</label>
+        <input type="text" [(ngModel)]="editForm.badgeIcon" maxlength="2" />
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Badge Text</label>
+      <input type="text" [(ngModel)]="editForm.badgeText" />
+    </div>
+    <div class="form-actions" style="margin-top:1.5rem">
+      <button class="btn-primary" (click)="saveEdit()">Save Changes</button>
+      <button class="btn-outline" (click)="showEditModal = false">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- View Contact Message Modal -->
+<div class="modal" [class.show]="showContactModal">
+  <div class="modal-content" *ngIf="selectedContactMessage">
+    <button class="modal-close" (click)="showContactModal = false">✕</button>
+    <div class="modal-title">📩 Contact Message</div>
+
+    <div class="form-group">
+      <label>From</label>
+      <div class="read-field">{{ selectedContactMessage.name }} &lt;{{ selectedContactMessage.email }}&gt;</div>
+    </div>
+    <div class="form-group">
+      <label>Subject</label>
+      <div class="read-field">{{ selectedContactMessage.subject }}</div>
+    </div>
+    <div class="form-group">
+      <label>Message</label>
+      <div class="read-field read-field-msg">{{ selectedContactMessage.message }}</div>
+    </div>
+    <div class="form-group">
+      <label>Received</label>
+      <div class="read-field">{{ selectedContactMessage.createdDate | date:'dd MMM yyyy, HH:mm' }}</div>
+    </div>
+
+    <div class="form-actions" style="margin-top:1.5rem">
+      <a class="btn-primary" [href]="'mailto:' + selectedContactMessage.email + '?subject=Re: ' + selectedContactMessage.subject">
+        Reply via Email
+      </a>
+      <button class="btn-outline" (click)="showContactModal = false">Close</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,177 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+$gold:       #f9b303;
+$gold-dark:  #e0a000;
+$gold-light: #fff8e1;
+$text:       #4e4e4e;
+$text-dark:  #2a2a2a;
+$text-light: #888;
+$bg-warm:    #fffaf2;
+$border:     #e8e8e8;
+$shadow:     0 2px 10px rgba(0,0,0,.08);
+$radius:     10px;
+$font-serif: 'Libre Baskerville', Georgia, serif;
+$font-sans:  'DM Sans', sans-serif;
+
+* { font-family: $font-sans; cursor: default; box-sizing: border-box; }
+input, textarea { cursor: text; }
+button { cursor: pointer; }
+
+// ── Hero ──────────────────────────────────────────────────────────
+.page-hero {
+  background: $bg-warm;
+  padding: 2.5rem;
+  text-align: center;
+  border-bottom: 1px solid $border;
+
+  h1 {
+    font-family: $font-serif;
+    font-size: 1.9rem;
+    color: $text-dark;
+    margin-bottom: .4rem;
+  }
+
+  p { color: $text-light; font-size: .93rem; }
+}
+
+// ── Layout ────────────────────────────────────────────────────────
+.contact-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  padding: 3rem 2.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ── Info side ─────────────────────────────────────────────────────
+.contact-info {
+  h2 {
+    font-family: $font-serif;
+    font-size: 1.7rem;
+    color: $text-dark;
+    margin-bottom: .9rem;
+  }
+
+  > p {
+    color: $text-light;
+    line-height: 1.7;
+    margin-bottom: 1.8rem;
+    font-size: .93rem;
+  }
+}
+
+.contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  margin-bottom: 1.1rem;
+
+  h4 {
+    font-weight: 600;
+    font-size: .88rem;
+    color: $text-dark;
+    margin-bottom: 2px;
+  }
+
+  p { font-size: .82rem; color: $text-light; }
+}
+
+.contact-icon {
+  width: 42px;
+  height: 42px;
+  background: $gold-light;
+  border-radius: $radius;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+// ── Form side ─────────────────────────────────────────────────────
+.contact-form {
+  background: white;
+  border-radius: 12px;
+  padding: 1.8rem;
+  box-shadow: $shadow;
+
+  h3 {
+    font-family: $font-serif;
+    font-size: 1.2rem;
+    color: $text-dark;
+    margin-bottom: 1.3rem;
+  }
+}
+
+.input-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 0;
+
+  @media (max-width: 480px) { grid-template-columns: 1fr; }
+}
+
+.input-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1.5px solid $border;
+  border-radius: $radius;
+  padding: 11px 14px;
+  margin-bottom: 10px;
+  background: white;
+  transition: border-color .2s;
+
+  &:focus-within { border-color: $gold; }
+
+  .icon { color: $text-light; font-size: 1rem; user-select: none; }
+
+  input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-family: $font-sans;
+    font-size: .93rem;
+    color: $text;
+    background: transparent;
+  }
+}
+
+textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1.5px solid $border;
+  border-radius: $radius;
+  font-family: $font-sans;
+  font-size: .9rem;
+  color: $text;
+  outline: none;
+  resize: vertical;
+  min-height: 100px;
+  transition: border-color .2s;
+  display: block;
+
+  &.focused, &:focus { border-color: $gold; }
+}
+
+// ── Button ────────────────────────────────────────────────────────
+.btn-gold {
+  padding: 11px 24px;
+  background: $gold;
+  color: white;
+  border: none;
+  border-radius: $radius;
+  font-family: $font-sans;
+  font-size: .92rem;
+  font-weight: 600;
+  transition: background .2s;
+  &:hover { background: $gold-dark; }
+}
+
+.btn-full { width: 100%; margin-top: 1rem; }

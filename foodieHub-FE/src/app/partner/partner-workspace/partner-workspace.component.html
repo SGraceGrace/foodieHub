@@ -1,0 +1,1005 @@
+<!-- ── Header ─────────────────────────────────────────────────── -->
+<header class="header">
+  <div class="logo-area">
+    <div class="logo-icon">F</div>
+    <div>
+      <div class="logo-text">foodiehub</div>
+      <div class="logo-sub">Restaurant Partner</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <!-- Notification Bell -->
+    <div class="notif-bell-wrap">
+      <!-- Enable browser notifications prompt -->
+      <button class="notif-enable-btn"
+              *ngIf="notifPermission !== 'granted' && notifPermission !== 'denied'"
+              (click)="enableBrowserNotifications()"
+              title="Enable browser notifications for new orders">
+        🔕 Enable alerts
+      </button>
+      <span class="notif-denied-hint"
+            *ngIf="notifPermission === 'denied'"
+            title="Browser notifications blocked — allow them in browser settings">
+        🔕
+      </span>
+
+      <button class="notif-bell-btn" (click)="toggleNotifPanel()" title="Order notifications">
+        🔔
+        <span class="notif-badge" *ngIf="unreadCount > 0">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+      </button>
+
+      <!-- Notification panel -->
+      <div class="notif-panel" *ngIf="showNotifPanel">
+        <div class="notif-panel-hdr">
+          <span class="notif-panel-title">New Orders</span>
+          <button class="notif-clear-btn"
+                  *ngIf="notifications.length > 0"
+                  (click)="clearNotifications()">
+            Clear all
+          </button>
+          <button class="notif-panel-close" (click)="closeNotifPanel()">✕</button>
+        </div>
+
+        <div class="notif-empty" *ngIf="notifications.length === 0">
+          No orders yet today 🍽️
+        </div>
+
+        <div class="notif-list" *ngIf="notifications.length > 0">
+          <div class="notif-item notif-item--clickable" *ngFor="let n of notifications"
+               [class.notif-item--unread]="!n.read"
+               (click)="onNotifItemClick()"
+               title="View live orders">
+            <div class="notif-item-hdr">
+              <span class="notif-item-type">📦 New Order</span>
+              <span class="notif-item-time">{{ n.createdAt | date:'h:mm a' }}</span>
+              <span class="notif-item-goto">› View</span>
+            </div>
+            <div class="notif-item-customer">{{ n.customerName }}</div>
+            <div class="notif-item-items">{{ n.itemNames.join(', ') }}</div>
+            <div class="notif-item-amount">₹{{ n.totalAmount }}</div>
+            <div class="notif-item-address">📍 {{ n.deliveryAddress }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <span class="owner-name">{{ ownerName }}</span>
+    <div class="user-icon" (click)="logout()" title="Logout">{{ ownerInitials }}</div>
+  </div>
+  <!-- Click-outside overlay for notif panel — must be inside <header> so it
+       shares the header's stacking context (z-index:100). If placed outside,
+       the overlay's root z-index:9998 exceeds the header's z-index:100 and
+       blocks all clicks inside the panel. -->
+  <div class="notif-overlay" *ngIf="showNotifPanel" (click)="closeNotifPanel()"></div>
+</header>
+
+<!-- ── Loading ────────────────────────────────────────────────── -->
+<div class="loading-fullpage" *ngIf="loading">
+  <p>Loading restaurant…</p>
+</div>
+
+<!-- ── Workspace ──────────────────────────────────────────────── -->
+<div class="layout" *ngIf="!loading && restaurant">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <button class="back-btn" (click)="goBack()">← My Restaurants</button>
+
+    <div class="sidebar-restaurant">
+      <div class="sidebar-r-icon">{{ restaurant.name[0] }}</div>
+      <div class="sidebar-r-name">{{ restaurant.name }}</div>
+      <div class="sidebar-status" [class.sidebar-status--open]="restaurant.open" [class.sidebar-status--closed]="!restaurant.open">
+        <span class="sidebar-status-dot"></span>
+        {{ restaurant.open ? 'Open' : 'Closed' }}
+      </div>
+    </div>
+
+    <button class="nav-btn" [class.active]="activeTab==='overview'" (click)="goTab('overview')">
+      <span>📊</span> Overview
+    </button>
+    <button class="nav-btn" [class.active]="activeTab==='orders'" (click)="goTab('orders')">
+      <span>📦</span> Live Orders
+      <span class="nav-badge" *ngIf="liveOrderCount > 0">{{ liveOrderCount }}</span>
+    </button>
+    <button class="nav-btn" [class.active]="activeTab==='all-orders'" (click)="goTab('all-orders')">
+      <span>🗂️</span> All Orders
+    </button>
+    <button class="nav-btn" [class.active]="activeTab==='menu'" (click)="goTab('menu')">
+      <span>🍽️</span> Menu
+    </button>
+    <button class="nav-btn" [class.active]="activeTab==='analytics'" (click)="goTab('analytics')">
+      <span>📈</span> Analytics
+    </button>
+    <button class="nav-btn" [class.active]="activeTab==='hours'" (click)="goTab('hours')">
+      <span>🕐</span> Hours
+    </button>
+    <button class="nav-btn" [class.active]="activeTab==='settings'" (click)="goTab('settings')">
+      <span>⚙️</span> Settings
+    </button>
+
+    <button class="nav-btn logout-btn" (click)="logout()">
+      <span>🚪</span> Logout
+    </button>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- ── Overview ─────────────────────────────────────────── -->
+    <div *ngIf="activeTab === 'overview'">
+      <div class="overview-title-row">
+        <div class="page-title">{{ restaurant.name }}</div>
+        <button class="btn-secondary btn-sm" (click)="loadStats()" [disabled]="statsLoading" title="Refresh stats">
+          {{ statsLoading ? '…' : '↻ Refresh' }}
+        </button>
+      </div>
+
+      <!-- Stats error banner -->
+      <div class="stats-error-banner" *ngIf="statsError && !statsLoading">
+        ⚠️ Could not load stats — check that the order service is running.
+        <button class="stats-retry-btn" (click)="loadStats()">Retry</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card" [class.stat-card--loading]="statsLoading">
+          <div class="stat-label">Today's Orders</div>
+          <div class="stat-value">{{ statsLoading ? '…' : stats.todayOrders }}</div>
+          <div class="stat-note" *ngIf="!statsLoading && stats.pendingOrders > 0">
+            <span class="stat-pending-pill">{{ stats.pendingOrders }} pending</span>
+          </div>
+          <div class="stat-note" *ngIf="!statsLoading && stats.pendingOrders === 0">
+            {{ stats.totalOrders }} orders all time
+          </div>
+        </div>
+        <div class="stat-card" [class.stat-card--loading]="statsLoading">
+          <div class="stat-label">Today's Revenue</div>
+          <div class="stat-value">{{ statsLoading ? '…' : ('₹' + (stats.todayRevenue | number:'1.0-0')) }}</div>
+          <div class="stat-note">{{ statsLoading ? '' : ('₹' + (stats.totalRevenue | number:'1.0-0') + ' all time') }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Rating</div>
+          <div class="stat-value">{{ restaurant.rating ? (restaurant.rating | number:'1.1-1') : '—' }}</div>
+          <div class="stat-note">{{ restaurant.ratingCount ? (restaurant.ratingCount + ' reviews') : 'No reviews yet' }}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Menu Items</div>
+          <div class="stat-value">{{ getMenuItemCount() }}</div>
+          <div class="stat-note">Across all categories</div>
+        </div>
+      </div>
+
+      <div class="section-box">
+        <div class="settings-section-hdr">
+          <h3 class="section-title">Restaurant Details</h3>
+          <button class="btn-secondary btn-sm" (click)="openEditDetails()" *ngIf="!editingDetails">Edit</button>
+          <button class="btn-secondary btn-sm" (click)="cancelEditDetails()" *ngIf="editingDetails">Cancel</button>
+        </div>
+
+        <!-- View mode -->
+        <ng-container *ngIf="!editingDetails">
+          <div class="details-image" *ngIf="restaurant.imageUrl">
+            <img [src]="restaurant.imageUrl" alt="Restaurant photo" class="details-img" />
+          </div>
+          <div class="info-row">
+            <span class="info-label">Name</span>
+            <span class="info-val">{{ restaurant.name }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Cuisine</span>
+            <span class="info-val">{{ restaurant.cuisine?.join(', ') || '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Address</span>
+            <span class="info-val">{{ restaurant.address || '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Delivery Time</span>
+            <span class="info-val">{{ restaurant.deliveryTime ? restaurant.deliveryTime + ' min' : '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Min Order</span>
+            <span class="info-val">{{ restaurant.minOrder ? '₹' + restaurant.minOrder : '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">FSSAI</span>
+            <span class="info-val">{{ restaurant.fssaiNumber || '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">GST</span>
+            <span class="info-val">{{ restaurant.gstNumber || '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Status</span>
+            <span class="badge" [class.badge-open]="restaurant.open" [class.badge-closed]="!restaurant.open">
+              {{ restaurant.open ? 'Open' : 'Closed' }}
+            </span>
+          </div>
+        </ng-container>
+
+        <!-- Edit mode -->
+        <ng-container *ngIf="editingDetails">
+          <div class="details-edit-grid">
+            <div class="form-group">
+              <label class="form-label">Name</label>
+              <input class="form-input" type="text" [(ngModel)]="detailsDraft.name" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Cuisine <span class="optional">(comma separated)</span></label>
+              <input class="form-input" type="text" [(ngModel)]="detailsDraft.cuisine" placeholder="e.g. Indian, Biryani" />
+            </div>
+            <div class="form-group details-col-full">
+              <label class="form-label">Address</label>
+              <input class="form-input" type="text" [(ngModel)]="detailsDraft.address" />
+            </div>
+            <div class="form-group details-col-full">
+              <label class="form-label">Location on Map <span class="required-star">*</span></label>
+              <div class="location-pick-row">
+                <span class="location-pick-val" *ngIf="detailsLocation"
+                      [title]="detailsDraft.address || detailsLocation.displayName">
+                  📌 {{ (detailsDraft.address || detailsLocation.displayName).length > 65
+                        ? ((detailsDraft.address || detailsLocation.displayName) | slice:0:65) + '…'
+                        : (detailsDraft.address || detailsLocation.displayName) }}
+                </span>
+                <span class="location-pick-val muted" *ngIf="!detailsLocation">Required — pin your restaurant on the map</span>
+                <button type="button" class="btn-pick-map" (click)="showDetailsLocationPicker = true">
+                  {{ detailsLocation ? 'Change Pin' : 'Pick on Map' }}
+                </button>
+              </div>
+              <span class="field-error-msg" *ngIf="detailsLocationError">Please pin the restaurant location on the map.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Delivery Time (min)</label>
+              <input class="form-input" type="number" [(ngModel)]="detailsDraft.deliveryTime" min="0" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Min Order (₹)</label>
+              <input class="form-input" type="number" [(ngModel)]="detailsDraft.minOrder" min="0" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">FSSAI Number</label>
+              <input class="form-input" type="text" [(ngModel)]="detailsDraft.fssaiNumber" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">GST Number</label>
+              <input class="form-input" type="text" [(ngModel)]="detailsDraft.gstNumber" />
+            </div>
+            <div class="form-group details-col-full">
+              <label class="form-label">Restaurant Photo</label>
+              <input type="file" accept="image/*" (change)="onDetailsImageSelected($event)" [disabled]="uploadingDetailsImage" />
+              <div class="img-upload-status" *ngIf="uploadingDetailsImage">Uploading…</div>
+              <img *ngIf="detailsImageUrl" [src]="detailsImageUrl" class="img-preview" alt="Preview" />
+            </div>
+          </div>
+          <div class="settings-save-row">
+            <span class="settings-msg" style="color:#e53935" *ngIf="detailsSaveMsg">{{ detailsSaveMsg }}</span>
+            <button class="btn-primary btn-sm" (click)="saveDetails()" [disabled]="savingDetails || uploadingDetailsImage">
+              {{ savingDetails ? 'Saving…' : 'Save Changes' }}
+            </button>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+
+    <!-- ── Live Orders ──────────────────────────────────────── -->
+    <div *ngIf="activeTab === 'orders'">
+      <div class="tab-header">
+        <div class="page-title" style="margin:0">Live Orders</div>
+        <button class="btn-secondary btn-sm" (click)="loadLiveOrders()" [disabled]="liveOrdersLoading">
+          {{ liveOrdersLoading ? 'Loading…' : '↻ Refresh' }}
+        </button>
+      </div>
+
+      <!-- Loading -->
+      <div class="section-box" *ngIf="liveOrdersLoading && liveOrders.length === 0">
+        <p class="empty-sub" style="text-align:center;padding:2rem">Loading orders…</p>
+      </div>
+
+      <!-- Empty -->
+      <div class="section-box" *ngIf="!liveOrdersLoading && liveOrders.length === 0">
+        <div class="empty-state">
+          <div class="empty-icon">🍽️</div>
+          <p>No active orders right now.</p>
+          <p class="empty-sub">New orders will appear here instantly when customers place them.</p>
+        </div>
+      </div>
+
+      <!-- Order cards -->
+      <div class="order-cards" *ngIf="liveOrders.length > 0">
+        <div class="live-order-card" *ngFor="let order of liveOrders"
+             [class.lo-new]="order.status === 'PLACED'"
+             [class.lo-confirmed]="order.status === 'CONFIRMED'"
+             [class.lo-preparing]="order.status === 'PREPARING'"
+             [class.lo-ready]="order.status === 'READY'">
+
+          <!-- Card header -->
+          <div class="lo-hdr">
+            <div class="lo-hdr-left">
+              <span class="lo-order-id">#{{ order.id | slice:0:8 }}…</span>
+              <span class="lo-time">{{ order.createdAt | date:'h:mm a' }}</span>
+            </div>
+            <span class="lo-status-badge lo-status-{{ order.status.toLowerCase() }}">
+              {{ statusLabel(order.status) }}
+            </span>
+          </div>
+
+          <!-- Customer -->
+          <div class="lo-customer">
+            <span class="lo-customer-name">👤 {{ order.customerName }}</span>
+            <span class="lo-address">📍 {{ order.deliveryAddress }}</span>
+          </div>
+
+          <!-- Items -->
+          <div class="lo-items">
+            <span class="lo-item-tag" *ngFor="let item of order.items">
+              {{ item.qty }}× {{ item.name }}
+            </span>
+          </div>
+
+          <!-- Bill -->
+          <div class="lo-total">Total: <strong>₹{{ order.totalAmount }}</strong></div>
+
+          <!-- Actions -->
+          <div class="lo-actions">
+            <!-- Advance status button -->
+            <button class="lo-btn lo-btn-primary"
+                    *ngIf="nextStatus(order.status) as ns"
+                    [disabled]="updatingOrderId === order.id"
+                    (click)="onStatusUpdate(order, ns)">
+              {{ updatingOrderId === order.id ? 'Updating…' : nextStatusLabel(order.status) }}
+            </button>
+            <!-- Cancel button (only for PLACED / CONFIRMED) -->
+            <button class="lo-btn lo-btn-cancel"
+                    *ngIf="order.status === 'PLACED' || order.status === 'CONFIRMED'"
+                    [disabled]="updatingOrderId === order.id"
+                    (click)="onStatusUpdate(order, 'CANCELLED')">
+              ✕ Cancel
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── All Orders ────────────────────────────────────────── -->
+    <div *ngIf="activeTab === 'all-orders'">
+      <div class="tab-header">
+        <div class="page-title" style="margin:0">All Orders</div>
+        <span class="ao-count" *ngIf="allOrdersPagination.totalElements > 0">
+          {{ allOrdersPagination.totalElements }} total
+        </span>
+      </div>
+
+      <!-- ── Date filter bar ──────────────────────────────────── -->
+      <div class="ao-filter-bar">
+        <!-- Preset toggle pills -->
+        <div class="ao-filter-presets">
+          <button class="ao-filter-btn"
+                  [class.ao-filter-btn--active]="aoFilterPreset === 'all'"
+                  (click)="setAoFilter('all')">All time</button>
+          <button class="ao-filter-btn"
+                  [class.ao-filter-btn--active]="aoFilterPreset === 'today'"
+                  (click)="setAoFilter('today')">Today</button>
+          <button class="ao-filter-btn"
+                  [class.ao-filter-btn--active]="aoFilterPreset === 'custom'"
+                  (click)="setAoFilter('custom')">Custom range</button>
+        </div>
+
+        <!-- Custom date pickers (shown when "Custom range" is selected) -->
+        <div class="ao-date-range" *ngIf="aoShowCustom">
+          <input class="ao-date-input" type="date"
+                 [(ngModel)]="aoFromDate"
+                 [max]="aoToDate || ''"
+                 placeholder="From" />
+          <span class="ao-date-sep">→</span>
+          <input class="ao-date-input" type="date"
+                 [(ngModel)]="aoToDate"
+                 [min]="aoFromDate"
+                 placeholder="To" />
+          <button class="btn-primary btn-sm"
+                  (click)="applyAoCustomFilter()"
+                  [disabled]="!aoFromDate || !aoToDate">
+            Apply
+          </button>
+        </div>
+
+        <!-- Active filter chip + clear -->
+        <div class="ao-active-filter" *ngIf="aoFilterActive">
+          <span class="ao-active-chip">🗓 {{ aoFilterLabel }}</span>
+          <button class="ao-clear-btn" (click)="clearAoFilter()">✕ Clear</button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div class="section-box" *ngIf="allOrdersLoading && allOrdersHistory.length === 0">
+        <p class="empty-sub" style="text-align:center;padding:2rem">Loading orders…</p>
+      </div>
+
+      <!-- Empty -->
+      <div class="section-box" *ngIf="!allOrdersLoading && allOrdersHistory.length === 0">
+        <div class="empty-state">
+          <div class="empty-icon">🗂️</div>
+          <p>No orders found{{ aoFilterActive ? ' for this date range' : '' }}.</p>
+          <p class="empty-sub" *ngIf="!aoFilterActive">All past and present orders will appear here.</p>
+          <p class="empty-sub" *ngIf="aoFilterActive">
+            <button class="ao-clear-btn" (click)="clearAoFilter()">Clear filter</button> to see all orders.
+          </p>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="section-box ao-box" *ngIf="allOrdersHistory.length > 0">
+        <table class="ao-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Payment</th>
+              <th>Status</th>
+              <th>Date &amp; Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let o of allOrdersHistory">
+              <td class="ao-id">#{{ o.id | slice:0:8 }}…</td>
+              <td>{{ o.customerName || '—' }}</td>
+              <td class="ao-items">
+                <span class="ao-item-tag" *ngFor="let item of o.items">
+                  {{ item.qty }}× {{ item.name }}
+                </span>
+              </td>
+              <td class="ao-amount">₹{{ o.totalAmount }}</td>
+              <td>
+                <span class="ao-pay-badge"
+                      [class.ao-pay-paid]="o.paymentStatus === 'PAID'"
+                      [class.ao-pay-pending]="o.paymentStatus !== 'PAID'">
+                  {{ o.paymentStatus === 'PAID' ? 'Paid' : 'COD' }}
+                </span>
+              </td>
+              <td>
+                <span class="ao-status-badge ao-status-{{ o.status.toLowerCase() }}">
+                  {{ statusLabel(o.status || '') }}
+                </span>
+              </td>
+              <td class="ao-date">{{ o.createdAt | date:'d MMM y, h:mm a' }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <div class="ao-pagination">
+          <span class="ao-page-info">
+            Showing {{ allOrdersFrom() }}–{{ allOrdersTo() }} of {{ allOrdersPagination.totalElements }}
+          </span>
+          <div class="ao-page-btns">
+            <button class="ao-page-btn"
+                    [disabled]="allOrdersPagination.currentPage === 0"
+                    (click)="loadAllOrdersHistory(allOrdersPagination.currentPage - 1)">
+              ‹
+            </button>
+            <button class="ao-page-btn"
+                    *ngFor="let p of allOrdersPageRange()"
+                    [class.ao-page-btn--active]="p === allOrdersPagination.currentPage"
+                    (click)="loadAllOrdersHistory(p)">
+              {{ p + 1 }}
+            </button>
+            <button class="ao-page-btn"
+                    [disabled]="allOrdersPagination.currentPage >= allOrdersPagination.totalPages - 1"
+                    (click)="loadAllOrdersHistory(allOrdersPagination.currentPage + 1)">
+              ›
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Menu ─────────────────────────────────────────────── -->
+    <div *ngIf="activeTab === 'menu'">
+
+      <!-- Header -->
+      <div class="tab-header">
+        <div class="menu-title-row">
+          <div class="page-title" style="margin:0">Menu Management</div>
+          <span class="dirty-pill" *ngIf="menuDirty">Unsaved changes</span>
+        </div>
+        <div class="menu-header-actions">
+          <button class="btn-secondary" (click)="showAddCategory = true" *ngIf="!showAddCategory">
+            + Add Category
+          </button>
+          <button class="btn-primary" (click)="saveMenu()"
+                  [disabled]="savingMenu || !menuDirty">
+            {{ savingMenu ? 'Saving…' : 'Save Menu' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Saved message -->
+      <div class="menu-saved-msg" *ngIf="menuSavedMsg">✓ {{ menuSavedMsg }}</div>
+
+      <!-- Add category bar -->
+      <div class="add-cat-bar" *ngIf="showAddCategory">
+        <input class="form-input add-cat-input" type="text"
+               [(ngModel)]="newCategoryName"
+               placeholder="e.g. South Indian, Chinese, Beverages…"
+               (keyup.enter)="addCategory()" />
+        <button class="btn-primary" (click)="addCategory()">Add</button>
+        <button class="btn-secondary"
+                (click)="showAddCategory = false; newCategoryName = ''; categoryNameError = ''">
+          Cancel
+        </button>
+        <span class="cat-name-error" *ngIf="categoryNameError">{{ categoryNameError }}</span>
+      </div>
+
+      <!-- Menu stats strip -->
+      <div class="menu-stats" *ngIf="menuCategories.length > 0">
+        <span class="menu-stat">
+          <strong>{{ menuCategories.length }}</strong> categor{{ menuCategories.length !== 1 ? 'ies' : 'y' }}
+        </span>
+        <span class="menu-stat-sep">·</span>
+        <span class="menu-stat">
+          <strong>{{ totalMenuItems }}</strong> item{{ totalMenuItems !== 1 ? 's' : '' }}
+        </span>
+      </div>
+
+      <!-- Empty state -->
+      <div class="section-box" *ngIf="menuCategories.length === 0 && !showAddCategory">
+        <div class="empty-state">
+          <div class="empty-icon">🍽️</div>
+          <p>No menu categories yet.</p>
+          <p class="empty-sub">Click "Add Category" to create your first menu section.</p>
+        </div>
+      </div>
+
+      <!-- Category cards -->
+      <div class="menu-cat-card" *ngFor="let cat of menuCategories; let ci = index">
+
+        <!-- Category header -->
+        <div class="cat-header">
+          <ng-container *ngIf="editingCategoryIdx === ci; else viewCatName">
+            <input class="cat-name-input" type="text"
+                   [(ngModel)]="editingCategoryName"
+                   (keyup.enter)="saveEditCategory(ci)"
+                   (keyup.escape)="cancelEditCategory()" />
+            <button class="cat-action-btn cat-action-btn--save" (click)="saveEditCategory(ci)" title="Save">✓</button>
+            <button class="cat-action-btn" (click)="cancelEditCategory()" title="Cancel">✕</button>
+          </ng-container>
+          <ng-template #viewCatName>
+            <div class="cat-name-wrap">
+              <span class="cat-name">{{ cat.category }}</span>
+              <span class="cat-count">{{ cat.items.length }} item{{ cat.items.length !== 1 ? 's' : '' }}</span>
+            </div>
+            <div class="cat-actions">
+              <button class="cat-action-btn" (click)="startEditCategory(ci)" title="Rename">✎</button>
+              <button class="cat-action-btn cat-action-btn--danger" (click)="deleteCategory(ci)" title="Delete">✕</button>
+              <button class="cat-collapse-btn" (click)="toggleCategory(ci)">
+                {{ cat.collapsed ? '▼' : '▲' }}
+              </button>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Items body -->
+        <div class="cat-body" *ngIf="!cat.collapsed">
+
+          <!-- Items table -->
+          <div class="items-list" *ngIf="cat.items.length > 0">
+            <div class="item-row" *ngFor="let item of cat.items; let ii = index">
+
+              <span class="veg-dot"
+                    [class.veg-dot--veg]="item.isVeg"
+                    [class.veg-dot--nonveg]="!item.isVeg"
+                    [title]="item.isVeg ? 'Vegetarian' : 'Non-Vegetarian'">●</span>
+
+              <div class="item-info">
+                <span class="item-name">{{ item.name }}</span>
+                <span class="item-desc" *ngIf="item.description">{{ item.description }}</span>
+              </div>
+
+              <div class="item-pricing">
+                <span class="item-base-price">₹{{ item.price }}</span>
+                <span class="item-gst-tag" *ngIf="item.gstPercent">
+                  +{{ item.gstPercent }}% GST
+                </span>
+                <span class="item-total-price" *ngIf="item.gstPercent">
+                  = ₹{{ getTotalPrice(item.price, item.gstPercent) }}
+                </span>
+              </div>
+
+              <span class="extras-tag" *ngIf="item.extras.length > 0">
+                {{ item.extras.length }} extra{{ item.extras.length !== 1 ? 's' : '' }}
+              </span>
+
+              <span class="avail-pill"
+                    [class.avail-pill--on]="item.available"
+                    [class.avail-pill--off]="!item.available">
+                {{ item.available ? 'Available' : 'Unavailable' }}
+              </span>
+
+              <div class="item-actions">
+                <button class="item-edit-btn" (click)="openEditItem(ci, ii)">Edit</button>
+                <button class="item-del-btn" (click)="deleteItem(ci, ii)">✕</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty category -->
+          <div class="cat-empty" *ngIf="cat.items.length === 0">
+            No items yet — add your first dish below.
+          </div>
+
+          <!-- Add item -->
+          <button class="add-item-btn" (click)="openAddItem(ci)">+ Add Item</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Hours ───────────────────────────────────────────── -->
+    <div *ngIf="activeTab === 'hours'">
+      <div class="page-title">Operating Hours</div>
+
+      <!-- Summary strip -->
+      <div class="hours-summary">
+        <div class="hours-summary-stat">
+          <span class="hours-summary-val">{{ openDaysCount }}</span>
+          <span class="hours-summary-key">Days Open</span>
+        </div>
+        <div class="hours-summary-stat">
+          <span class="hours-summary-val">{{ 7 - openDaysCount }}</span>
+          <span class="hours-summary-key">Days Closed</span>
+        </div>
+        <div class="hours-summary-badge" [class.hours-open]="restaurant.open" [class.hours-closed]="!restaurant.open">
+          <span class="hours-dot"></span>
+          {{ restaurant.open ? 'Currently Open' : 'Currently Closed' }}
+        </div>
+      </div>
+
+      <!-- Weekly schedule -->
+      <div class="section-box hours-card">
+        <div class="hours-card-header">
+          <h3 class="section-title" style="margin:0">Weekly Schedule</h3>
+          <p class="hours-hint">Toggle days on/off and set opening and closing times.</p>
+        </div>
+
+        <div class="hours-rows">
+          <div class="hours-row" *ngFor="let h of hours" [class.hours-row--closed]="!h.open">
+
+            <!-- Day toggle -->
+            <div class="hours-day-col">
+              <span class="hours-day-short">{{ h.short }}</span>
+              <span class="hours-day-full">{{ h.day }}</span>
+            </div>
+
+            <!-- Toggle switch -->
+            <label class="toggle-switch" [title]="h.open ? 'Click to close' : 'Click to open'">
+              <input type="checkbox" [(ngModel)]="h.open" />
+              <span class="toggle-track">
+                <span class="toggle-thumb"></span>
+              </span>
+              <span class="toggle-label" [class.toggle-label--on]="h.open">
+                {{ h.open ? 'Open' : 'Closed' }}
+              </span>
+            </label>
+
+            <!-- Time pickers -->
+            <div class="hours-times" [class.hours-times--disabled]="!h.open">
+              <div class="time-field">
+                <label class="time-label">Opens</label>
+                <input class="time-input" type="time" [(ngModel)]="h.openTime" [disabled]="!h.open" />
+              </div>
+              <span class="time-arrow">→</span>
+              <div class="time-field">
+                <label class="time-label">Closes</label>
+                <input class="time-input" type="time" [(ngModel)]="h.closeTime" [disabled]="!h.open" />
+              </div>
+            </div>
+
+            <!-- Apply to all -->
+            <button class="apply-all-btn" *ngIf="h.open" (click)="applyToAllDays(h)" title="Apply these times to all open days">
+              Apply to all
+            </button>
+            <div class="apply-all-placeholder" *ngIf="!h.open"></div>
+
+          </div>
+        </div>
+
+        <!-- Save -->
+        <div class="hours-footer">
+          <div class="hours-saved-msg" *ngIf="hoursSavedMsg">✓ {{ hoursSavedMsg }}</div>
+          <button class="btn-primary" (click)="saveHours()" [disabled]="savingHours">
+            {{ savingHours ? 'Saving…' : 'Save Hours' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Preview card -->
+      <div class="section-box hours-preview-card">
+        <h3 class="section-title">Preview</h3>
+        <p class="hours-preview-sub">How customers will see your hours</p>
+        <div class="preview-rows">
+          <div class="preview-row" *ngFor="let h of hours">
+            <span class="preview-day">{{ h.day }}</span>
+            <span class="preview-times" *ngIf="h.open">{{ formatTime(h.openTime) }} – {{ formatTime(h.closeTime) }}</span>
+            <span class="preview-closed" *ngIf="!h.open">Closed</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Analytics ────────────────────────────────────────── -->
+    <div *ngIf="activeTab === 'analytics'">
+      <div class="page-title">Analytics</div>
+      <div class="section-box">
+        <div class="empty-state">
+          <div class="empty-icon">📊</div>
+          <p>Analytics dashboard coming soon.</p>
+          <p class="empty-sub">View order trends, revenue reports, and peak hours.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Settings ─────────────────────────────────────────── -->
+    <div *ngIf="activeTab === 'settings'">
+      <div class="page-title">Settings</div>
+
+      <!-- Owner -->
+      <div class="section-box settings-box">
+        <div class="settings-section-hdr">
+          <h3 class="section-title">Owner Information</h3>
+          <button class="btn-secondary btn-sm" (click)="openEditOwner()" *ngIf="!editingOwner">Edit</button>
+          <button class="btn-secondary btn-sm" (click)="cancelEditOwner()" *ngIf="editingOwner">Cancel</button>
+        </div>
+
+        <ng-container *ngIf="!editingOwner">
+          <div class="info-row">
+            <span class="info-label">Name</span>
+            <span class="info-val">{{ user?.firstName }} {{ user?.lastName }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Email</span>
+            <span class="info-val">{{ user?.email }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Phone</span>
+            <span class="info-val">{{ user?.phone || '—' }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Status</span>
+            <span class="badge badge-open">Active</span>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="editingOwner">
+          <div class="owner-edit-grid">
+            <div class="form-group">
+              <label class="form-label">First Name</label>
+              <input class="form-input" type="text" [(ngModel)]="ownerDraft.firstName" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name</label>
+              <input class="form-input" type="text" [(ngModel)]="ownerDraft.lastName" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone</label>
+              <input class="form-input" type="text" [(ngModel)]="ownerDraft.phone" />
+            </div>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Email</span>
+            <span class="info-val">{{ user?.email }}</span>
+          </div>
+          <div class="settings-save-row">
+            <span class="settings-msg" *ngIf="ownerSaveMsg">{{ ownerSaveMsg }}</span>
+            <button class="btn-primary btn-sm" [disabled]="savingOwner">
+              {{ savingOwner ? 'Saving…' : 'Save Changes' }}
+            </button>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- Staff -->
+      <div class="section-box settings-box" style="margin-top:1.25rem">
+        <h3 class="section-title">Restaurant Staff</h3>
+
+        <div class="staff-loading" *ngIf="staffLoading">Loading staff…</div>
+
+        <div class="staff-empty" *ngIf="!staffLoading && staff.length === 0">
+          No staff assigned to this restaurant yet.
+        </div>
+
+        <div class="staff-list" *ngIf="!staffLoading && staff.length > 0">
+          <div class="staff-row" *ngFor="let s of staff">
+            <div class="staff-avatar">{{ getStaffInitials(s) }}</div>
+            <div class="staff-info">
+              <div class="staff-name">{{ s.firstName }} {{ s.lastName }}</div>
+              <div class="staff-email">{{ s.email }}</div>
+            </div>
+            <span class="avail-pill"
+                  [class.avail-pill--on]="s.status === 'ACTIVE'"
+                  [class.avail-pill--off]="s.status !== 'ACTIVE'">
+              {{ s.status === 'ACTIVE' ? 'Active' : 'Inactive' }}
+            </span>
+            <button class="btn-secondary btn-sm" (click)="openEditStaff(s)">Edit</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ── Add / Edit Item Modal ──────────────────────────────────── -->
+<div class="modal-backdrop" *ngIf="showItemForm" (click)="closeItemForm()"></div>
+<div class="modal-card item-modal" *ngIf="showItemForm" (click)="$event.stopPropagation()">
+
+  <div class="modal-header">
+    <div>
+      <h3 class="modal-title">{{ itemFormItemIdx === -1 ? 'Add Item' : 'Edit Item' }}</h3>
+      <span class="modal-subtitle">{{ itemFormCatIdx >= 0 ? menuCategories[itemFormCatIdx].category : '' }}</span>
+    </div>
+    <button class="modal-close" (click)="closeItemForm()">✕</button>
+  </div>
+
+  <div class="modal-body item-form-body">
+
+    <div class="item-form-grid">
+      <div class="form-group item-col-full">
+        <label class="form-label">Item Name <span class="required">*</span></label>
+        <input class="form-input" type="text" [(ngModel)]="itemDraft.name"
+               placeholder="e.g. Masala Dosa" />
+      </div>
+
+      <div class="form-group item-col-full">
+        <label class="form-label">Description <span class="optional">(optional)</span></label>
+        <input class="form-input" type="text" [(ngModel)]="itemDraft.description"
+               placeholder="e.g. Crispy dosa with spiced potato filling" />
+      </div>
+
+      <div class="form-group item-col-full">
+        <label class="form-label">Item Photo <span class="optional">(optional)</span></label>
+        <input type="file" accept="image/*" (change)="onItemImageSelected($event)" [disabled]="uploadingItemImage" />
+        <div class="img-upload-status" *ngIf="uploadingItemImage">Uploading…</div>
+        <img *ngIf="itemDraft.imageUrl" [src]="itemDraft.imageUrl" class="img-preview" alt="Preview" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Base Price (₹) <span class="required">*</span></label>
+        <input class="form-input" type="number" [(ngModel)]="itemDraft.price"
+               min="0" placeholder="0" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">GST Slab</label>
+        <div class="gst-options">
+          <button type="button" class="gst-btn"
+                  *ngFor="let g of gstOptions"
+                  [class.gst-btn--active]="itemDraft.gstPercent === g"
+                  (click)="itemDraft.gstPercent = g">
+            {{ g === 0 ? 'None' : g + '%' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GST breakdown -->
+    <div class="gst-preview" *ngIf="itemDraft.price">
+      <span class="gst-preview-part">Base ₹{{ itemDraft.price }}</span>
+      <span class="gst-preview-op">+</span>
+      <span class="gst-preview-part">GST ({{ itemDraft.gstPercent }}%) ₹{{ getGstAmount(itemDraft.price, itemDraft.gstPercent) }}</span>
+      <span class="gst-preview-op">=</span>
+      <span class="gst-preview-total">Customer pays ₹{{ getTotalPrice(itemDraft.price, itemDraft.gstPercent) }}</span>
+    </div>
+
+    <!-- Toggles -->
+    <div class="item-toggles">
+      <label class="toggle-switch">
+        <input type="checkbox" [(ngModel)]="itemDraft.isVeg" />
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        <span class="toggle-label" [class.toggle-label--on]="itemDraft.isVeg">
+          {{ itemDraft.isVeg ? '🟢 Vegetarian' : '🔴 Non-Vegetarian' }}
+        </span>
+      </label>
+      <label class="toggle-switch">
+        <input type="checkbox" [(ngModel)]="itemDraft.available" />
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        <span class="toggle-label" [class.toggle-label--on]="itemDraft.available">
+          {{ itemDraft.available ? 'Available' : 'Unavailable' }}
+        </span>
+      </label>
+    </div>
+
+    <!-- Extras -->
+    <div class="extras-section">
+      <div class="extras-section-header">
+        <span class="extras-title">Extra Charges</span>
+        <span class="extras-hint">Customisable add-ons customers can select (e.g. Extra Cheese, Packaging)</span>
+      </div>
+
+      <div class="extra-row" *ngFor="let ex of itemDraft.extras; let ei = index">
+        <input class="form-input extra-label-input" type="text"
+               [(ngModel)]="ex.label" placeholder="e.g. Extra Cheese" />
+        <span class="extra-rupee">₹</span>
+        <input class="form-input extra-amt-input" type="number"
+               [(ngModel)]="ex.amount" min="0" placeholder="0" />
+        <button type="button" class="extra-remove-btn" (click)="removeExtra(ei)">✕</button>
+      </div>
+
+      <div class="extras-empty" *ngIf="itemDraft.extras.length === 0">
+        No extras defined yet.
+      </div>
+
+      <button type="button" class="add-extra-btn" (click)="addExtra()">+ Add Extra Field</button>
+    </div>
+
+    <div class="form-error" style="margin-top:.5rem" *ngIf="itemFormError">{{ itemFormError }}</div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn-primary" (click)="saveItem()" [disabled]="uploadingItemImage">
+      {{ uploadingItemImage ? 'Uploading…' : (itemFormItemIdx === -1 ? 'Add Item' : 'Save Changes') }}
+    </button>
+    <button class="btn-secondary" (click)="closeItemForm()">Cancel</button>
+  </div>
+</div>
+
+<!-- ── Edit Staff Modal ────────────────────────────────────────── -->
+<div class="modal-backdrop" *ngIf="editingStaff" (click)="closeEditStaff()"></div>
+<div class="modal-card" *ngIf="editingStaff" (click)="$event.stopPropagation()">
+  <div class="modal-header">
+    <div>
+      <h3 class="modal-title">Edit Staff</h3>
+      <span class="modal-subtitle">{{ editingStaff.email }}</span>
+    </div>
+    <button class="modal-close" (click)="closeEditStaff()">✕</button>
+  </div>
+
+  <div class="modal-body">
+    <div class="staff-modal-profile">
+      <div class="staff-avatar staff-avatar--lg">{{ getStaffInitials(editingStaff) }}</div>
+      <div>
+        <div class="staff-name">{{ editingStaff.firstName }} {{ editingStaff.lastName }}</div>
+        <div class="staff-email">{{ editingStaff.email }}</div>
+        <div class="staff-phone" *ngIf="editingStaff.phone">{{ editingStaff.phone }}</div>
+      </div>
+    </div>
+
+    <div class="info-row" style="margin-top:1rem">
+      <span class="info-label">Current Status</span>
+      <span class="avail-pill"
+            [class.avail-pill--on]="editingStaff.status === 'ACTIVE'"
+            [class.avail-pill--off]="editingStaff.status !== 'ACTIVE'">
+        {{ editingStaff.status === 'ACTIVE' ? 'Active' : 'Inactive' }}
+      </span>
+    </div>
+
+    <div class="staff-action-msg" *ngIf="staffActionMsg">{{ staffActionMsg }}</div>
+  </div>
+
+  <div class="modal-footer">
+    <button class="btn-primary"
+            [class.btn-danger]="editingStaff.status === 'ACTIVE'"
+            (click)="toggleStaffStatus()"
+            [disabled]="staffActionLoading">
+      {{ staffActionLoading ? 'Updating…' : (editingStaff.status === 'ACTIVE' ? 'Deactivate' : 'Activate') }}
+    </button>
+    <button class="btn-secondary" (click)="closeEditStaff()">Close</button>
+  </div>
+</div>
+
+<!-- Location Picker Modal for Restaurant Details -->
+<div class="lp-overlay" *ngIf="showDetailsLocationPicker" (click)="showDetailsLocationPicker = false">
+  <div class="lp-modal" (click)="$event.stopPropagation()">
+    <div class="lp-modal-hdr">
+      <h3>Pin Restaurant Location</h3>
+      <button class="lp-close" (click)="showDetailsLocationPicker = false">✕</button>
+    </div>
+    <app-location-picker
+      placeholder="Search restaurant address..."
+      [initialLat]="detailsLat ?? 20.5937"
+      [initialLng]="detailsLng ?? 78.9629"
+      (locationPicked)="onDetailsLocationPicked($event)"
+      (cancelled)="showDetailsLocationPicker = false">
+    </app-location-picker>
+  </div>
+</div>

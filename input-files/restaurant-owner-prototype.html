@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoodieHub Restaurant Owner</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #f9b303;
+  --gold-dark: #e0a000;
+  --text: #4e4e4e;
+  --text-dark: #2a2a2a;
+  --text-light: #888;
+  --success: #248f28;
+  --error: #ff1100;
+  --shadow: 0 2px 10px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.14);
+  --radius: 10px;
+  --font-serif: 'Libre Baskerville', Georgia, serif;
+  --font-sans: 'DM Sans', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font-sans); color: var(--text); background: white; }
+
+/* PAGE VISIBILITY */
+.page { display: none; min-height: 100vh; }
+.page.show { display: block; }
+.content-section { display: none; }
+.content-section.show { display: block; }
+
+/* HEADER */
+.header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; border-bottom: 1px solid #eee; background: white; position: sticky; top: 0; z-index: 100; }
+.logo-area { display: flex; align-items: center; gap: 10px; cursor: pointer; }
+.logo-icon { width: 40px; height: 40px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-family: var(--font-serif); font-size: 18px; }
+.logo-text { font-family: var(--font-serif); font-size: 1.2rem; font-weight: 700; color: var(--text-dark); }
+.logo-sub { font-size: 0.7rem; color: var(--text-light); }
+.header-right { display: flex; gap: 15px; align-items: center; }
+.header-btn { border: 1px solid #ddd; padding: 7px 14px; border-radius: 6px; background: white; cursor: pointer; font-size: 0.85rem; color: var(--text); }
+.header-btn:hover { border-color: var(--gold); color: var(--gold); }
+.user-icon { width: 36px; height: 36px; background: var(--gold); border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
+
+/* AUTH PAGES */
+.auth-bg { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; background: linear-gradient(135deg, rgba(249,179,3,0.15) 0%, rgba(249,179,3,0.05) 100%), #fff8f0; }
+.auth-card { display: grid; grid-template-columns: 1fr 1fr; background: white; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow-lg); max-width: 900px; width: 100%; }
+.auth-left { padding: 3rem 2.5rem; }
+.auth-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 2rem; }
+.auth-divider { width: 1px; height: 40px; background: #ddd; }
+.auth-title { font-family: var(--font-serif); font-size: 1.4rem; color: var(--text-dark); margin-bottom: 1.5rem; text-align: center; }
+.input-field { display: flex; align-items: center; gap: 10px; border: 1.5px solid #000; border-radius: 8px; padding: 11px 14px; margin-bottom: 1rem; background: white; }
+.input-field:focus-within { border-color: var(--gold); }
+.input-field span { color: var(--text-light); }
+.input-field input { flex: 1; border: none; outline: none; font-family: var(--font-sans); font-size: 0.9rem; color: var(--text); background: transparent; }
+.input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; border: none; border-radius: 8px; font-family: var(--font-sans); font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.95rem; }
+.btn-gold { background: var(--gold); color: var(--text-dark); width: 100%; }
+.btn-gold:hover { background: var(--gold-dark); }
+.btn-outline { background: transparent; border: 1.5px solid #ddd; color: var(--text); width: 100%; }
+.btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+.auth-or { text-align: center; color: var(--text-light); margin: 1rem 0; font-size: 0.85rem; }
+.auth-footer { text-align: center; margin-top: 1rem; font-size: 0.85rem; color: var(--text-light); }
+.auth-footer a { color: var(--gold); cursor: pointer; font-weight: 600; }
+.auth-right { background: linear-gradient(135deg, rgba(249,179,3,0.12), rgba(249,179,3,0.04)); padding: 3rem 2.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.promo-card { background: white; border-radius: 12px; padding: 1.5rem; text-align: center; box-shadow: var(--shadow); }
+.promo-emoji { font-size: 64px; margin-bottom: 1rem; }
+.promo-title { font-family: var(--font-serif); font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem; }
+.promo-desc { font-size: 0.8rem; color: var(--text-light); line-height: 1.5; }
+
+/* DASHBOARD */
+.dashboard { display: grid; grid-template-columns: 240px 1fr; gap: 0; min-height: calc(100vh - 70px); }
+.sidebar { background: #1a1a1a; color: white; padding: 1.5rem 1rem; }
+.sidebar-title { font-family: var(--font-serif); font-weight: 700; font-size: 0.95rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 8px; }
+.sidebar-title span { background: var(--gold); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; }
+.nav-btn { width: 100%; text-align: left; padding: 10px 10px; border: none; background: transparent; color: rgba(255,255,255,0.7); cursor: pointer; border-radius: 6px; margin-bottom: 8px; font-family: var(--font-sans); font-size: 0.85rem; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
+.nav-btn:hover { background: rgba(249,179,3,0.15); color: var(--gold); }
+.nav-btn.active { background: rgba(249,179,3,0.15); color: var(--gold); }
+.nav-btn span { font-size: 1rem; }
+.logout-btn { margin-top: auto; color: rgba(255,255,255,0.4); }
+
+/* MAIN CONTENT */
+.main { padding: 2rem; background: #f5f5f5; overflow-y: auto; max-height: calc(100vh - 70px); }
+.page-title { font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; margin-bottom: 2rem; }
+
+/* STATS GRID */
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
+.stat-box { background: white; padding: 1.2rem; border-radius: 10px; box-shadow: var(--shadow); }
+.stat-label { font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+.stat-value { font-family: var(--font-serif); font-size: 1.8rem; font-weight: 700; color: var(--text-dark); }
+.stat-change { font-size: 0.75rem; color: var(--success); margin-top: 3px; }
+
+/* ORDERS */
+.orders-box { background: white; border-radius: 10px; padding: 1.5rem; box-shadow: var(--shadow); }
+.orders-box h3 { font-family: var(--font-serif); font-size: 1.1rem; margin-bottom: 1rem; }
+.order-item { display: grid; grid-template-columns: 80px 1fr 80px 100px 120px; gap: 12px; align-items: center; padding: 10px; background: #fffaf2; border-radius: 8px; margin-bottom: 8px; font-size: 0.85rem; }
+.order-id { font-weight: 700; color: var(--text-dark); }
+.order-status { font-weight: 600; font-size: 0.7rem; padding: 3px 8px; border-radius: 20px; }
+.status-new { background: #e3f2fd; color: #1565c0; }
+.status-prep { background: #e8f5e9; color: var(--success); }
+.order-amount { font-weight: 700; }
+.order-actions { display: flex; gap: 4px; }
+.order-btn { padding: 4px 8px; border-radius: 4px; border: none; font-size: 0.7rem; font-weight: 600; cursor: pointer; }
+.btn-accept { background: var(--success); color: white; }
+.btn-reject { background: #ffcccc; color: var(--error); }
+.btn-ready { background: var(--gold); color: var(--text-dark); }
+
+/* MENU */
+.menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
+.menu-card { background: white; border: 1.5px solid #ddd; border-radius: 10px; padding: 1rem; text-align: center; transition: all 0.2s; }
+.menu-card:hover { border-color: var(--gold); box-shadow: var(--shadow-lg); }
+.menu-emoji { font-size: 2.5rem; margin-bottom: 0.5rem; }
+.menu-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 3px; }
+.menu-price { font-weight: 700; font-size: 1.1rem; color: var(--text-dark); margin-bottom: 0.8rem; }
+.menu-actions { display: flex; gap: 6px; }
+.menu-btn { flex: 1; padding: 5px; border-radius: 5px; border: none; font-size: 0.7rem; cursor: pointer; font-weight: 600; }
+.menu-btn.edit { background: #fff4e6; color: var(--gold); }
+.menu-btn.delete { background: #ffcccc; color: var(--error); }
+
+/* MODAL */
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
+.modal.show { display: flex; }
+.modal-content { background: white; border-radius: 12px; padding: 2rem; max-width: 500px; width: 90%; position: relative; }
+.modal-title { font-family: var(--font-serif); font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem; }
+.close-btn { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--text-light); }
+.form-group { margin-bottom: 1rem; }
+.form-group label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--text-light); text-transform: uppercase; margin-bottom: 5px; letter-spacing: 0.5px; }
+.form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1.5px solid #ddd; border-radius: 6px; font-family: var(--font-sans); font-size: 0.9rem; color: var(--text); outline: none; }
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--gold); }
+.modal-actions { display: flex; gap: 10px; margin-top: 1.5rem; }
+.modal-actions .btn { width: 100%; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1a1a1a; color: white; padding: 12px 24px; border-radius: 50px; font-size: 0.85rem; display: none; z-index: 9999; box-shadow: var(--shadow-lg); }
+.toast.show { display: block; animation: slideUp 0.3s ease; }
+@keyframes slideUp { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+/* EMPTY STATE */
+.empty-state { text-align: center; padding: 3rem; color: var(--text-light); }
+.empty-state-icon { font-size: 4rem; margin-bottom: 1rem; }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- LOGIN PAGE -->
+<div class="page show" id="page-login">
+<div class="auth-bg">
+<div class="auth-card">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <div class="logo-icon">F</div>
+      <div class="auth-divider"></div>
+      <div>
+        <div class="logo-text">foodiehub</div>
+        <div class="logo-sub">Restaurant Partner</div>
+      </div>
+    </div>
+    <div class="auth-title">Welcome Back!</div>
+    <div class="input-field">
+      <span>📧</span>
+      <input type="email" placeholder="Email" id="email-login" value="spice@email.com">
+    </div>
+    <div class="input-field">
+      <span>🔒</span>
+      <input type="password" placeholder="Password" id="pass-login" value="demo123">
+    </div>
+    <button class="btn btn-gold" onclick="login()">Login</button>
+    <div class="auth-or">or</div>
+    <button class="btn btn-outline" onclick="goPage('page-signup')">Create New Account</button>
+    <div class="auth-footer"><a onclick="notify('Reset coming soon')">Forgot password?</a></div>
+  </div>
+  <div class="auth-right">
+    <div class="promo-card">
+      <div class="promo-emoji">🍽️</div>
+      <div class="promo-title">Grow Your Business</div>
+      <div class="promo-desc">Reach thousands of customers and increase revenue on FoodieHub.</div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- SIGNUP PAGE -->
+<div class="page" id="page-signup">
+<div class="auth-bg">
+<div class="auth-card">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <div class="logo-icon">F</div>
+      <div class="auth-divider"></div>
+      <div>
+        <div class="logo-text">foodiehub</div>
+        <div class="logo-sub">Restaurant Partner</div>
+      </div>
+    </div>
+    <div class="auth-title">Register Restaurant</div>
+    <div class="input-row">
+      <div class="input-field">
+        <span>👨</span>
+        <input type="text" placeholder="Owner Name" id="own-name">
+      </div>
+      <div class="input-field">
+        <span>📞</span>
+        <input type="tel" placeholder="Phone" id="own-phone">
+      </div>
+    </div>
+    <div class="input-field">
+      <span>🍛</span>
+      <input type="text" placeholder="Restaurant Name" id="rest-name">
+    </div>
+    <div class="input-field">
+      <span>📧</span>
+      <input type="email" placeholder="Email" id="email-signup">
+    </div>
+    <div class="input-field">
+      <span>🔒</span>
+      <input type="password" placeholder="Password" id="pass-signup">
+    </div>
+    <button class="btn btn-gold" onclick="signup()">Create Account</button>
+    <div class="auth-footer">Have account? <a onclick="goPage('page-login')">Login</a></div>
+  </div>
+  <div class="auth-right">
+    <div class="promo-card">
+      <div class="promo-emoji">🎉</div>
+      <div class="promo-title">Join 1200+ Partners</div>
+      <div class="promo-desc">Start selling on FoodieHub and reach hungry customers today.</div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- DASHBOARD PAGE -->
+<div class="page" id="page-dashboard">
+<header class="header">
+  <div class="logo-area" onclick="goPage('page-dashboard'); goTab('tab-dash')">
+    <div class="logo-icon">F</div>
+    <div>
+      <div class="logo-text">foodiehub</div>
+      <div class="logo-sub">Restaurant Partner</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="header-btn" onclick="notify('Support chat coming soon')">Get Help</button>
+    <div class="user-icon" onclick="logout()">RO</div>
+  </div>
+</header>
+
+<div class="dashboard">
+  <div class="sidebar">
+    <div class="sidebar-title"><span>R</span> Restaurant</div>
+    <button class="nav-btn active" onclick="goTab('tab-dash')"><span>📊</span>Dashboard</button>
+    <button class="nav-btn" onclick="goTab('tab-orders')"><span>📦</span>Live Orders</button>
+    <button class="nav-btn" onclick="goTab('tab-menu')"><span>🍽️</span>Menu</button>
+    <button class="nav-btn" onclick="goTab('tab-analytics')"><span>📈</span>Analytics</button>
+    <button class="nav-btn" onclick="goTab('tab-settings')"><span>⚙️</span>Settings</button>
+    <button class="nav-btn logout-btn" onclick="logout()"><span>🚪</span>Logout</button>
+  </div>
+
+  <!-- DASHBOARD TAB -->
+  <div class="main">
+    <div class="content-section show" id="tab-dash">
+      <div class="page-title">Welcome, Spice Garden! 👋</div>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-label">Today's Orders</div>
+          <div class="stat-value">47</div>
+          <div class="stat-change">↑ 12% vs yesterday</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Today's Revenue</div>
+          <div class="stat-value">₹18.4K</div>
+          <div class="stat-change">↑ 8% vs yesterday</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Avg Order Value</div>
+          <div class="stat-value">₹391</div>
+          <div class="stat-change">↑ 3% this week</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Rating</div>
+          <div class="stat-value">4.9 ⭐</div>
+          <div class="stat-change">12 new reviews</div>
+        </div>
+      </div>
+      <div class="orders-box">
+        <h3>Live Orders (4 Active) 🔴</h3>
+        <div class="order-item">
+          <div class="order-id">#4821</div>
+          <div>2× Butter Chicken, 4× Naan</div>
+          <div class="order-amount">₹730</div>
+          <div class="order-status status-new">New</div>
+          <div class="order-actions">
+            <button class="order-btn btn-accept" onclick="notify('✅ Order accepted!')">Accept</button>
+            <button class="order-btn btn-reject" onclick="notify('❌ Order rejected')">Reject</button>
+          </div>
+        </div>
+        <div class="order-item">
+          <div class="order-id">#4820</div>
+          <div>1× Chicken Biryani, 1× Lassi</div>
+          <div class="order-amount">₹430</div>
+          <div class="order-status status-prep">Preparing</div>
+          <div class="order-actions">
+            <button class="order-btn btn-ready" onclick="notify('🍽️ Marked ready!')">Ready</button>
+          </div>
+        </div>
+        <div class="order-item">
+          <div class="order-id">#4819</div>
+          <div>2× Paneer Tikka, 2× Naan</div>
+          <div class="order-amount">₹620</div>
+          <div class="order-status status-prep">Preparing</div>
+          <div class="order-actions">
+            <button class="order-btn btn-ready" onclick="notify('🍽️ Marked ready!')">Ready</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDERS TAB -->
+    <div class="content-section" id="tab-orders">
+      <div class="page-title">Live Orders 🍽️</div>
+      <div class="orders-box">
+        <div class="order-item">
+          <div class="order-id">#4821</div>
+          <div>2× Butter Chicken, 4× Naan</div>
+          <div class="order-amount">₹730</div>
+          <div class="order-status status-new">New</div>
+          <div class="order-actions">
+            <button class="order-btn btn-accept" onclick="notify('✅ Order accepted!')">Accept</button>
+            <button class="order-btn btn-reject" onclick="notify('❌ Order rejected')">Reject</button>
+          </div>
+        </div>
+        <div class="order-item">
+          <div class="order-id">#4820</div>
+          <div>1× Chicken Biryani, 1× Lassi</div>
+          <div class="order-amount">₹430</div>
+          <div class="order-status status-prep">Preparing</div>
+          <div class="order-actions">
+            <button class="order-btn btn-ready" onclick="notify('🍽️ Marked ready!')">Ready</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MENU TAB -->
+    <div class="content-section" id="tab-menu">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <div class="page-title" style="margin: 0;">Menu Management 🍛</div>
+        <button class="btn btn-gold" style="width: auto; padding: 10px 20px;" onclick="openModal()">+ Add Item</button>
+      </div>
+      <div class="menu-grid">
+        <div class="menu-card">
+          <div class="menu-emoji">🧆</div>
+          <div class="menu-name">Paneer Tikka</div>
+          <div class="menu-price">₹260</div>
+          <div class="menu-actions">
+            <button class="menu-btn edit" onclick="notify('✏️ Editing...')">Edit</button>
+            <button class="menu-btn delete" onclick="notify('🗑 Deleted')">Delete</button>
+          </div>
+        </div>
+        <div class="menu-card">
+          <div class="menu-emoji">🍗</div>
+          <div class="menu-name">Chicken Tikka</div>
+          <div class="menu-price">₹320</div>
+          <div class="menu-actions">
+            <button class="menu-btn edit" onclick="notify('✏️ Editing...')">Edit</button>
+            <button class="menu-btn delete" onclick="notify('🗑 Deleted')">Delete</button>
+          </div>
+        </div>
+        <div class="menu-card">
+          <div class="menu-emoji">🍛</div>
+          <div class="menu-name">Butter Chicken</div>
+          <div class="menu-price">₹340</div>
+          <div class="menu-actions">
+            <button class="menu-btn edit" onclick="notify('✏️ Editing...')">Edit</button>
+            <button class="menu-btn delete" onclick="notify('🗑 Deleted')">Delete</button>
+          </div>
+        </div>
+        <div class="menu-card">
+          <div class="menu-emoji">🍚</div>
+          <div class="menu-name">Chicken Biryani</div>
+          <div class="menu-price">₹380</div>
+          <div class="menu-actions">
+            <button class="menu-btn edit" onclick="notify('✏️ Editing...')">Edit</button>
+            <button class="menu-btn delete" onclick="notify('🗑 Deleted')">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ANALYTICS TAB -->
+    <div class="content-section" id="tab-analytics">
+      <div class="page-title">Analytics & Reports 📈</div>
+      <div class="empty-state">
+        <div class="empty-state-icon">📊</div>
+        <p>Analytics dashboard coming soon!</p>
+        <p style="font-size: 0.85rem; margin-top: 0.5rem;">View detailed reports on orders and revenue.</p>
+      </div>
+    </div>
+
+    <!-- SETTINGS TAB -->
+    <div class="content-section" id="tab-settings">
+      <div class="page-title">Settings ⚙️</div>
+      <div class="orders-box" style="max-width: 600px;">
+        <h3>Restaurant Information</h3>
+        <div class="form-group">
+          <label>Restaurant Name</label>
+          <input type="text" value="Spice Garden" readonly>
+        </div>
+        <div class="form-group">
+          <label>Owner Name</label>
+          <input type="text" value="Raj Kumar" readonly>
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="tel" value="+91 98765 43210" readonly>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" value="spice@email.com" readonly>
+        </div>
+        <button class="btn btn-outline" onclick="notify('Update coming soon')" style="width: auto;">Edit Profile</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ADD MENU MODAL -->
+<div class="modal" id="modal-add">
+<div class="modal-content">
+  <button class="close-btn" onclick="closeModal()">✕</button>
+  <div class="modal-title">Add Menu Item</div>
+  <div class="form-group">
+    <label>Item Name</label>
+    <input type="text" placeholder="e.g., Paneer Tikka">
+  </div>
+  <div class="form-group">
+    <label>Description</label>
+    <textarea placeholder="Brief description" style="min-height: 80px;"></textarea>
+  </div>
+  <div class="form-group">
+    <label>Price (₹)</label>
+    <input type="number" placeholder="e.g., 260">
+  </div>
+  <div class="form-group">
+    <label>Category</label>
+    <select>
+      <option>Starters</option>
+      <option>Main Course</option>
+      <option>Breads</option>
+      <option>Desserts</option>
+      <option>Beverages</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Type</label>
+    <select>
+      <option>Vegetarian</option>
+      <option>Non-Vegetarian</option>
+    </select>
+  </div>
+  <div class="modal-actions">
+    <button class="btn btn-gold" onclick="addItem()">Add Item</button>
+    <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+  </div>
+</div>
+</div>
+
+<script>
+function goPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('show'));
+  document.getElementById(id).classList.add('show');
+}
+
+function goTab(id) {
+  document.querySelectorAll('.content-section').forEach(s => s.classList.remove('show'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  
+  document.getElementById(id).classList.add('show');
+  event.target.closest('.nav-btn').classList.add('active');
+}
+
+function login() {
+  const email = document.getElementById('email-login').value;
+  const pass = document.getElementById('pass-login').value;
+  if (!email || !pass) {
+    notify('❌ Fill all fields');
+    return;
+  }
+  goPage('page-dashboard');
+  notify('🎉 Login successful!');
+}
+
+function signup() {
+  const name = document.getElementById('own-name').value;
+  const rest = document.getElementById('rest-name').value;
+  const email = document.getElementById('email-signup').value;
+  const pass = document.getElementById('pass-signup').value;
+  if (!name || !rest || !email || !pass) {
+    notify('❌ Fill all fields');
+    return;
+  }
+  goPage('page-login');
+  notify('✅ Account created! Login now.');
+}
+
+function logout() {
+  if (confirm('Logout?')) {
+    goPage('page-login');
+    notify('👋 Logged out');
+  }
+}
+
+function openModal() {
+  document.getElementById('modal-add').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modal-add').classList.remove('show');
+}
+
+function addItem() {
+  closeModal();
+  notify('✅ Menu item added!');
+}
+
+function notify(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>

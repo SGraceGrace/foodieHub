@@ -1,0 +1,15 @@
+package com.project.foodieHub.repo;
+
+import com.project.foodieHub.entity.RefreshToken;
+import com.project.foodieHub.entity.User;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface RefreshTokenRepo extends JpaRepository<RefreshToken, Long> {
+
+  Optional<RefreshToken> findByToken(String refreshToken);
+
+  Optional<RefreshToken> findByUserAndDeviceId(User user, String deviceId);
+
+  void deleteAllByUserAndDeviceId(User user, String deviceId);
+}

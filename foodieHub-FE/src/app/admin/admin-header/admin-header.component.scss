@@ -1,0 +1,290 @@
+$gold: #f9b303;
+$font-serif: 'Libre Baskerville', Georgia, serif;
+$font-sans: 'DM Sans', sans-serif;
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  border-bottom: 1px solid #eee;
+  background: white;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 10px rgba(0,0,0,.08);
+}
+
+.logo-area {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  background: #1a1a1a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-family: $font-serif;
+  font-size: 18px;
+}
+
+.logo-text {
+  font-family: $font-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #2a2a2a;
+}
+
+.logo-sub {
+  font-size: 0.7rem;
+  color: #888;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+// ── Enable push button ─────────────────────────────────────────
+.push-enable-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border: 1px solid #e8e8e8; border-radius: 6px;
+  background: white; cursor: pointer; font-size: 0.78rem; color: #555;
+  font-family: $font-sans; transition: all 0.2s;
+  &:hover { border-color: $gold; color: $gold; }
+}
+
+.push-blocked-msg {
+  font-size: 0.75rem; color: #c0392b; font-family: $font-sans;
+  cursor: help;
+}
+
+// ── Notification bell ──────────────────────────────────────────
+.notif-wrapper {
+  position: relative;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.bell-icon {
+  width: 22px;
+  height: 22px;
+  color: #555;
+  transition: color 0.15s;
+
+  &:hover { color: #1a1a1a; }
+}
+
+.badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #e53e3e;
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+  font-family: $font-sans;
+  pointer-events: none;
+}
+
+// ── Dropdown panel ─────────────────────────────────────────────
+.notif-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 360px;
+  background: white;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+  z-index: 200;
+  overflow: hidden;
+  font-family: $font-sans;
+}
+
+.notif-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.notif-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notif-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.notif-count {
+  background: #f0f0f0;
+  color: #555;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.notif-list {
+  max-height: 380px;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar { width: 4px; }
+  &::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+}
+
+.notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f8f8f8;
+  transition: background 0.15s;
+  cursor: pointer;
+  position: relative;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: #f4f6ff; }
+  &:hover .dismiss-btn { opacity: 1; }
+
+  &.pending .notif-icon  { background: #fff7e6; }
+  &.activity .notif-icon { background: #f0f4ff; }
+  &.contact .notif-icon  { background: #fff8e1; }
+}
+
+.notif-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.notif-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.notif-msg {
+  font-size: 0.82rem;
+  color: #2a2a2a;
+  margin: 0 0 4px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.notif-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.notif-actor {
+  font-size: 0.73rem;
+  color: #888;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.notif-time {
+  font-size: 0.73rem;
+  color: #aaa;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.notif-empty {
+  padding: 28px 16px;
+  text-align: center;
+  color: #aaa;
+  font-size: 0.85rem;
+  font-family: $font-sans;
+}
+
+// ── Dismiss (×) button on each notification ────────────────────
+.dismiss-btn {
+  flex-shrink: 0;
+  opacity: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #aaa;
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+  margin-top: 1px;
+
+  &:hover {
+    color: #e53e3e;
+    background: #fff0f0;
+  }
+}
+
+// ── Clear all button ────────────────────────────────────────────
+.clear-all-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #888;
+  font-size: 0.72rem;
+  font-family: $font-sans;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+  white-space: nowrap;
+
+  &:hover {
+    color: #e53e3e;
+    background: #fff0f0;
+  }
+}
+
+// ── Profile avatar ─────────────────────────────────────────────
+.user-icon {
+  width: 36px;
+  height: 36px;
+  background: #1a1a1a;
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-family: $font-sans;
+
+  &:hover { background: #333; }
+}

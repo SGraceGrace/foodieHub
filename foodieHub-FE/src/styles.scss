@@ -1,0 +1,50 @@
+// Custom Theming for Angular Material
+// For more information: https://material.angular.dev/guide/theming
+@use "@angular/material" as mat;
+@use "../src/styles/variables" as *;
+
+html,
+body {
+  height: 100%;
+  font-family: "Libertinus Serif";
+}
+body {
+  margin: 0;
+}
+.mat-mdc-menu-panel {
+  background-color: white !important;
+}
+
+.toast-top-center {
+  top: 18px !important;
+}
+
+#toast-container > div {
+  border-radius: 10px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+  font-family: 'DM Sans', sans-serif !important;
+  font-size: 0.92rem !important;
+  padding: 14px 18px 14px 52px !important;
+  opacity: 1 !important;
+}
+
+#toast-container > .toast-success {
+  background-color: #4caf50 !important;
+}
+
+#toast-container > .toast-error {
+  background-color: #ef5350 !important;
+}
+
+#toast-container > .toast-warning {
+  background-color: #ffa726 !important;
+}
+
+#toast-container > .toast-info {
+  background-color: #42a5f5 !important;
+}
+
+.toast-progress {
+  opacity: 0.3 !important;
+  height: 3px !important;
+}

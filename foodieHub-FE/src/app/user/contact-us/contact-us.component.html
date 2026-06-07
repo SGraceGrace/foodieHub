@@ -1,0 +1,68 @@
+<!-- Hero -->
+<div class="page-hero">
+  <h1>Get In Touch</h1>
+  <p>We'd love to hear from you. Our team responds within 2–4 hours.</p>
+</div>
+
+<!-- Layout -->
+<div class="contact-layout">
+
+  <!-- Left: Info -->
+  <div class="contact-info">
+    <h2>Contact Information</h2>
+    <p>Reach out to us for any questions, feedback, or support. We're always here to help.</p>
+
+    <div class="contact-item">
+      <div class="contact-icon">📍</div>
+      <div><h4>Address</h4><p>42, Anna Salai, T Nagar, Chennai — 600017</p></div>
+    </div>
+    <div class="contact-item">
+      <div class="contact-icon">📞</div>
+      <div><h4>Phone</h4><p>+91 98765 43210</p></div>
+    </div>
+    <div class="contact-item">
+      <div class="contact-icon">✉️</div>
+      <div><h4>Email</h4><p>support&#64;foodiehub.in</p></div>
+    </div>
+    <div class="contact-item">
+      <div class="contact-icon">🕐</div>
+      <div><h4>Hours</h4><p>Mon – Sun: 8:00 AM – 11:00 PM</p></div>
+    </div>
+  </div>
+
+  <!-- Right: Form -->
+  <div class="contact-form">
+    <h3>Send Us a Message</h3>
+
+    <form [formGroup]="contactForm" (ngSubmit)="onSubmit()">
+      <div class="input-row">
+        <div class="input-field">
+          <span class="icon">👤</span>
+          <input type="text" placeholder="Your name" formControlName="name" />
+        </div>
+        <div class="input-field">
+          <span class="icon">✉</span>
+          <input type="email" placeholder="Your email" formControlName="email" />
+        </div>
+      </div>
+
+      <div class="input-field">
+        <span class="icon">📝</span>
+        <input type="text" placeholder="Subject" formControlName="subject" />
+      </div>
+
+      <textarea
+        placeholder="Your message..."
+        formControlName="message"
+        (focus)="focused = true"
+        (blur)="focused = false"
+        [class.focused]="focused"
+      ></textarea>
+
+      <button type="submit" class="btn-gold btn-full" [disabled]="loading">
+        {{ loading ? 'Sending...' : 'Send Message →' }}
+      </button>
+    </form>
+  </div>
+
+</div>

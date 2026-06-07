@@ -1,0 +1,45 @@
+<div class="kyc-container">
+  <div class="kyc-card">
+    <div class="kyc-brand">
+      <div class="logo-icon">F</div>
+      <div>
+        <div class="logo-text">foodiehub</div>
+        <div class="logo-sub">Delivery Partner</div>
+      </div>
+    </div>
+
+    <h2 class="kyc-title">📄 Verify Your Documents</h2>
+
+    <div class="info-banner">
+      <p><strong>You're almost ready to start delivering!</strong></p>
+      <p>Upload the required documents below. We'll verify and approve your account within 24–48 hours.</p>
+    </div>
+
+    <div class="doc-list">
+      <div class="doc-item" *ngFor="let doc of documents">
+        <div class="doc-info">
+          <div class="doc-label">{{ doc.label }}</div>
+          <div class="doc-status" *ngIf="doc.file">✅ {{ doc.file.name }}</div>
+          <div class="doc-status pending" *ngIf="!doc.file">Not uploaded</div>
+        </div>
+        <div class="doc-actions">
+          <img *ngIf="doc.preview" [src]="doc.preview" class="doc-preview" alt="preview" />
+          <label class="upload-btn">
+            {{ doc.file ? 'Change' : 'Upload' }}
+            <input type="file" accept="image/*,.pdf" (change)="onFileSelected($event, doc)" hidden />
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="progress-bar">
+      <div class="progress-fill" [style.width.%]="uploadedCount / documents.length * 100"></div>
+    </div>
+    <p class="progress-text">{{ uploadedCount }} of {{ documents.length }} documents uploaded</p>
+
+    <button class="btn btn-primary" (click)="submit()" [disabled]="!allUploaded || submitting">
+      {{ submitting ? 'Submitting...' : 'Submit Documents' }}
+    </button>
+    <a routerLink="/driver/login" class="skip-link">Skip for now — submit later</a>
+  </div>
+</div>

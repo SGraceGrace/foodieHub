@@ -1,0 +1,75 @@
+<header class="header">
+  <div class="logo-area">
+    <div class="logo-icon">F</div>
+    <div>
+      <div class="logo-text">foodiehub</div>
+      <div class="logo-sub">Delivery Partner</div>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <!-- Enable notifications prompt (shown until permission is granted/denied) -->
+    <button
+      *ngIf="notifPermission === 'default'"
+      class="header-btn enable-notif-btn"
+      (click)="enableBrowserNotifications()"
+      title="Enable order alerts">
+      🔔 Enable alerts
+    </button>
+
+    <!-- Notification bell -->
+    <div class="bell-wrapper">
+      <button class="bell-btn" (click)="toggleBell()" title="Order notifications">
+        <span class="bell-icon">🔔</span>
+        <span *ngIf="unreadCount > 0" class="bell-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+      </button>
+
+      <!-- Bell panel -->
+      <div class="bell-panel" *ngIf="showBell">
+        <div class="bell-panel-header">
+          <span class="bell-panel-title">Order Alerts</span>
+          <div class="bell-panel-header-actions">
+            <button *ngIf="notifications.length > 0" class="bell-clear-btn" (click)="clearNotifications()">
+              Clear all
+            </button>
+            <button class="bell-close-btn" (click)="showBell = false">✕</button>
+          </div>
+        </div>
+
+        <div class="bell-panel-body">
+          <div *ngIf="notifications.length === 0" class="bell-empty">
+            <div class="bell-empty-icon">📭</div>
+            <p>No order alerts yet.<br>Go online to start receiving orders.</p>
+          </div>
+
+          <div
+            *ngFor="let n of notifications"
+            class="bell-item"
+            [class.unread]="!n.read">
+            <div class="bell-item-top">
+              <span class="bell-item-restaurant">{{ n.restaurantName }}</span>
+              <span class="bell-item-earn">₹{{ n.earnAmount | number:'1.0-0' }}</span>
+            </div>
+            <div class="bell-item-meta">
+              {{ n.itemCount }} item{{ n.itemCount !== 1 ? 's' : '' }}
+              · {{ n.deliveryAddress | slice:0:35 }}{{ n.deliveryAddress.length > 35 ? '…' : '' }}
+            </div>
+            <div class="bell-item-time">{{ n.createdAt | date:'h:mm a' }}</div>
+          </div>
+        </div>
+
+        <div class="bell-panel-footer" *ngIf="notifications.length > 0">
+          <button class="bell-view-btn" (click)="goOrders(); showBell = false">
+            View Available Orders →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <button class="header-btn" (click)="logout()">Logout</button>
+    <div class="user-avatar" (click)="goProfile()" title="My Profile">{{ driverInitials }}</div>
+  </div>
+</header>
+
+<!-- Transparent overlay to close bell panel on outside click -->
+<div class="bell-overlay" *ngIf="showBell" (click)="showBell = false"></div>

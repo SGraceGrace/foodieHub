@@ -1,0 +1,121 @@
+$gold:      #f9b303;
+$text:      #4e4e4e;
+$text-dark: #2a2a2a;
+$font-serif: 'Libre Baskerville', Georgia, serif;
+$font-sans:  'DM Sans', sans-serif;
+
+.footer {
+  background: #1a1a1a;
+  color: rgba(255,255,255,0.75);
+  font-family: $font-sans;
+  padding: 3rem 2rem 1.5rem;
+  margin-top: auto;
+}
+
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  gap: 3rem;
+  flex-wrap: wrap;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.footer-brand {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  max-width: 220px;
+}
+
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  background: $gold;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-family: $font-serif;
+  font-size: 18px;
+}
+
+.brand-name {
+  font-family: $font-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: white;
+}
+
+.brand-tagline {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.45);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.footer-links {
+  display: flex;
+  gap: 3rem;
+  flex-wrap: wrap;
+}
+
+.link-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 130px;
+}
+
+.link-heading {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 4px;
+}
+
+.link-group a {
+  font-size: 0.88rem;
+  color: rgba(255,255,255,0.65);
+  text-decoration: none;
+  transition: color 0.15s;
+
+  &:hover { color: white; }
+}
+
+.partner-link {
+  color: $gold !important;
+  font-weight: 600;
+
+  &:hover { color: #fbc534 !important; }
+}
+
+.footer-bottom {
+  max-width: 1200px;
+  margin: 1.5rem auto 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.3);
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.footer-legal {
+  display: flex;
+  gap: 1.5rem;
+
+  a {
+    color: rgba(255,255,255,0.3);
+    text-decoration: none;
+    &:hover { color: rgba(255,255,255,0.6); }
+  }
+}

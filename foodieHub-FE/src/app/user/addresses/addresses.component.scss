@@ -1,0 +1,367 @@
+@use 'sass:color';
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+$gold:       #f9b303;
+$gold-dark:  #e0a000;
+$gold-light: #fff8e1;
+$text:       #4e4e4e;
+$text-dark:  #2a2a2a;
+$text-light: #888;
+$bg-warm:    #fffaf2;
+$border:     #e8e8e8;
+$shadow:     0 2px 10px rgba(0,0,0,.08);
+$shadow-lg:  0 4px 20px rgba(0,0,0,.12);
+$radius:     10px;
+$font-serif: 'Libre Baskerville', Georgia, serif;
+$font-sans:  'DM Sans', sans-serif;
+
+* { font-family: $font-sans; cursor: default; box-sizing: border-box; }
+input, select { cursor: text; }
+button { cursor: pointer; }
+select { cursor: pointer; }
+
+// ── Back Bar ──────────────────────────────────────────────────────
+.back-bar {
+  padding: .75rem 2.5rem 0;
+
+  @media (max-width: 600px) { padding: .75rem 1.2rem 0; }
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: $text-light;
+  font-family: $font-sans;
+  font-size: .85rem;
+  font-weight: 500;
+  padding: 0;
+  transition: color .2s;
+
+  &:hover { color: $gold; }
+}
+
+// ── Hero ─────────────────────────────────────────────────────────
+.page-hero {
+  background: $bg-warm;
+  padding: 2.5rem;
+  text-align: center;
+  border-bottom: 1px solid $border;
+
+  h1 { font-family: $font-serif; font-size: 1.9rem; color: $text-dark; margin-bottom: .4rem; }
+  p  { color: $text-light; font-size: .93rem; }
+}
+
+// ── List ──────────────────────────────────────────────────────────
+.addr-mgmt-list {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 2rem 2.5rem;
+
+  @media (max-width: 600px) { padding: 1.2rem; }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+  color: $text-light;
+  font-size: .9rem;
+}
+
+// ── Address Card ──────────────────────────────────────────────────
+.addr-card-mgmt {
+  background: white;
+  border-radius: 12px;
+  padding: 1.3rem;
+  box-shadow: $shadow;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  transition: box-shadow .2s;
+  border: 1.5px solid transparent;
+
+  &:hover { box-shadow: $shadow-lg; }
+  &.default { border-color: $gold; }
+}
+
+.addr-icon-big {
+  width: 44px;
+  height: 44px;
+  border-radius: $radius;
+  background: $gold-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.addr-card-info { flex: 1; }
+
+.addr-card-label {
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: $gold;
+  margin-bottom: 3px;
+  letter-spacing: .04em;
+}
+
+.addr-card-text {
+  font-size: .87rem;
+  color: $text-dark;
+  line-height: 1.5;
+}
+
+.addr-card-default-tag {
+  display: inline-block;
+  font-size: .72rem;
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+  margin-top: 5px;
+}
+
+.set-default-btn {
+  display: inline-block;
+  font-size: .72rem;
+  color: $gold;
+  background: none;
+  border: none;
+  padding: 2px 0;
+  margin-top: 4px;
+  font-weight: 600;
+  text-decoration: underline;
+  &:hover { color: $gold-dark; }
+}
+
+.addr-card-actions { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; flex-shrink: 0; }
+
+.deliver-here-btn {
+  padding: 7px 14px; border-radius: 8px;
+  background: $gold; border: none; color: $text-dark;
+  font-size: .78rem; font-weight: 700; font-family: $font-sans;
+  transition: all .2s; white-space: nowrap;
+  &:hover { background: $gold-dark; }
+}
+
+.delivering-badge {
+  display: inline-block; margin-left: 8px;
+  background: #e8f5e9; color: #2e7d32;
+  font-size: .68rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 20px;
+}
+
+.addr-has-location {
+  font-size: .72rem; color: $gold; margin-top: 3px;
+}
+
+.addr-card-mgmt.delivering {
+  border-color: $gold;
+  background: $gold-light;
+}
+
+.location-pick-row {
+  display: flex; align-items: center; gap: 10px; margin-top: 4px;
+}
+.location-pick-val { font-size: .85rem; color: $text-dark; flex: 1; }
+.location-pick-val.muted { color: #aaa; }
+.btn-pick-map {
+  padding: 7px 14px; border-radius: 8px; border: 1.5px solid $gold;
+  background: transparent; color: $gold; font-size: .82rem; font-weight: 600;
+  cursor: pointer; white-space: nowrap; transition: all .2s;
+  &:hover { background: $gold; color: $text-dark; }
+}
+
+// ── Location Modal ────────────────────────────────────────────────
+.lp-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.45);
+  z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 1rem;
+}
+.lp-modal {
+  background: white; border-radius: 16px; width: 100%; max-width: 560px;
+  padding: 1.5rem; box-shadow: 0 12px 40px rgba(0,0,0,.2); max-height: 90vh; overflow-y: auto;
+}
+.lp-modal-hdr {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;
+  h3 { font-family: $font-serif; font-size: 1.2rem; color: $text-dark; margin: 0; }
+}
+.lp-close {
+  background: none; border: none; font-size: 1.1rem; cursor: pointer;
+  color: $text-light; padding: 4px 8px; border-radius: 6px;
+  &:hover { background: #f5f5f5; }
+}
+
+// ── Add New Card (dashed) ─────────────────────────────────────────
+
+.addr-action-btn {
+  padding: 6px 12px;
+  border-radius: 7px;
+  font-size: .78rem;
+  font-family: $font-sans;
+  transition: all .2s;
+  font-weight: 500;
+
+  &.delete {
+    background: white;
+    border: 1.5px solid #ffddd9;
+    color: #e53935;
+    &:hover { background: #fff0ef; }
+  }
+}
+
+// ── Add New Card (dashed) ─────────────────────────────────────────
+.add-address-card {
+  border: 2px dashed $border;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  color: $text-light;
+  margin-top: .5rem;
+  transition: all .2s;
+
+  &:hover {
+    border-color: $gold;
+    color: $gold;
+    background: $gold-light;
+  }
+}
+
+.add-address-title { font-weight: 600; margin-bottom: .2rem; font-size: .93rem; }
+.add-address-sub   { font-size: .82rem; }
+
+// ── Add Form Card ─────────────────────────────────────────────────
+.add-form-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: $shadow;
+  margin-bottom: 12px;
+
+  h3 {
+    font-family: $font-serif;
+    font-size: 1.1rem;
+    color: $text-dark;
+    margin-bottom: 1.2rem;
+  }
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: .3rem;
+
+  @media (max-width: 480px) { grid-template-columns: 1fr; }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: .9rem;
+
+  label {
+    font-size: .79rem;
+    font-weight: 600;
+    color: $text-light;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+  }
+
+  input, select {
+    padding: 10px 13px;
+    border: 1.5px solid $border;
+    border-radius: $radius;
+    font-family: $font-sans;
+    font-size: .9rem;
+    color: $text;
+    outline: none;
+    transition: border-color .2s;
+    background: white;
+
+    &:focus { border-color: $gold; }
+    &.field-error { border-color: #ef5350; }
+    &::placeholder { color: color.adjust($text-light, $lightness: 12%); }
+  }
+}
+
+.err-msg { font-size: .75rem; color: #ef5350; }
+
+// ── Toggle ────────────────────────────────────────────────────────
+.toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+}
+
+.toggle {
+  position: relative;
+  display: inline-block;
+  width: 42px;
+  height: 24px;
+
+  input { opacity: 0; width: 0; height: 0; }
+
+  .slider {
+    position: absolute;
+    inset: 0;
+    background: $border;
+    border-radius: 24px;
+    transition: background .2s;
+    cursor: pointer;
+
+    &::before {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 3px;
+      top: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: transform .2s;
+    }
+  }
+
+  input:checked + .slider { background: $gold; }
+  input:checked + .slider::before { transform: translateX(18px); }
+}
+
+.toggle-label { font-size: .85rem; color: $text; }
+
+// ── Actions ───────────────────────────────────────────────────────
+.form-actions { display: flex; gap: 9px; margin-top: .4rem; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 22px;
+  border: none;
+  border-radius: $radius;
+  font-family: $font-sans;
+  font-size: .9rem;
+  font-weight: 600;
+  transition: all .2s;
+
+  &:disabled { opacity: .6; cursor: not-allowed; }
+}
+
+.btn-gold {
+  background: $gold;
+  color: $text-dark;
+  &:hover:not(:disabled) { background: $gold-dark; }
+}
+
+.btn-outline {
+  background: transparent;
+  color: $text-dark;
+  border: 1.5px solid $border;
+  &:hover { border-color: $gold; color: $gold; }
+}

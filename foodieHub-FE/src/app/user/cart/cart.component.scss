@@ -1,0 +1,377 @@
+$gold: #e6ad00;
+$text: #1a1a1a;
+$muted: #888;
+$border: #ebebeb;
+$green: #2e7d32;
+$font-sans: 'Inter', 'Segoe UI', sans-serif;
+
+* { box-sizing: border-box; }
+
+// ── Empty state ───────────────────────────────────────────────────────
+.cart-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 1rem;
+  font-family: $font-sans;
+  text-align: center;
+}
+
+.cart-empty-icon  { font-size: 4rem; margin-bottom: 1rem; }
+.cart-empty-title { font-size: 1.4rem; font-weight: 700; color: $text; margin: 0 0 0.4rem; }
+.cart-empty-sub   { font-size: 0.9rem; color: $muted; margin: 0 0 1.5rem; }
+
+.cart-empty-btn {
+  background: $gold;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding: 0.7rem 2rem;
+  border-radius: 10px;
+  text-decoration: none;
+  font-family: $font-sans;
+  transition: background .15s;
+  &:hover { background: #d4930a; }
+}
+
+// ── Page shell ────────────────────────────────────────────────────────
+.cart-page {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+  font-family: $font-sans;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+// ── Page header ───────────────────────────────────────────────────────
+.cart-page-hdr {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.cart-back-btn {
+  background: none;
+  border: 1.5px solid $border;
+  border-radius: 8px;
+  padding: 0.4rem 0.9rem;
+  font-size: 0.88rem;
+  color: #555;
+  cursor: pointer;
+  font-family: $font-sans;
+  transition: border-color .15s, color .15s;
+  &:hover { border-color: $text; color: $text; }
+}
+
+.cart-page-title { font-size: 1.5rem; font-weight: 700; color: $text; margin: 0; flex: 1; }
+
+.cart-clear-all-btn {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.8rem;
+  color: #c62828;
+  cursor: pointer;
+  font-family: $font-sans;
+  transition: all .15s;
+  &:hover { background: #ffeaea; border-color: #c62828; }
+}
+
+// ── Delivery address ──────────────────────────────────────────────────
+.cart-address-section {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+}
+
+.cart-address-hdr {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.cart-address-hdr-icon { font-size: 1rem; }
+
+.cart-address-hdr-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: $text;
+}
+
+.cart-address-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.cart-address-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.cart-address-label { font-size: 0.82rem; font-weight: 700; color: $text; }
+.cart-address-text  { font-size: 0.85rem; color: #444; line-height: 1.4; }
+.cart-address-landmark { font-size: 0.78rem; color: $muted; }
+
+.cart-address-change {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $gold;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  &:hover { text-decoration: underline; }
+}
+
+.cart-no-address {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.cart-no-address-text { font-size: 0.85rem; color: $muted; }
+
+.cart-add-address-btn {
+  background: $gold;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.82rem;
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-family: $font-sans;
+  white-space: nowrap;
+  transition: background .15s;
+  &:hover { background: #d4930a; }
+}
+
+// ── Restaurant card ───────────────────────────────────────────────────
+.cart-restaurant-card {
+  background: #fff;
+  border: 1px solid $border;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+// Restaurant header
+.cart-rest-hdr {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  background: #fafaf8;
+  border-bottom: 1px solid $border;
+}
+
+.cart-rest-hdr-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.cart-rest-icon { font-size: 1.3rem; }
+.cart-rest-name { font-size: 0.95rem; font-weight: 700; color: $text; }
+.cart-rest-count { font-size: 0.75rem; color: $muted; margin-top: 1px; }
+
+.cart-remove-rest-btn {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.75rem;
+  color: #c62828;
+  cursor: pointer;
+  font-family: $font-sans;
+  transition: all .15s;
+  flex-shrink: 0;
+  &:hover { background: #ffeaea; border-color: #c62828; }
+}
+
+// Items
+.cart-items {}
+
+.cart-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1px solid $border;
+  &:last-child { border-bottom: none; }
+}
+
+.cart-item-dot { font-size: 0.82rem; flex-shrink: 0; align-self: flex-start; margin-top: 2px; }
+
+.cart-item-info { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.cart-item-name { font-size: 0.9rem; font-weight: 600; color: $text; }
+.cart-item-desc { font-size: 0.76rem; color: $muted; line-height: 1.4; }
+.cart-item-unit { font-size: 0.76rem; color: $muted; }
+
+.cart-item-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
+.cart-item-total { font-size: 0.88rem; font-weight: 700; color: $text; }
+
+// Qty controls
+.cart-qty-ctrl {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid $gold;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.cart-qty-btn {
+  background: transparent;
+  border: none;
+  color: $gold;
+  font-size: 1rem;
+  font-weight: 700;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .12s;
+  font-family: $font-sans;
+  flex-shrink: 0;
+  &:hover  { background: #fff8e1; }
+  &:active { background: #f5e89e; }
+}
+
+.cart-qty-val {
+  min-width: 24px;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: $text;
+  user-select: none;
+}
+
+// Add more link
+.cart-add-more {
+  display: block;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $gold;
+  text-decoration: none;
+  border-top: 1px solid $border;
+  transition: opacity .15s;
+  &:hover { opacity: 0.75; }
+}
+
+// ── Bill section ──────────────────────────────────────────────────────
+.cart-bill-section {
+  padding: 1rem 1.1rem;
+  border-top: 2px solid $border;
+  background: #fafaf8;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+// Nudge banner
+.cart-nudge {
+  background: #fff8e1;
+  border: 1px solid #f0e0a0;
+  border-radius: 8px;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.8rem;
+  color: #7a5500;
+
+  &--success {
+    background: #e8f5e9;
+    border-color: #a5d6a7;
+    color: $green;
+  }
+}
+
+// Bill rows
+.cart-bill { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.cart-bill-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.86rem;
+  color: #444;
+  font-family: $font-sans;
+  .free { color: $green; font-weight: 600; }
+}
+
+.cart-bill-free {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: $green;
+  margin-left: 4px;
+}
+
+.cart-bill-divider { height: 1px; background: $border; margin: 0.2rem 0; }
+
+.cart-bill-total {
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: $text;
+}
+
+// Place order button
+.cart-order-btn {
+  width: 100%;
+  background: $gold;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: $font-sans;
+  transition: background .15s;
+
+  &:hover:not(:disabled) { background: #d4930a; }
+
+  &:disabled {
+    background: #e0e0e0;
+    color: $muted;
+    cursor: not-allowed;
+  }
+}
+
+.cart-payment-error {
+  margin-top: .6rem;
+  font-size: 0.82rem;
+  color: #c62828;
+  text-align: center;
+}
+
+// ── Mobile ────────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .cart-page { padding: 1.2rem 1rem 3rem; }
+  .cart-page-title { font-size: 1.2rem; }
+  .cart-address-section { padding: 0.9rem 1rem; }
+}
+
+@media (max-width: 480px) {
+  .cart-item { gap: 0.6rem; padding: 0.8rem 0.9rem; }
+  .cart-rest-hdr { padding: 0.8rem 0.9rem; }
+  .cart-bill-section { padding: 0.85rem 0.9rem; }
+  .cart-no-address { flex-direction: column; align-items: flex-start; }
+}

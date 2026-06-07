@@ -1,0 +1,145 @@
+<div class="orders-wrap">
+  <h2 class="orders-title">My Orders</h2>
+
+  <!-- Tabs -->
+  <div class="order-tabs">
+    <button
+      class="order-tab"
+      *ngFor="let tab of tabs"
+      [class.active]="activeTab === tab.key"
+      (click)="applyTab(tab.key)"
+    >{{ tab.label }}</button>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="filtered.length === 0">
+    <div class="empty-icon">📦</div>
+    <p>No orders here yet.</p>
+  </div>
+
+  <!-- Order Cards -->
+  <div
+    class="order-card"
+    *ngFor="let order of filtered"
+    [class.active-order]="isActive(order)"
+  >
+    <!-- Card Header -->
+    <div class="oc-hdr">
+      <div>
+        <div class="oc-id">Order #{{ order.id }}</div>
+        <div class="oc-rest">🍽️ {{ order.restaurantName }}</div>
+      </div>
+      <span class="status-badge" [ngClass]="statusBadgeClass(order.status)">
+        {{ statusLabel(order.status) }}
+      </span>
+    </div>
+
+    <!-- Progress Tracker (active orders only) -->
+    <div class="track-bar" *ngIf="isActive(order)">
+      <ng-container *ngFor="let step of trackSteps; let i = index; let last = last">
+        <div class="trk-bar-step">
+          <div class="trk-bar-dot" [ngClass]="stepState(order, i)">
+            <span *ngIf="stepState(order, i) === 'done'">✓</span>
+            <span *ngIf="stepState(order, i) === 'curr' && i === 4">🛵</span>
+            <span *ngIf="stepState(order, i) === 'curr' && i !== 4">●</span>
+            <span *ngIf="stepState(order, i) === 'pending' && i === 5">🏠</span>
+          </div>
+          <div class="trk-bar-lbl" [ngClass]="stepState(order, i)">{{ step }}</div>
+        </div>
+        <div class="trk-bar-line" *ngIf="!last" [class.done]="stepState(order, i) === 'done'"></div>
+      </ng-container>
+    </div>
+
+    <!-- Items -->
+    <div class="oc-items">
+      <span class="oc-itag" *ngFor="let item of order.items">
+        {{ item.qty }}× {{ item.name }}
+      </span>
+    </div>
+
+    <!-- Footer -->
+    <div class="oc-foot">
+      <span class="oc-date">
+        {{ order.createdAt }}{{ order.eta ? ' · ' + order.eta : '' }}
+      </span>
+      <span class="oc-total">₹{{ order.totalAmount }}</span>
+    </div>
+
+    <!-- Actions -->
+    <div class="oc-actions">
+      <ng-container *ngIf="isActive(order)">
+        <button class="oc-btn gold" (click)="trackOrder(order)">📍 Track Order</button>
+        <button class="oc-btn outline">📞 Call Restaurant</button>
+      </ng-container>
+
+      <ng-container *ngIf="order.status === 'DELIVERED'">
+        <button class="oc-btn gold"
+          [disabled]="reorderingId === order.id"
+          (click)="reorder(order)">
+          {{ reorderingId === order.id ? 'Adding…' : '🔁 Reorder' }}
+        </button>
+        <button
+          *ngIf="!order.rated && ratingTarget?.id !== order.id"
+          class="oc-btn outline"
+          (click)="openRating(order)"
+        >✍ Rate Order</button>
+        <span class="rated-badge" *ngIf="order.rated">⭐ Rated</span>
+      </ng-container>
+
+      <ng-container *ngIf="order.status === 'CANCELLED'">
+        <button class="oc-btn outline"
+          [disabled]="reorderingId === order.id"
+          (click)="reorder(order)">
+          {{ reorderingId === order.id ? 'Adding…' : '🔁 Reorder' }}
+        </button>
+      </ng-container>
+    </div>
+
+    <!-- ── Inline Rating Widget ──────────────────────────────── -->
+    <div class="rating-panel" *ngIf="ratingTarget?.id === order.id">
+
+      <!-- Restaurant rating (required) -->
+      <div class="rating-section">
+        <p class="rating-prompt">🍛 <strong>{{ order.restaurantName }}</strong> <span class="required-hint">(required)</span></p>
+        <div class="star-row">
+          <button
+            class="star-btn"
+            *ngFor="let s of stars"
+            (mouseenter)="hoverRating(s)"
+            (mouseleave)="hoverRating(0)"
+            (click)="selectStar(s)"
+            [class.lit]="s <= activeStar()"
+          >★</button>
+        </div>
+        <p class="star-hint" *ngIf="activeStar() > 0">{{ starLabels[activeStar()] }}</p>
+      </div>
+
+      <!-- Driver rating (optional — only when a driver was assigned) -->
+      <div class="rating-section rating-section--driver" *ngIf="hasDriverAssigned(order)">
+        <p class="rating-prompt">🛵 <strong>Your Delivery Driver</strong> <span class="optional-hint">(optional)</span></p>
+        <div class="star-row">
+          <button
+            class="star-btn"
+            *ngFor="let s of stars"
+            (mouseenter)="hoverDriverRating(s)"
+            (mouseleave)="hoverDriverRating(0)"
+            (click)="selectDriverStar(s)"
+            [class.lit]="s <= activeDriverStar()"
+          >★</button>
+        </div>
+        <p class="star-hint" *ngIf="activeDriverStar() > 0">{{ starLabels[activeDriverStar()] }}</p>
+      </div>
+
+      <div class="rating-actions">
+        <button
+          class="oc-btn gold"
+          [disabled]="selectedStar === 0 || submitting"
+          (click)="submitRating()"
+        >{{ submitting ? 'Submitting…' : 'Submit Rating' }}</button>
+        <button class="oc-btn outline" (click)="cancelRating()">Cancel</button>
+      </div>
+    </div>
+
+  </div>
+
+</div>

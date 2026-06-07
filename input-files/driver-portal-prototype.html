@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoodieHub Driver Partner — Delivery App</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #f9b303;
+  --text: #4e4e4e;
+  --text-dark: #2a2a2a;
+  --text-light: #888;
+  --white: #ffffff;
+  --bg-light: #f5f5f5;
+  --border: #e8e8e8;
+  --success: #248f28;
+  --error: #ff1100;
+  --warning: #ff9800;
+  --shadow: 0 2px 10px rgba(0,0,0,0.08);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.14);
+  --radius: 10px;
+  --font-serif: 'Libre Baskerville', Georgia, serif;
+  --font-sans: 'DM Sans', sans-serif;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font-sans); color: var(--text); background: var(--bg-light); }
+
+.page { display: none; min-height: 100vh; }
+.page.show { display: block; }
+.content-section { display: none; }
+.content-section.show { display: block; }
+
+/* HEADER */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 2rem;
+  background: white;
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo-area { display: flex; align-items: center; gap: 10px; }
+.logo-icon { width: 40px; height: 40px; background: #1a1a1a; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 18px; font-family: var(--font-serif); }
+.logo-text { font-family: var(--font-serif); font-size: 1.2rem; font-weight: 700; color: var(--text-dark); }
+.logo-sub { font-size: 0.7rem; color: var(--text-light); }
+.header-right { display: flex; gap: 15px; align-items: center; }
+.header-btn { border: 1px solid var(--border); padding: 7px 14px; border-radius: 6px; background: white; cursor: pointer; font-size: 0.85rem; color: var(--text); font-family: var(--font-sans); }
+.header-btn:hover { border-color: var(--gold); color: var(--gold); }
+.user-avatar { width: 36px; height: 36px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; cursor: pointer; font-size: 0.9rem; }
+
+/* AUTH PAGE */
+.auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(26,26,26,0.15) 0%, rgba(26,26,26,0.05) 100%), #f5f5f5;
+}
+.auth-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+  max-width: 900px;
+  width: 100%;
+}
+.auth-left { padding: 3rem 2.5rem; }
+.auth-brand { display: flex; align-items: center; gap: 10px; margin-bottom: 2rem; }
+.auth-divider { width: 1px; height: 40px; background: var(--border); }
+.auth-title { font-family: var(--font-serif); font-size: 1.4rem; color: var(--text-dark); margin-bottom: 1.5rem; text-align: center; }
+.input-field { display: flex; align-items: center; gap: 10px; border: 1.5px solid #000; border-radius: 8px; padding: 11px 14px; margin-bottom: 1rem; background: white; }
+.input-field:focus-within { border-color: var(--gold); }
+.input-field span { color: var(--text-light); }
+.input-field input { flex: 1; border: none; outline: none; font-family: var(--font-sans); font-size: 0.9rem; color: var(--text); background: transparent; }
+.input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; border: none; border-radius: 8px; font-family: var(--font-sans); font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.95rem; }
+.btn-primary { background: #1a1a1a; color: white; width: 100%; }
+.btn-primary:hover { background: #000; }
+.btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text); width: 100%; }
+.btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+.auth-or { text-align: center; color: var(--text-light); margin: 1rem 0; font-size: 0.85rem; }
+.auth-footer { text-align: center; margin-top: 1rem; font-size: 0.85rem; color: var(--text-light); }
+.auth-footer a { color: #1a1a1a; cursor: pointer; font-weight: 600; }
+.auth-right { background: linear-gradient(135deg, rgba(26,26,26,0.12), rgba(26,26,26,0.04)); padding: 3rem 2.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.promo-card { background: white; border-radius: 12px; padding: 1.5rem; text-align: center; box-shadow: var(--shadow); }
+.promo-emoji { font-size: 64px; margin-bottom: 1rem; }
+.promo-title { font-family: var(--font-serif); font-weight: 700; font-size: 1rem; margin-bottom: 0.5rem; }
+.promo-desc { font-size: 0.8rem; color: var(--text-light); line-height: 1.5; }
+
+/* DASHBOARD */
+.dashboard { display: grid; grid-template-columns: 260px 1fr; gap: 0; min-height: calc(100vh - 70px); }
+.sidebar { background: #1a1a1a; color: white; padding: 1.5rem 1rem; overflow-y: auto; max-height: calc(100vh - 70px); }
+.sidebar-title { font-family: var(--font-serif); font-weight: 700; font-size: 0.95rem; margin-bottom: 2rem; display: flex; align-items: center; gap: 8px; color: var(--gold); }
+.sidebar-title span { background: var(--gold); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #1a1a1a; font-size: 12px; }
+.nav-btn { width: 100%; text-align: left; padding: 10px 10px; border: none; background: transparent; color: rgba(255,255,255,0.7); cursor: pointer; border-radius: 6px; margin-bottom: 8px; font-family: var(--font-sans); font-size: 0.85rem; display: flex; align-items: center; gap: 8px; transition: all 0.2s; }
+.nav-btn:hover { background: rgba(249,179,3,0.15); color: var(--gold); }
+.nav-btn.active { background: rgba(249,179,3,0.15); color: var(--gold); }
+.nav-btn span { font-size: 1rem; }
+.logout-btn { margin-top: auto; color: rgba(255,255,255,0.4); }
+
+/* MAIN CONTENT */
+.main { padding: 2rem; background: var(--bg-light); overflow-y: auto; max-height: calc(100vh - 70px); }
+.page-title { font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; margin-bottom: 2rem; color: var(--text-dark); }
+
+/* DRIVER STATUS CARD */
+.status-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow);
+}
+.status-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+.status-info h3 { font-size: 0.9rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+.status-value { font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: var(--text-dark); }
+.status-toggle {
+  display: flex;
+  gap: 10px;
+}
+.toggle-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.toggle-btn.online {
+  background: var(--success);
+  color: white;
+}
+.toggle-btn.offline {
+  background: var(--text-light);
+  color: white;
+}
+
+/* EARNINGS */
+.earnings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.earning-box {
+  background: white;
+  padding: 1.2rem;
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+}
+.earning-label { font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+.earning-value { font-family: var(--font-serif); font-size: 1.8rem; font-weight: 700; color: var(--text-dark); }
+.earning-sub { font-size: 0.8rem; color: var(--text-light); margin-top: 3px; }
+
+/* ORDERS */
+.orders-box {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+.orders-box h3 { font-size: 1.05rem; margin-bottom: 1rem; }
+.order-card {
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 1.2rem;
+  margin-bottom: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.order-card:hover {
+  border-color: var(--gold);
+  box-shadow: var(--shadow-lg);
+}
+.order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; }
+.order-id { font-weight: 700; font-size: 0.95rem; color: var(--text-dark); }
+.order-time { font-size: 0.8rem; color: var(--text-light); }
+.order-details { font-size: 0.9rem; color: var(--text); margin-bottom: 0.8rem; }
+.order-restaurant { display: flex; gap: 5px; align-items: center; margin-bottom: 0.8rem; }
+.order-restaurant span { font-weight: 600; }
+.order-footer { display: flex; justify-content: space-between; align-items: center; }
+.order-amount { font-family: var(--font-serif); font-weight: 700; font-size: 1.1rem; color: var(--text-dark); }
+.order-status { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+.status-available { background: #e8f5e9; color: var(--success); }
+.status-accepted { background: #e3f2fd; color: #1565c0; }
+.status-pickup { background: #fff3e0; color: var(--warning); }
+.status-delivery { background: #f3e5f5; color: #7b1fa2; }
+
+/* PROFILE */
+.profile-box {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+.profile-header { display: flex; gap: 1.5rem; margin-bottom: 2rem; }
+.profile-avatar { width: 100px; height: 100px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; font-weight: 700; }
+.profile-info h3 { font-size: 1.2rem; margin-bottom: 3px; }
+.profile-info p { font-size: 0.9rem; color: var(--text-light); margin-bottom: 5px; }
+.rating-section { display: flex; align-items: center; gap: 10px; }
+.rating-stars { font-size: 1.2rem; }
+.rating-text { font-weight: 700; color: var(--text-dark); }
+
+/* STATS GRID */
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+.stat-item {
+  background: var(--bg-light);
+  padding: 1rem;
+  border-radius: 8px;
+}
+.stat-label { font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; margin-bottom: 5px; }
+.stat-value { font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: var(--text-dark); }
+
+/* MODAL */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+}
+.modal.show {
+  display: flex;
+}
+.modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 600px;
+  width: 90%;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+.modal-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--text-light);
+}
+.modal-title { font-family: var(--font-serif); font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem; }
+
+/* FORM */
+.form-group {
+  margin-bottom: 1rem;
+}
+.form-group label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 5px;
+}
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  color: var(--text);
+  outline: none;
+}
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  border-color: var(--gold);
+}
+
+/* TOAST */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a1a;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  display: none;
+  z-index: 9999;
+  box-shadow: var(--shadow-lg);
+}
+.toast.show {
+  display: block;
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* STEP INDICATOR */
+.step-indicator {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  position: relative;
+}
+.step-indicator::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--border);
+  z-index: 0;
+}
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+.step-circle {
+  width: 40px;
+  height: 40px;
+  background: white;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: var(--text-light);
+}
+.step.active .step-circle {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: white;
+}
+.step-label { font-size: 0.75rem; color: var(--text-light); text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- LOGIN PAGE -->
+<div class="page show" id="page-login">
+<div class="auth-container">
+<div class="auth-card">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <div class="logo-icon">F</div>
+      <div class="auth-divider"></div>
+      <div>
+        <div class="logo-text">foodiehub</div>
+        <div class="logo-sub">Delivery Partner</div>
+      </div>
+    </div>
+    <div class="auth-title">Welcome Driver!</div>
+    <div class="input-field">
+      <span>📱</span>
+      <input type="tel" placeholder="Phone Number" id="loginPhone" value="98765 43210">
+    </div>
+    <div class="input-field">
+      <span>🔒</span>
+      <input type="password" placeholder="Password" id="loginPassword" value="driver123">
+    </div>
+    <button class="btn btn-primary" onclick="handleLogin()">Login</button>
+    <div class="auth-or">or</div>
+    <button class="btn btn-outline" onclick="goPage('page-register')">Become a Delivery Partner</button>
+    <div class="auth-footer"><a onclick="notify('🔄 Reset coming soon')">Forgot password?</a></div>
+  </div>
+  <div class="auth-right">
+    <div class="promo-card">
+      <div class="promo-emoji">🚗</div>
+      <div class="promo-title">Earn While You Drive</div>
+      <div class="promo-desc">Flexible working hours. Earn ₹1000-2000 per day. Get instant payouts.</div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- REGISTRATION PAGE -->
+<div class="page" id="page-register">
+<div class="auth-container">
+<div class="auth-card">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <div class="logo-icon">F</div>
+      <div class="auth-divider"></div>
+      <div>
+        <div class="logo-text">foodiehub</div>
+        <div class="logo-sub">Delivery Partner</div>
+      </div>
+    </div>
+    <div class="auth-title">Start Delivering</div>
+
+    <div style="display: none;" id="registerStep1">
+      <div class="input-field">
+        <span>👤</span>
+        <input type="text" placeholder="Full Name" id="driverName">
+      </div>
+      <div class="input-field">
+        <span>📧</span>
+        <input type="email" placeholder="Email" id="driverEmail">
+      </div>
+      <div class="input-field">
+        <span>📱</span>
+        <input type="tel" placeholder="Phone Number" id="driverPhone">
+      </div>
+      <button class="btn btn-primary" onclick="nextRegisterStep()">Next</button>
+      <div class="auth-footer"><a onclick="goPage('page-login')">Already have account? Login</a></div>
+    </div>
+
+    <div id="registerStep2">
+      <div class="input-field">
+        <span>🚗</span>
+        <select id="vehicleType">
+          <option>Select Vehicle Type</option>
+          <option>🏍️ Bike</option>
+          <option>🛵 Scooter</option>
+          <option>🚙 Car</option>
+        </select>
+      </div>
+      <div class="input-field">
+        <span>🪪</span>
+        <input type="text" placeholder="License Number" id="licenseNumber">
+      </div>
+      <div class="input-field">
+        <span>🏦</span>
+        <input type="text" placeholder="Bank Account Number" id="bankAccount">
+      </div>
+      <div class="input-field">
+        <span>🔒</span>
+        <input type="password" placeholder="Create Password" id="registerPassword">
+      </div>
+      <div style="font-size: 0.8rem; color: var(--text-light); margin-bottom: 1rem;">
+        <input type="checkbox" id="agreeTerms"> I agree to terms and conditions
+      </div>
+      <button class="btn btn-primary" onclick="handleSignup()">Create Account</button>
+      <button class="btn btn-outline" style="margin-top: 0.5rem;" onclick="prevRegisterStep()">Back</button>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div class="promo-card">
+      <div class="promo-emoji">⚡</div>
+      <div class="promo-title">Quick Verification</div>
+      <div class="promo-desc">Upload documents. Get approved in 24-48 hours. Start earning immediately.</div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- KYC PAGE -->
+<div class="page" id="page-kyc">
+<div class="auth-container">
+<div style="background: white; border-radius: 16px; padding: 2rem; max-width: 600px; width: 100%; box-shadow: var(--shadow-lg);">
+  <h2 style="font-family: var(--font-serif); font-size: 1.3rem; margin-bottom: 1.5rem;">📄 Verify Your Documents</h2>
+  
+  <div style="background: var(--bg-light); padding: 1.5rem; border-radius: 10px; margin-bottom: 1.5rem; border-left: 4px solid var(--gold);">
+    <p style="font-size: 0.9rem; color: var(--text-dark); margin-bottom: 0.5rem;"><strong>Upload to get approved:</strong></p>
+    <p style="font-size: 0.85rem; color: var(--text-light); line-height: 1.5;">
+      ✅ Driving License<br>
+      ✅ Vehicle Registration Certificate<br>
+      ✅ PAN Card or Aadhar<br>
+      ✅ Insurance Certificate<br>
+      ✅ Bank Account Details
+    </p>
+  </div>
+
+  <div class="form-group">
+    <label>Upload Driving License</label>
+    <input type="file" accept="image/*">
+  </div>
+  <div class="form-group">
+    <label>Upload Vehicle Registration</label>
+    <input type="file" accept="image/*">
+  </div>
+  <div class="form-group">
+    <label>Upload PAN/Aadhar</label>
+    <input type="file" accept="image/*">
+  </div>
+  <div class="form-group">
+    <label>Upload Insurance Certificate</label>
+    <input type="file" accept="image/*">
+  </div>
+
+  <button class="btn btn-primary" onclick="submitKYC()" style="margin-top: 1rem;">Submit Documents</button>
+</div>
+</div>
+</div>
+
+<!-- DASHBOARD PAGE -->
+<div class="page" id="page-dashboard">
+<header class="header">
+  <div class="logo-area">
+    <div class="logo-icon">F</div>
+    <div>
+      <div class="logo-text">foodiehub</div>
+      <div class="logo-sub">Delivery Partner</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <button class="header-btn" onclick="notify('📞 Support coming soon')">Help</button>
+    <div class="user-avatar" onclick="goTab('tab-profile')">DR</div>
+  </div>
+</header>
+
+<div class="dashboard">
+  <div class="sidebar">
+    <div class="sidebar-title"><span>🚗</span> Driver</div>
+    <button class="nav-btn active" onclick="goTab('tab-dashboard')"><span>🏠</span>Dashboard</button>
+    <button class="nav-btn" onclick="goTab('tab-orders')"><span>📦</span>Available Orders</button>
+    <button class="nav-btn" onclick="goTab('tab-active')"><span>🔴</span>Active Delivery</button>
+    <button class="nav-btn" onclick="goTab('tab-history')"><span>📜</span>Delivery History</button>
+    <button class="nav-btn" onclick="goTab('tab-earnings')"><span>💰</span>Earnings</button>
+    <button class="nav-btn" onclick="goTab('tab-profile')"><span>👤</span>Profile</button>
+    <button class="nav-btn logout-btn" onclick="logout()"><span>🚪</span>Logout</button>
+  </div>
+
+  <div class="main">
+    <!-- DASHBOARD TAB -->
+    <div class="content-section show" id="tab-dashboard">
+      <div class="page-title">🏠 Dashboard</div>
+
+      <!-- STATUS CARD -->
+      <div class="status-card">
+        <div class="status-header">
+          <div>
+            <div class="status-info">
+              <h3>Current Status</h3>
+              <div class="status-value" id="statusText">⏸️ Offline</div>
+            </div>
+          </div>
+          <div class="status-toggle">
+            <button class="toggle-btn online" onclick="goOnline()">🟢 Go Online</button>
+            <button class="toggle-btn offline" onclick="goOffline()">⏹️ Go Offline</button>
+          </div>
+        </div>
+        <p style="font-size: 0.85rem; color: var(--text-light);">You are <strong>offline</strong>. Go online to receive delivery orders nearby.</p>
+      </div>
+
+      <!-- EARNINGS TODAY -->
+      <div class="earnings-grid">
+        <div class="earning-box">
+          <div class="earning-label">Today's Earnings</div>
+          <div class="earning-value">₹0</div>
+          <div class="earning-sub">0 deliveries completed</div>
+        </div>
+        <div class="earning-box">
+          <div class="earning-label">This Week</div>
+          <div class="earning-value">₹2,340</div>
+          <div class="earning-sub">12 deliveries completed</div>
+        </div>
+        <div class="earning-box">
+          <div class="earning-label">Rating</div>
+          <div class="earning-value">4.8 ⭐</div>
+          <div class="earning-sub">Based on 47 deliveries</div>
+        </div>
+      </div>
+
+      <!-- QUICK STATS -->
+      <div class="orders-box">
+        <h3>📊 Quick Stats</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+          <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px; text-align: center;">
+            <div style="font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; margin-bottom: 5px;">Total Deliveries</div>
+            <div style="font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: var(--text-dark);">47</div>
+          </div>
+          <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px; text-align: center;">
+            <div style="font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; margin-bottom: 5px;">Completion Rate</div>
+            <div style="font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: var(--success);">98%</div>
+          </div>
+          <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px; text-align: center;">
+            <div style="font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; margin-bottom: 5px;">Cancellation Rate</div>
+            <div style="font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: #1565c0;">2%</div>
+          </div>
+          <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px; text-align: center;">
+            <div style="font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; margin-bottom: 5px;">Avg Delivery Time</div>
+            <div style="font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: var(--text-dark);">23 min</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AVAILABLE ORDERS TAB -->
+    <div class="content-section" id="tab-orders">
+      <div class="page-title">📦 Available Orders</div>
+      
+      <div class="orders-box">
+        <p style="color: var(--text-light); margin-bottom: 1rem;">Go online to see nearby orders</p>
+        
+        <div class="order-card" onclick="acceptOrder('ORD001')">
+          <div class="order-header">
+            <div class="order-id">#ORD001</div>
+            <div class="order-time">3 minutes ago</div>
+          </div>
+          <div class="order-details">
+            <span class="order-restaurant">🍛 Spice Garden</span><br>
+            Pick up from: Taj Nagar, Chennai
+          </div>
+          <div class="order-footer">
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-light);">Distance: 0.8 km</div>
+              <div style="font-size: 0.8rem; color: var(--text-light);">Delivery time: ~15 min</div>
+            </div>
+            <div class="order-amount">₹50</div>
+          </div>
+        </div>
+
+        <div class="order-card" onclick="acceptOrder('ORD002')">
+          <div class="order-header">
+            <div class="order-id">#ORD002</div>
+            <div class="order-time">5 minutes ago</div>
+          </div>
+          <div class="order-details">
+            <span class="order-restaurant">🍕 Pizza Paradise</span><br>
+            Pick up from: T Nagar, Chennai
+          </div>
+          <div class="order-footer">
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-light);">Distance: 1.2 km</div>
+              <div style="font-size: 0.8rem; color: var(--text-light);">Delivery time: ~18 min</div>
+            </div>
+            <div class="order-amount">₹60</div>
+          </div>
+        </div>
+
+        <div class="order-card" onclick="acceptOrder('ORD003')">
+          <div class="order-header">
+            <div class="order-id">#ORD003</div>
+            <div class="order-time">8 minutes ago</div>
+          </div>
+          <div class="order-details">
+            <span class="order-restaurant">🍜 Noodle House</span><br>
+            Pick up from: Pondy Bazaar, Chennai
+          </div>
+          <div class="order-footer">
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-light);">Distance: 0.5 km</div>
+              <div style="font-size: 0.8rem; color: var(--text-light);">Delivery time: ~10 min</div>
+            </div>
+            <div class="order-amount">₹45</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVE DELIVERY TAB -->
+    <div class="content-section" id="tab-active">
+      <div class="page-title">🔴 Active Delivery</div>
+      
+      <div class="orders-box">
+        <p style="color: var(--text-light); text-align: center; padding: 2rem;">
+          No active delivery right now.<br>
+          Accept an order to see it here.
+        </p>
+      </div>
+    </div>
+
+    <!-- HISTORY TAB -->
+    <div class="content-section" id="tab-history">
+      <div class="page-title">📜 Delivery History</div>
+      
+      <div class="orders-box">
+        <div class="order-card" style="border-left: 4px solid var(--success);">
+          <div class="order-header">
+            <div class="order-id">#ORD999</div>
+            <div class="order-time">Today at 2:35 PM</div>
+          </div>
+          <div class="order-details">
+            <span class="order-restaurant">🍛 Spice Garden</span><br>
+            Delivered to: Anna Nagar, Chennai
+          </div>
+          <div class="order-footer">
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-light);">Distance: 2.5 km</div>
+              <div style="font-size: 0.8rem; color: var(--text-light);">Time taken: 22 min</div>
+            </div>
+            <div style="text-align: right;">
+              <div class="order-amount">₹50</div>
+              <div style="font-size: 0.8rem; color: var(--success); margin-top: 3px;">✅ Delivered</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="order-card" style="border-left: 4px solid var(--success);">
+          <div class="order-header">
+            <div class="order-id">#ORD998</div>
+            <div class="order-time">Today at 2:10 PM</div>
+          </div>
+          <div class="order-details">
+            <span class="order-restaurant">🍕 Pizza Paradise</span><br>
+            Delivered to: Mylapore, Chennai
+          </div>
+          <div class="order-footer">
+            <div>
+              <div style="font-size: 0.8rem; color: var(--text-light);">Distance: 3.2 km</div>
+              <div style="font-size: 0.8rem; color: var(--text-light);">Time taken: 28 min</div>
+            </div>
+            <div style="text-align: right;">
+              <div class="order-amount">₹80</div>
+              <div style="font-size: 0.8rem; color: var(--success); margin-top: 3px;">✅ Delivered</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EARNINGS TAB -->
+    <div class="content-section" id="tab-earnings">
+      <div class="page-title">💰 Earnings & Payouts</div>
+      
+      <div class="orders-box">
+        <h3 style="margin-bottom: 1.5rem;">📊 Earnings Breakdown</h3>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem;">
+          <div style="background: var(--bg-light); padding: 1.2rem; border-radius: 8px;">
+            <div style="font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; margin-bottom: 8px;">Today</div>
+            <div style="font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: var(--text-dark);">₹0</div>
+            <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 5px;">0 deliveries</div>
+          </div>
+          <div style="background: var(--bg-light); padding: 1.2rem; border-radius: 8px;">
+            <div style="font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; margin-bottom: 8px;">This Week</div>
+            <div style="font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: var(--text-dark);">₹2,340</div>
+            <div style="font-size: 0.8rem; color: var(--text-light); margin-top: 5px;">12 deliveries + ₹200 bonus</div>
+          </div>
+        </div>
+
+        <div style="background: #e8f5e9; border-left: 4px solid var(--success); padding: 1.2rem; border-radius: 8px; margin-bottom: 1.5rem;">
+          <div style="font-weight: 700; color: var(--success); margin-bottom: 5px;">💵 Next Payout</div>
+          <div style="font-size: 0.9rem; color: var(--text-dark); margin-bottom: 3px;"><strong>₹2,340</strong> on Friday, Dec 22</div>
+          <button class="btn btn-primary" style="width: auto; padding: 8px 16px; font-size: 0.85rem; margin-top: 0.8rem;" onclick="notify('💸 Instant withdraw coming soon')">Withdraw Now</button>
+        </div>
+
+        <h3 style="margin: 1.5rem 0;">📜 Recent Transactions</h3>
+        <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px; margin-bottom: 0.8rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <div style="font-weight: 600;">Base Fee (12 deliveries)</div>
+            <div style="font-weight: 700;">₹600</div>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-light);">₹50 avg per delivery</div>
+        </div>
+        <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px; margin-bottom: 0.8rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <div style="font-weight: 600;">Customer Tips</div>
+            <div style="font-weight: 700;">₹540</div>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-light);">Good ratings = More tips</div>
+        </div>
+        <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+            <div style="font-weight: 600;">Completion Bonus</div>
+            <div style="font-weight: 700; color: var(--success);">+₹200</div>
+          </div>
+          <div style="font-size: 0.8rem; color: var(--text-light);">12 deliveries completed</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROFILE TAB -->
+    <div class="content-section" id="tab-profile">
+      <div class="page-title">👤 My Profile</div>
+      
+      <div class="profile-box">
+        <div class="profile-header">
+          <div class="profile-avatar">RD</div>
+          <div>
+            <h3>Rajesh Kumar</h3>
+            <p>📱 98765 43210</p>
+            <p>📧 rajesh@email.com</p>
+            <div class="rating-section">
+              <div class="rating-stars">⭐⭐⭐⭐⭐</div>
+              <div class="rating-text">4.8</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid var(--border); padding-top: 1.5rem;">
+          <h3 style="margin-bottom: 1rem;">Vehicle Information</h3>
+          <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px; margin-bottom: 0.8rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+              <span style="color: var(--text-light);">Vehicle Type</span>
+              <strong>🏍️ Bike</strong>
+            </div>
+          </div>
+          <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px; margin-bottom: 0.8rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+              <span style="color: var(--text-light);">License Number</span>
+              <strong>DL 01 AB 1234</strong>
+            </div>
+          </div>
+          <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+              <span style="color: var(--text-light);">Verification Status</span>
+              <strong style="color: var(--success);">✅ Approved</strong>
+            </div>
+          </div>
+        </div>
+
+        <div style="border-top: 1px solid var(--border); padding-top: 1.5rem; margin-top: 1.5rem;">
+          <h3 style="margin-bottom: 1rem;">Performance Metrics</h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px; text-align: center;">
+              <div style="font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; margin-bottom: 5px;">Total Deliveries</div>
+              <div style="font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: var(--text-dark);">47</div>
+            </div>
+            <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px; text-align: center;">
+              <div style="font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; margin-bottom: 5px;">Rating</div>
+              <div style="font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: var(--success);">4.8⭐</div>
+            </div>
+            <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px; text-align: center;">
+              <div style="font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; margin-bottom: 5px;">Completion Rate</div>
+              <div style="font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: var(--text-dark);">98%</div>
+            </div>
+            <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px; text-align: center;">
+              <div style="font-size: 0.75rem; color: var(--text-light); text-transform: uppercase; margin-bottom: 5px;">Avg Delivery Time</div>
+              <div style="font-family: var(--font-serif); font-size: 1.5rem; font-weight: 700; color: var(--text-dark);">23 min</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- ACCEPT ORDER MODAL -->
+<div class="modal" id="orderModal">
+<div class="modal-content">
+  <button class="modal-close" onclick="closeOrderModal()">✕</button>
+  <div class="modal-title">📦 Order Details</div>
+  
+  <div style="background: var(--bg-light); padding: 1.2rem; border-radius: 8px; margin-bottom: 1.5rem;">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+      <span style="color: var(--text-light);">Order ID:</span>
+      <strong id="modalOrderId">#ORD001</strong>
+    </div>
+    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+      <span style="color: var(--text-light);">Pickup from:</span>
+      <strong id="modalRestaurant">Spice Garden</strong>
+    </div>
+    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+      <span style="color: var(--text-light);">Distance:</span>
+      <strong id="modalDistance">0.8 km</strong>
+    </div>
+    <div style="display: flex; justify-content: space-between;">
+      <span style="color: var(--text-light);">Estimated Delivery:</span>
+      <strong id="modalTime">~15 min</strong>
+    </div>
+  </div>
+
+  <div style="background: white; border: 1.5px solid var(--border); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+    <div style="font-weight: 700; margin-bottom: 0.5rem;">💰 Earnings</div>
+    <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 5px;">
+      <span>Base fee</span>
+      <strong id="modalBaseFee">₹50</strong>
+    </div>
+    <div style="display: flex; justify-content: space-between; font-size: 0.9rem; margin-bottom: 5px; color: var(--text-light);">
+      <span>Plus tips from customer</span>
+      <strong>Extra</strong>
+    </div>
+    <div style="border-top: 1px solid var(--border); padding-top: 8px; margin-top: 8px; display: flex; justify-content: space-between; font-weight: 700;">
+      <span>Total Expected</span>
+      <span id="modalTotal">₹50+</span>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 10px;">
+    <button class="btn btn-primary" style="flex: 1;" onclick="confirmAccept()">✅ Accept Order</button>
+    <button class="btn btn-outline" style="flex: 1;" onclick="closeOrderModal()">Reject</button>
+  </div>
+</div>
+</div>
+
+<script>
+let currentPage = 'page-login';
+let isOnline = false;
+let registerStep = 1;
+
+function goPage(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('show'));
+  document.getElementById(page).classList.add('show');
+  currentPage = page;
+}
+
+function goTab(tabId) {
+  document.querySelectorAll('.content-section').forEach(s => s.classList.remove('show'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  
+  document.getElementById(tabId).classList.add('show');
+  event.target.closest('.nav-btn').classList.add('active');
+}
+
+function handleLogin() {
+  const phone = document.getElementById('loginPhone').value;
+  const password = document.getElementById('loginPassword').value;
+  
+  if (!phone || !password) {
+    notify('❌ Please fill all fields');
+    return;
+  }
+  
+  goPage('page-dashboard');
+  notify('🎉 Login successful!');
+}
+
+function nextRegisterStep() {
+  const name = document.getElementById('driverName').value;
+  const email = document.getElementById('driverEmail').value;
+  const phone = document.getElementById('driverPhone').value;
+  
+  if (!name || !email || !phone) {
+    notify('❌ Please fill all fields');
+    return;
+  }
+  
+  document.getElementById('registerStep1').style.display = 'none';
+  document.getElementById('registerStep2').style.display = 'block';
+  registerStep = 2;
+}
+
+function prevRegisterStep() {
+  document.getElementById('registerStep1').style.display = 'block';
+  document.getElementById('registerStep2').style.display = 'none';
+  registerStep = 1;
+}
+
+function handleSignup() {
+  const vehicle = document.getElementById('vehicleType').value;
+  const license = document.getElementById('licenseNumber').value;
+  const bank = document.getElementById('bankAccount').value;
+  const password = document.getElementById('registerPassword').value;
+  const agree = document.getElementById('agreeTerms').checked;
+  
+  if (!vehicle || !license || !bank || !password || !agree) {
+    notify('❌ Please fill all fields and agree to terms');
+    return;
+  }
+  
+  goPage('page-kyc');
+  notify('✅ Account created! Now upload documents.');
+}
+
+function submitKYC() {
+  goPage('page-login');
+  notify('📤 Documents submitted! Admin will verify in 24-48 hours.');
+}
+
+function goOnline() {
+  isOnline = true;
+  document.getElementById('statusText').innerHTML = '🟢 Online';
+  notify('🟢 You are now online. Receiving orders...');
+}
+
+function goOffline() {
+  isOnline = false;
+  document.getElementById('statusText').innerHTML = '⏸️ Offline';
+  notify('⏹️ You are now offline.');
+}
+
+function acceptOrder(orderId) {
+  document.getElementById('modalOrderId').textContent = orderId;
+  
+  let restaurant = 'Spice Garden';
+  let distance = '0.8 km';
+  let time = '~15 min';
+  let baseFee = '₹50';
+  let total = '₹50+';
+  
+  if (orderId === 'ORD002') {
+    restaurant = 'Pizza Paradise';
+    distance = '1.2 km';
+    time = '~18 min';
+    baseFee = '₹60';
+    total = '₹60+';
+  } else if (orderId === 'ORD003') {
+    restaurant = 'Noodle House';
+    distance = '0.5 km';
+    time = '~10 min';
+    baseFee = '₹45';
+    total = '₹45+';
+  }
+  
+  document.getElementById('modalRestaurant').textContent = restaurant;
+  document.getElementById('modalDistance').textContent = distance;
+  document.getElementById('modalTime').textContent = time;
+  document.getElementById('modalBaseFee').textContent = baseFee;
+  document.getElementById('modalTotal').textContent = total;
+  
+  document.getElementById('orderModal').classList.add('show');
+}
+
+function confirmAccept() {
+  closeOrderModal();
+  notify('✅ Order accepted! Navigate to restaurant.');
+  goTab('tab-active');
+}
+
+function closeOrderModal() {
+  document.getElementById('orderModal').classList.remove('show');
+}
+
+function logout() {
+  if (confirm('Logout from driver account?')) {
+    goPage('page-login');
+    notify('👋 Logged out successfully');
+  }
+}
+
+function notify(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Show step 1 on page load
+document.getElementById('registerStep1').style.display = 'block';
+document.getElementById('registerStep2').style.display = 'none';
+</script>
+</body>
+</html>

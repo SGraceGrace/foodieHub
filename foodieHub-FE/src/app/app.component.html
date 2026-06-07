@@ -1,0 +1,11 @@
+<ng-container [ngSwitch]="role$ | async" *ngIf="showHeader">
+  <app-header *ngSwitchCase="'guest'"></app-header>
+  <app-user-header *ngSwitchCase="'END_USERS'"></app-user-header>
+  <app-admin-header *ngSwitchCase="'ADMIN'"></app-admin-header>
+  <app-admin-header *ngSwitchCase="'SUPER_ADMIN'"></app-admin-header>
+  <app-header *ngSwitchDefault></app-header>
+</ng-container>
+<app-global-loader></app-global-loader>
+<router-outlet></router-outlet>
+<app-footer *ngIf="showFooter"></app-footer>
+<app-cart-float-bar *ngIf="(role$ | async) === 'END_USERS'"></app-cart-float-bar>

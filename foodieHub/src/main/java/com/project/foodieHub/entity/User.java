@@ -1,18 +1,38 @@
 package com.project.foodieHub.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.project.foodieHub.enums.AuthProvider;
 import com.project.foodieHub.enums.UserStatus;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import lombok.Data;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
 @Entity
-@Table(name = "user")
+@Table(name = "user", uniqueConstraints = {
+    @UniqueConstraint(columnNames = "username")
+})
 @Data
 public class User extends BaseEntity implements UserDetails {
 
@@ -20,37 +40,65 @@ public class User extends BaseEntity implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false)
-    @NotNull(message = "Name cannot be empty")
-    private String name;
+    @Column(name = "first_name", nullable = false)
+    @NotNull(message = "First Name cannot be empty")
+    private String firstName;
 
-    @Column(name = "user_name", nullable = false)
+    @Column(name = "last_name", nullable = false)
+    @NotNull(message = "Last Name cannot be null")
+    private String lastName;
+
+    @Column(name = "username", nullable = false, unique = true)
     @NotNull(message = "Username cannot be null")
     private String userName;
 
-    @Column(name = "password", nullable = false)
-    @NotNull(message = "Password cannot be null")
-    private String password;
+    @Column(name = "email", nullable = false)
+    @NotNull(message = "Email cannot be null")
+    private String email;
 
-    @ManyToMany
-    @JoinTable(
-            name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id")
-    )
-    private Set<Roles> roles;
+    @Column(name = "password")
+//    @NotNull(message = "Password cannot be null")
+    @JsonIgnore
+    private String password = "DEFAULT_PASSWORD";
 
-    @Column(name = "status", nullable = false)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "role_id", nullable = false) // Foreign Key
+    private Roles role;
+
+    @Column(name = "status", nullable = false, columnDefinition = "VARCHAR(50)")
     @Enumerated(value = EnumType.STRING)
     private UserStatus status;
 
-    @OneToOne
-    @JoinColumn(name = "id")
-    private UserProfile userProfile;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<RefreshToken> refreshTokens;
+
+    @Column(name = "phone")
+    private String phone;
+
+    @Column(name = "date_of_birth")
+    private String dateOfBirth;
+
+    @Column(name = "gender")
+    private String gender;
+
+    @Column(name = "bio", length = 500)
+    private String bio;
+
+    @Column(name = "auth_provider")
+    @Enumerated(EnumType.STRING)
+    private AuthProvider authProvider = AuthProvider.LOCAL;
+
+    @Column(name = "provider_id")
+    private String providerId;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_restaurant_assignments", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "restaurant_id", length = 100)
+    private Set<String> assignedRestaurantIds = new HashSet<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return List.of(new SimpleGrantedAuthority("ROLE_" + getRole().getRoleName()));
     }
 
     @Override

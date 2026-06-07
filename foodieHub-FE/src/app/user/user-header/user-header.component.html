@@ -1,0 +1,121 @@
+<header class="header">
+
+  <!-- Logo -->
+  <div class="logo-wrap">
+    <div class="logo-icon">F</div>
+    <div class="logo-divider"></div>
+    <span class="logo-text">foodiehub</span>
+  </div>
+
+  <!-- Nav -->
+  <nav class="nav-links">
+    <a routerLink="/home" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" class="nav-link">Home</a>
+    <a routerLink="/user/cuisine" routerLinkActive="active" class="nav-link">Cuisines</a>
+    <a routerLink="/user/about-us" routerLinkActive="active" class="nav-link">About Us</a>
+    <a routerLink="/user/reviews" routerLinkActive="active" class="nav-link">Reviews</a>
+    <a routerLink="/user/contact-us" routerLinkActive="active" class="nav-link">Contact Us</a>
+  </nav>
+
+  <!-- Right -->
+  <div class="header-right">
+
+    <!-- Search -->
+    <div class="search-box" [class.focused]="searchFocused">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        placeholder="Search food, cuisines..."
+        [formControl]="searchControl"
+        (keyup.enter)="onSearch()"
+        (focus)="searchFocused = true"
+        (blur)="searchFocused = false"
+      />
+    </div>
+
+    <!-- Cart -->
+    <button class="icon-btn cart-btn" routerLink="/user/cart" title="My Cart">
+      🛒
+      <span class="cart-count" *ngIf="cartCount > 0">{{ cartCount }}</span>
+    </button>
+
+    <!-- Order Status Notifications Bell -->
+    <div class="notif-wrap">
+
+      <!-- Enable alerts button — shown only when permission is not yet decided -->
+      <button class="notif-enable-btn"
+              *ngIf="notifPermission === 'default'"
+              (click)="enableBrowserNotifications()"
+              title="Get browser alerts when your order status changes">
+        Enable alerts
+      </button>
+
+      <!-- Bell button -->
+      <button class="icon-btn notif-btn" (click)="toggleNotifPanel()" title="Order updates">
+        🔔
+        <span class="notif-badge" *ngIf="unreadCount > 0">
+          {{ unreadCount > 9 ? '9+' : unreadCount }}
+        </span>
+      </button>
+
+      <!-- Dropdown panel -->
+      <div class="notif-panel" *ngIf="showNotifPanel">
+        <div class="notif-panel-hdr">
+          <span class="notif-panel-title">Order Updates</span>
+          <button class="notif-clear-btn"
+                  *ngIf="notifications.length > 0"
+                  (click)="clearNotifications()">
+            Clear all
+          </button>
+          <button class="notif-panel-close" (click)="closeNotifPanel()">✕</button>
+        </div>
+
+        <div class="notif-empty" *ngIf="notifications.length === 0">
+          No updates yet — we'll notify you when your order status changes 🍽️
+        </div>
+
+        <div class="notif-list" *ngIf="notifications.length > 0">
+          <a class="notif-item" *ngFor="let n of notifications"
+             [class.notif-item--unread]="!n.read"
+             routerLink="/user/orders"
+             (click)="closeNotifPanel()">
+            <div class="notif-item-row">
+              <span class="notif-item-emoji">{{ statusEmoji(n.newStatus) }}</span>
+              <div class="notif-item-body">
+                <div class="notif-item-restaurant">{{ n.restaurantName }}</div>
+                <div class="notif-item-msg">{{ n.message }}</div>
+              </div>
+              <span class="notif-item-arrow">›</span>
+            </div>
+          </a>
+        </div>
+
+        <div class="notif-panel-footer" *ngIf="notifications.length > 0">
+          <a routerLink="/user/orders" (click)="closeNotifPanel()" class="notif-view-all">
+            View all orders →
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Click-outside overlay -->
+    <div class="notif-overlay" *ngIf="showNotifPanel" (click)="closeNotifPanel()"></div>
+
+    <!-- User Avatar + Dropdown -->
+    <div class="user-menu">
+      <button class="user-av" (click)="toggleMenu()">
+        {{ initials }}
+      </button>
+
+      <div class="dropdown" *ngIf="menuOpen">
+        <a class="drop-item" routerLink="/user/profile" (click)="menuOpen=false">👤 My Profile</a>
+        <a class="drop-item" routerLink="/user/orders" (click)="menuOpen=false">📦 My Orders</a>
+        <a class="drop-item" routerLink="/user/wishlist" (click)="menuOpen=false">❤️ Wishlist</a>
+        <a class="drop-item" routerLink="/user/cart" (click)="menuOpen=false">🛒 My Cart</a>
+        <div class="drop-divider"></div>
+        <button class="drop-item drop-logout" (click)="logout()">🚪 Logout</button>
+      </div>
+    </div>
+
+  </div>
+
+</header>

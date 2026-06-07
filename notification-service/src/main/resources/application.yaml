@@ -1,0 +1,54 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: notification-service
+  mvc:
+    async:
+      request-timeout: -1   # -1 = no timeout; keeps SSE connections open indefinitely
+
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/foodiehub_food}
+
+  rabbitmq:
+    addresses: ${RABBITMQ_URL:amqp://guest:guest@localhost:5672}
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+admin:
+  email: ${ADMIN_EMAIL:admin@foodiehub.com}
+
+user-service:
+  base-url: ${USER_SERVICE_URL:http://localhost:8081}
+
+vapid:
+  public-key: ${VAPID_PUBLIC_KEY:BBExuSKx28RTr_4tt3TJIqAfVoWOfTpwNExZez0UjTUx4rnrSEgyjX0tFqmQPGYY5YS_CZeSRIFvmBL0S-39UQw}
+  private-key: ${VAPID_PRIVATE_KEY:Ln6IM4WpM_77cEsTvtU-rpv8S0gj7TAmqZmo-3OPRjg}
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411}/api/v2/spans
+
+logging:
+  level:
+    org.springframework.security: DEBUG

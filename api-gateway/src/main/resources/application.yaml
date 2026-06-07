@@ -1,0 +1,340 @@
+spring:
+  application:
+    name: api-gateway
+  data:
+    redis:
+      url: ${REDIS_URL:redis://localhost:6379}
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+          - id: user-service-auth
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
+            predicates:
+              - Path=/api/v1/auth/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: user-service
+                  fallbackUri: forward:/fallback/user-service
+
+          - id: user-service-users
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
+            predicates:
+              - Path=/api/v1/user, /api/v1/user/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: user-service
+                  fallbackUri: forward:/fallback/user-service
+
+          - id: user-service-refresh
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
+            predicates:
+              - Path=/api/v1/refresh-token/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: user-service
+                  fallbackUri: forward:/fallback/user-service
+
+          - id: user-service-oauth2
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
+            predicates:
+              - Path=/oauth2/**, /login/oauth2/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: user-service
+                  fallbackUri: forward:/fallback/user-service
+
+          - id: user-service-contact
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
+            predicates:
+              - Path=/api/v1/contact
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: user-service
+                  fallbackUri: forward:/fallback/user-service
+
+          - id: user-service-admin-contact-messages
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
+            predicates:
+              - Path=/api/v1/admin/contact-messages, /api/v1/admin/contact-messages/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: user-service
+                  fallbackUri: forward:/fallback/user-service
+
+          - id: food-service-slides-public
+            uri: ${FOOD_SERVICE_URL:http://localhost:8082}
+            predicates:
+              - Path=/api/v1/slides
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: food-service
+                  fallbackUri: forward:/fallback/food-service
+
+          - id: food-service-slides-admin
+            uri: ${FOOD_SERVICE_URL:http://localhost:8082}
+            predicates:
+              - Path=/api/v1/admin/slides, /api/v1/admin/slides/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: food-service
+                  fallbackUri: forward:/fallback/food-service
+
+          - id: food-service-admin-restaurants
+            uri: ${FOOD_SERVICE_URL:http://localhost:8082}
+            predicates:
+              - Path=/api/v1/admin/restaurants, /api/v1/admin/restaurants/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: food-service
+                  fallbackUri: forward:/fallback/food-service
+
+          - id: user-service-admin-users
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
+            predicates:
+              - Path=/api/v1/admin/users, /api/v1/admin/users/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: user-service
+                  fallbackUri: forward:/fallback/user-service
+
+          - id: user-service-activity-logs
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
+            predicates:
+              - Path=/api/v1/admin/activity-logs
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: user-service
+                  fallbackUri: forward:/fallback/user-service
+
+          - id: user-service-restaurant-owners
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
+            predicates:
+              - Path=/api/v1/admin/restaurant-owners, /api/v1/admin/restaurant-owners/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: user-service
+                  fallbackUri: forward:/fallback/user-service
+
+          - id: user-service-drivers
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
+            predicates:
+              - Path=/api/v1/admin/drivers, /api/v1/admin/drivers/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: user-service
+                  fallbackUri: forward:/fallback/user-service
+
+          - id: notification-service-notifications
+            uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
+            predicates:
+              - Path=/api/v1/admin/notifications, /api/v1/admin/notifications/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: notification-service
+                  fallbackUri: forward:/fallback/notification-service
+
+          - id: notification-service-push-subscription
+            uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
+            predicates:
+              - Path=/api/v1/admin/push-subscription
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: notification-service
+                  fallbackUri: forward:/fallback/notification-service
+
+          - id: user-service-partner
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
+            predicates:
+              - Path=/api/v1/partner/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: user-service
+                  fallbackUri: forward:/fallback/user-service
+
+          - id: notification-service-driver-notifications
+            uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
+            predicates:
+              - Path=/api/v1/driver/notifications, /api/v1/driver/notifications/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: notification-service
+                  fallbackUri: forward:/fallback/notification-service
+
+          - id: notification-service-driver-push-subscription
+            uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
+            predicates:
+              - Path=/api/v1/driver/push-subscription
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: notification-service
+                  fallbackUri: forward:/fallback/notification-service
+
+          - id: user-service-driver-register
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
+            predicates:
+              - Path=/api/v1/driver/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: user-service
+                  fallbackUri: forward:/fallback/user-service
+
+          - id: food-service-restaurants
+            uri: ${FOOD_SERVICE_URL:http://localhost:8082}
+            predicates:
+              - Path=/api/v1/restaurants, /api/v1/restaurants/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: food-service
+                  fallbackUri: forward:/fallback/food-service
+
+          - id: food-service-cuisines
+            uri: ${FOOD_SERVICE_URL:http://localhost:8082}
+            predicates:
+              - Path=/api/cuisines/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: food-service
+                  fallbackUri: forward:/fallback/food-service
+
+          - id: food-service-search
+            uri: ${FOOD_SERVICE_URL:http://localhost:8082}
+            predicates:
+              - Path=/api/search/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: food-service
+                  fallbackUri: forward:/fallback/food-service
+
+          - id: order-service-cart
+            uri: ${ORDER_SERVICE_URL:http://localhost:8083}
+            predicates:
+              - Path=/api/cart/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: order-service
+                  fallbackUri: forward:/fallback/order-service
+
+          - id: order-service-orders
+            uri: ${ORDER_SERVICE_URL:http://localhost:8083}
+            predicates:
+              - Path=/api/orders/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: order-service
+                  fallbackUri: forward:/fallback/order-service
+
+          - id: order-service-payments
+            uri: ${ORDER_SERVICE_URL:http://localhost:8083}
+            predicates:
+              - Path=/api/v1/payments/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: order-service
+                  fallbackUri: forward:/fallback/order-service
+
+          - id: notification-service-restaurant
+            uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
+            predicates:
+              - Path=/api/v1/restaurant/notifications, /api/v1/restaurant/notifications/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: notification-service
+                  fallbackUri: forward:/fallback/notification-service
+
+          - id: notification-service-customer
+            uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
+            predicates:
+              - Path=/api/v1/customer/notifications, /api/v1/customer/notifications/**, /api/v1/customer/push-subscription
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: notification-service
+                  fallbackUri: forward:/fallback/notification-service
+
+
+server:
+  port: 8080
+
+jwt:
+  secret:
+    key: ${JWT_KEY}
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      user-service:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        register-health-indicator: true
+      food-service:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        register-health-indicator: true
+      order-service:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        register-health-indicator: true
+      notification-service:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        register-health-indicator: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411}/api/v2/spans
+
+logging:
+  level:
+    org.springframework.security: DEBUG

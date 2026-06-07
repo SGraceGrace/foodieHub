@@ -13,12 +13,18 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import javax.crypto.SecretKey;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
+@RequiredArgsConstructor
 public class JwtService {
 
   @Value("${jwt.secret.key}")
@@ -29,19 +35,30 @@ public class JwtService {
 
   private SecretKey key;
 
+  private final RedisTemplate<String, String> redisTemplate;
+
   @PostConstruct
   public void init() {
+    if (secretKey.length() < 32) {
+      log.error("JWT secret key must be at least 32 characters long!");
+    }
     this.key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
   }
 
-  public String generateToken(UserDetails userDetails) {
+  public String generateToken(UserDetails userDetails, String deviceId) {
     Map<String, Object> claims = new HashMap<>();
-    return createToken(claims, userDetails);
+    return createToken(claims, userDetails, deviceId);
   }
 
   public boolean validateToken(String token) {
     try {
       Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+      var username = extractUserName(token);
+      var deviceId = extractDeviceId(token);
+      var accessToken = redisTemplate.opsForValue().get(username+deviceId);
+      if(Objects.isNull(accessToken) || !token.equals(accessToken)) {
+        return false;
+      }
       return !isTokenExpired(token);
     } catch (IllegalArgumentException | UnsupportedJwtException | MalformedJwtException |
              ExpiredJwtException e) {
@@ -49,9 +66,10 @@ public class JwtService {
     }
   }
 
-  private String createToken(Map<String, Object> claims, UserDetails userDetails) {
-    claims.put("name", ((User) userDetails).getName());
+  private String createToken(Map<String, Object> claims, UserDetails userDetails, String deviceId) {
+    claims.put("name", ((User) userDetails).getFirstName() + " " + ((User) userDetails).getLastName());
     claims.put("role", userDetails.getAuthorities());
+    claims.put("deviceId", deviceId);
 
     return Jwts.builder().addClaims(claims).setSubject(userDetails.getUsername())
         .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
@@ -70,5 +88,9 @@ public class JwtService {
 
   public String extractUserName(String token) {
     return extractAllClaims(token).getSubject();
+  }
+
+  public String extractDeviceId(String token) {
+    return (String) extractAllClaims(token).get("deviceId");
   }
 }

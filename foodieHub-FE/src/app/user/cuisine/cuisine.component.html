@@ -1,0 +1,111 @@
+<!-- ── Page Header ──────────────────────────────────────────────── -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div>
+      <h1>{{ selectedCuisine === 'All' ? 'All Restaurants' : selectedCuisine + ' Restaurants' }}</h1>
+      <p class="page-subtitle" *ngIf="totalElements > 0">
+        {{ showingCount }} of {{ totalElements }} restaurants
+      </p>
+    </div>
+    <button class="back-btn" routerLink="/home">← Back to Home</button>
+  </div>
+</div>
+
+<!-- ── Cuisine Filter Strip ──────────────────────────────────────── -->
+<div class="filter-strip">
+  <div class="cuisine-grid">
+    <div class="cuisine-card" [class.cuisine-card--active]="selectedCuisine === 'All'" (click)="selectCuisine()">
+      <div class="cuisine-card-emoji" [style.background]="selectedCuisine === 'All' ? 'linear-gradient(135deg,#f5f5f5,#e0e0e0)' : null">🍽️</div>
+      <span class="cuisine-card-label">All</span>
+    </div>
+    <div class="cuisine-card" *ngFor="let c of cuisines"
+         [class.cuisine-card--active]="selectedCuisine === c"
+         (click)="selectCuisine(c)">
+      <div class="cuisine-card-emoji" [style.background]="selectedCuisine === c ? getCuisineBg(c) : null">{{ getCuisineEmoji(c) }}</div>
+      <span class="cuisine-card-label">{{ c }}</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Sort Bar ─────────────────────────────────────────────────── -->
+<div class="sort-bar">
+  <div class="sort-bar-inner">
+    <span class="sort-label">Sort by</span>
+    <div class="sort-options">
+      <button class="sort-chip"
+              *ngFor="let opt of sortOptions"
+              [class.sort-chip--active]="selectedSort === opt.value"
+              (click)="selectSort(opt.value)">
+        {{ opt.label }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Content ───────────────────────────────────────────────────── -->
+<div class="content-wrap">
+
+  <!-- Initial loading skeletons -->
+  <div class="rest-grid" *ngIf="loading && restaurants.length === 0">
+    <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10]"></div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!loading && restaurants.length === 0">
+    <div class="empty-icon">🍽️</div>
+    <h3>No restaurants found</h3>
+    <p>Try a different cuisine filter.</p>
+    <button class="btn-reset" (click)="selectCuisine()">Show All Restaurants</button>
+  </div>
+
+  <!-- Restaurant grid -->
+  <div class="rest-grid" *ngIf="restaurants.length > 0">
+    <div class="rest-card" *ngFor="let r of restaurants"
+         [routerLink]="['/restaurants', r.id]">
+
+      <div class="rest-img" [style.background]="r.imageUrl ? 'none' : getBg(r)">
+        <img *ngIf="r.imageUrl" [src]="r.imageUrl" [alt]="r.name" class="rest-cover" />
+        <span *ngIf="!r.imageUrl" class="rest-emoji">{{ getEmoji(r) }}</span>
+        <span class="rest-badge-status" [class.closed]="r.open === false">
+          {{ r.open === false ? 'Closed' : 'Open now' }}
+        </span>
+        <span class="rest-badge-dist" *ngIf="getDistanceLabel(r)">
+          📍 {{ getDistanceLabel(r) }}
+        </span>
+      </div>
+
+      <div class="rest-body">
+        <div class="rest-body-top">
+          <h3>{{ r.name }}</h3>
+          <span class="rest-rating">⭐ {{ r.rating ?? '—' }}</span>
+        </div>
+        <div class="rtags">
+          <span class="rtag" *ngFor="let c of (r.cuisine ?? []) | slice:0:3">{{ c }}</span>
+        </div>
+        <div class="rest-meta">
+          <span>⏱ {{ r.deliveryTime ?? '—' }} min</span>
+          <span class="meta-dot">·</span>
+          <span>Min ₹{{ r.minOrder ?? 0 }}</span>
+          <span class="meta-dot">·</span>
+          <span>{{ r.priceRange ?? '₹₹' }}</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Bottom loader — shows while fetching next page -->
+  <div class="bottom-loader" *ngIf="loading && restaurants.length > 0">
+    <div class="spinner"></div>
+    <span>Loading more...</span>
+  </div>
+
+  <!-- End of results -->
+  <div class="end-msg" *ngIf="!loading && !hasMore && restaurants.length > 0">
+    You've seen all {{ totalElements }} restaurants
+  </div>
+
+  <!-- Scroll sentinel — IntersectionObserver watches this -->
+  <div #sentinel class="scroll-sentinel"></div>
+
+</div>

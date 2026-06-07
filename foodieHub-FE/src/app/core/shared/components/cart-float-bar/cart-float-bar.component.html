@@ -1,0 +1,10 @@
+<div class="cart-float-bar" *ngIf="visible" (click)="goToCart()">
+  <div class="cart-float-bar__left">
+    <span class="cart-float-bar__icon">🛒</span>
+    <span class="cart-float-bar__count">{{ totalItems }} item{{ totalItems !== 1 ? 's' : '' }}</span>
+  </div>
+  <div class="cart-float-bar__right">
+    <span class="cart-float-bar__amount">₹{{ totalAmount }}</span>
+    <span class="cart-float-bar__cta">View Cart →</span>
+  </div>
+</div>

@@ -1,0 +1,89 @@
+<div class="auth-bg">
+  <div class="auth-card">
+
+    <!-- Form side -->
+    <div class="auth-form-side">
+      <div class="auth-brand">
+        <div class="logo-icon">F</div>
+        <div class="auth-divider-line"></div>
+        <span class="logo-text">foodiehub</span>
+      </div>
+
+      <div class="auth-title">Create Account</div>
+
+      <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+        <div class="input-row">
+          <div class="input-field">
+            <span class="icon">👤</span>
+            <input type="text" placeholder="First Name" formControlName="firstName" />
+          </div>
+          <div class="input-field">
+            <span class="icon">👤</span>
+            <input type="text" placeholder="Last Name" formControlName="lastName" />
+          </div>
+        </div>
+
+        <div class="input-field">
+          <span class="icon">✉</span>
+          <input type="email" placeholder="Email Id" formControlName="email" />
+        </div>
+
+        <div class="pwd-wrap">
+          <div class="input-field">
+            <span class="icon">🔒</span>
+            <input
+              [type]="showPassword ? 'text' : 'password'"
+              placeholder="Password"
+              formControlName="pwd"
+              (focus)="showRules = true"
+              (blur)="hideRules()"
+            />
+            <span class="icon eye" (click)="showPassword = !showPassword">
+              {{ showPassword ? '🙈' : '👁' }}
+            </span>
+          </div>
+
+          <div class="rules-panel" *ngIf="showRules && pwd?.invalid">
+            <div [class.valid]="isMinLength"><span>{{ isMinLength ? '✓' : '✗' }}</span> At least 8 characters</div>
+            <div [class.valid]="isMaxLength"><span>{{ isMaxLength ? '✓' : '✗' }}</span> No more than 15 characters</div>
+            <div [class.valid]="hasUppercase"><span>{{ hasUppercase ? '✓' : '✗' }}</span> One uppercase letter</div>
+            <div [class.valid]="hasLowercase"><span>{{ hasLowercase ? '✓' : '✗' }}</span> One lowercase letter</div>
+            <div [class.valid]="hasNumber"><span>{{ hasNumber ? '✓' : '✗' }}</span> One number</div>
+            <div [class.valid]="hasSpecial"><span>{{ hasSpecial ? '✓' : '✗' }}</span> One special character</div>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-gold btn-full">Signup</button>
+      </form>
+
+      <div class="auth-or">or</div>
+
+      <button class="btn-google" type="button" (click)="signInWithGoogle()">
+        <div class="google-g">G</div>
+        Sign in with Google
+      </button>
+
+      <div class="auth-footer-text">
+        Already have an account? <a routerLink="/login">Log In</a>
+      </div>
+    </div>
+
+    <!-- Promo side -->
+    <div class="auth-promo-side">
+      <div class="promo-card" [class.fade]="animating">
+        <div class="promo-emoji">{{ slides[currentSlide].emoji }}</div>
+        <div class="promo-title">{{ slides[currentSlide].title }}</div>
+        <div class="promo-desc">{{ slides[currentSlide].desc }}</div>
+      </div>
+      <div class="promo-dots">
+        <div
+          *ngFor="let slide of slides; let i = index"
+          class="dot"
+          [class.active]="i === currentSlide"
+          (click)="goToSlide(i)"
+        ></div>
+      </div>
+    </div>
+
+  </div>
+</div>

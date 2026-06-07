@@ -1,0 +1,281 @@
+<div class="container" *ngIf="!loading && order">
+
+  <!-- ORDER HEADER -->
+  <div class="order-header">
+    <div class="order-info">
+      <button class="back-btn" (click)="goBack()">← Back to Orders</button>
+      <h1>Order #{{ order.id }}</h1>
+      <p>{{ order.restaurantName }} &nbsp;•&nbsp; {{ order.createdAt | date:'d MMM, h:mm a' }}</p>
+    </div>
+    <div class="order-status" [class.status-active]="isActive" [class.status-delivered]="isDelivered" [class.status-cancelled]="isCancelled">
+      <div class="status-dot" *ngIf="isActive"></div>
+      <div class="status-text">{{ currentStatusLabel }}</div>
+    </div>
+  </div>
+
+  <!-- TRACKING GRID -->
+  <div class="tracking-grid">
+
+    <!-- RESTAURANT TIMELINE -->
+    <div class="card">
+      <div class="card-title">🍳 Restaurant Status</div>
+      <div class="timeline">
+
+        <div class="timeline-item" [ngClass]="restaurantStep(1)">
+          <div class="tl-label">Order Confirmed</div>
+          <div class="tl-badge" [ngClass]="restaurantStep(1)">
+            <ng-container [ngSwitch]="restaurantStep(1)">
+              <span *ngSwitchCase="'completed'">✓ Completed</span>
+              <span *ngSwitchCase="'active'">🔄 In Progress</span>
+              <span *ngSwitchDefault>⏳ Pending</span>
+            </ng-container>
+          </div>
+        </div>
+
+        <div class="timeline-item" [ngClass]="restaurantStep(2)">
+          <div class="tl-label">Preparing Food</div>
+          <div class="tl-badge" [ngClass]="restaurantStep(2)">
+            <ng-container [ngSwitch]="restaurantStep(2)">
+              <span *ngSwitchCase="'completed'">✓ Completed</span>
+              <span *ngSwitchCase="'active'">👨‍🍳 Cooking</span>
+              <span *ngSwitchDefault>⏳ Pending</span>
+            </ng-container>
+          </div>
+        </div>
+
+        <div class="timeline-item" [ngClass]="restaurantStep(3)">
+          <div class="tl-label">Ready for Pickup</div>
+          <div class="tl-badge" [ngClass]="restaurantStep(3)">
+            <ng-container [ngSwitch]="restaurantStep(3)">
+              <span *ngSwitchCase="'completed'">✓ Completed</span>
+              <span *ngSwitchCase="'active'">📦 Ready</span>
+              <span *ngSwitchDefault>⏳ Pending</span>
+            </ng-container>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Restaurant card -->
+      <div class="restaurant-card">
+        <div class="rc-icon">🍛</div>
+        <div class="rc-info">
+          <h3>{{ order.restaurantName }}</h3>
+          <p>{{ order.items.length }} item{{ order.items.length !== 1 ? 's' : '' }} ordered</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- DRIVER TIMELINE -->
+    <div class="card">
+      <div class="card-title">🚗 Driver Status</div>
+      <div class="timeline">
+
+        <div class="timeline-item" [ngClass]="driverStep(1)">
+          <div class="tl-label">Driver Assigned</div>
+          <div class="tl-badge" [ngClass]="driverStep(1)">
+            <ng-container [ngSwitch]="driverStep(1)">
+              <span *ngSwitchCase="'completed'">✓ Completed</span>
+              <span *ngSwitchCase="'active'">🚗 Heading to Restaurant</span>
+              <span *ngSwitchDefault>⏳ Pending</span>
+            </ng-container>
+          </div>
+        </div>
+
+        <div class="timeline-item" [ngClass]="driverStep(2)">
+          <div class="tl-label">Order Picked Up</div>
+          <div class="tl-badge" [ngClass]="driverStep(2)">
+            <ng-container [ngSwitch]="driverStep(2)">
+              <span *ngSwitchCase="'completed'">✓ Completed</span>
+              <span *ngSwitchCase="'active'">📦 Picked Up</span>
+              <span *ngSwitchDefault>⏳ Pending</span>
+            </ng-container>
+          </div>
+        </div>
+
+        <div class="timeline-item" [ngClass]="driverStep(3)">
+          <div class="tl-label">Out for Delivery</div>
+          <div class="tl-badge" [ngClass]="driverStep(3)">
+            <ng-container [ngSwitch]="driverStep(3)">
+              <span *ngSwitchCase="'completed'">✓ Completed</span>
+              <span *ngSwitchCase="'active'">🛵 On the Way</span>
+              <span *ngSwitchDefault>⏳ Pending</span>
+            </ng-container>
+          </div>
+        </div>
+
+        <div class="timeline-item" [ngClass]="driverStep(4)">
+          <div class="tl-label">Delivered</div>
+          <div class="tl-badge" [ngClass]="driverStep(4)">
+            <ng-container [ngSwitch]="driverStep(4)">
+              <span *ngSwitchCase="'completed'">🎉 Delivered</span>
+              <span *ngSwitchCase="'active'">🎉 Delivered</span>
+              <span *ngSwitchDefault>⏳ Pending</span>
+            </ng-container>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Driver card — shown as soon as any driver status is set -->
+      <div class="driver-card" *ngIf="hasDriverAssigned">
+        <div class="driver-avatar">🛵</div>
+        <div class="driver-info">
+          <h3>Driver Assigned</h3>
+          <p>{{ driverCardMessage }}</p>
+        </div>
+      </div>
+      <div class="driver-card pending-driver" *ngIf="!hasDriverAssigned">
+        <div class="driver-avatar grey">🕐</div>
+        <div class="driver-info">
+          <h3>Awaiting Driver</h3>
+          <p>A driver will be assigned once the food is ready.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MAP PLACEHOLDER -->
+  <div class="map-container">
+    <div class="map-placeholder">
+      <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+        <rect x="20" y="40" width="160" height="100" fill="#e0e0e0" stroke="#999" stroke-width="2" rx="4"/>
+        <circle cx="60" cy="80" r="8" fill="#f9b303"/>
+        <text x="60" y="96" font-size="11" text-anchor="middle" fill="#666">Restaurant</text>
+        <circle cx="150" cy="120" r="8" fill="#248f28"/>
+        <text x="150" y="136" font-size="11" text-anchor="middle" fill="#666">Your Location</text>
+        <path d="M 70 85 Q 100 60, 140 110" stroke="#1a1a1a" stroke-width="2" fill="none" stroke-dasharray="5,5"/>
+        <text x="105" y="70" font-size="10" fill="#888">Driver Route</text>
+      </svg>
+      <span>Live Map Coming Soon</span>
+    </div>
+  </div>
+
+  <!-- DETAILS GRID -->
+  <div class="details-grid">
+    <div class="detail-card">
+      <div class="detail-label">Delivery Fee</div>
+      <div class="detail-value">{{ order.deliveryFee === 0 ? 'Free' : '₹' + order.deliveryFee }}</div>
+      <div class="detail-sub">{{ order.deliveryFee === 0 ? 'Free delivery!' : 'Standard delivery' }}</div>
+    </div>
+    <div class="detail-card">
+      <div class="detail-label">Payment</div>
+      <div class="detail-value">{{ order.paymentStatus === 'PAID' ? '✅' : '💵' }}</div>
+      <div class="detail-sub">{{ order.paymentStatus === 'PAID' ? 'Paid Online' : 'Cash on Delivery' }}</div>
+    </div>
+    <div class="detail-card">
+      <div class="detail-label">Total Items</div>
+      <div class="detail-value">{{ order.items.length }}</div>
+      <div class="detail-sub">Items in this order</div>
+    </div>
+    <div class="detail-card">
+      <div class="detail-label">Order Date</div>
+      <div class="detail-value" style="font-size:1rem;">{{ order.createdAt | date:'d MMM' }}</div>
+      <div class="detail-sub">{{ order.createdAt | date:'h:mm a' }}</div>
+    </div>
+  </div>
+
+  <!-- ORDER ITEMS -->
+  <div class="items-section">
+    <h2>📦 Order Items</h2>
+    <div class="item-row" *ngFor="let item of order.items">
+      <div>
+        <div class="item-name">{{ item.name }}</div>
+        <div class="item-qty">Qty: {{ item.qty }}</div>
+      </div>
+      <div class="item-price">₹{{ item.price * item.qty }}</div>
+    </div>
+  </div>
+
+  <!-- SUMMARY -->
+  <div class="summary-section">
+    <div class="summary-row">
+      <span class="summary-label">Subtotal</span>
+      <span class="summary-value">₹{{ order.subtotal }}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">Delivery Fee</span>
+      <span class="summary-value">{{ order.deliveryFee === 0 ? 'Free' : '₹' + order.deliveryFee }}</span>
+    </div>
+    <div class="summary-row">
+      <span class="summary-label">GST (5%)</span>
+      <span class="summary-value">₹{{ order.gst }}</span>
+    </div>
+    <div class="summary-total">
+      <span>Total Amount</span>
+      <span>₹{{ order.totalAmount }}</span>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="action-buttons">
+    <button class="btn btn-outline" (click)="goBack()">← My Orders</button>
+
+    <ng-container *ngIf="isDelivered">
+      <!-- Re-open rating if dismissed without rating -->
+      <button class="btn btn-primary" *ngIf="!order.rated && !showRating" (click)="openRating()">
+        ⭐ Rate Your Experience
+      </button>
+      <span class="rated-badge" *ngIf="order.rated">⭐ Rated</span>
+    </ng-container>
+  </div>
+
+</div>
+
+<!-- LOADING -->
+<div class="loading-state" *ngIf="loading">
+  <div class="loading-icon">⏳</div>
+  <p>Loading order...</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     FLOATING RATING MODAL — auto-shows on DELIVERED, click backdrop to dismiss
+     ═══════════════════════════════════════════════════════════════ -->
+<div class="rating-overlay" *ngIf="showRating && order" (click)="cancelRating()">
+  <div class="rating-modal" (click)="$event.stopPropagation()">
+
+    <!-- Close button -->
+    <button class="modal-close" (click)="cancelRating()" aria-label="Close">✕</button>
+
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="modal-icon">🎉</div>
+      <h2>Order Delivered!</h2>
+      <p>How was your experience? Your feedback helps others choose.</p>
+    </div>
+
+    <!-- Restaurant Rating (required) -->
+    <div class="rating-section">
+      <h3>🍛 {{ order.restaurantName }}</h3>
+      <p class="rating-sub">Rate your food experience <span class="required-hint">(required)</span></p>
+      <div class="star-row">
+        <button class="star-btn" *ngFor="let s of stars"
+          (mouseenter)="hoverRating(s)" (mouseleave)="hoverRating(0)"
+          (click)="selectStar(s)" [class.lit]="s <= activeStar()">★</button>
+      </div>
+      <p class="star-hint" *ngIf="activeStar() > 0">{{ starLabels[activeStar()] }}</p>
+    </div>
+
+    <!-- Driver Rating (optional — shown whenever a driver was assigned to this order) -->
+    <div class="rating-section" *ngIf="hasDriverAssigned">
+      <h3>🛵 Your Delivery Driver</h3>
+      <p class="rating-sub">Rate your delivery experience <span class="optional-hint">(optional)</span></p>
+      <div class="star-row">
+        <button class="star-btn" *ngFor="let s of stars"
+          (mouseenter)="hoverDriverRating(s)" (mouseleave)="hoverDriverRating(0)"
+          (click)="selectDriverStar(s)" [class.lit]="s <= activeDriverStar()">★</button>
+      </div>
+      <p class="star-hint" *ngIf="activeDriverStar() > 0">{{ starLabels[activeDriverStar()] }}</p>
+    </div>
+
+    <!-- Actions -->
+    <div class="modal-actions">
+      <button class="btn btn-primary" [disabled]="selectedStar === 0 || submitting" (click)="submitRating()">
+        {{ submitting ? 'Submitting…' : 'Submit Rating' }}
+      </button>
+      <button class="btn btn-outline" (click)="cancelRating()">Maybe Later</button>
+    </div>
+
+  </div>
+</div>

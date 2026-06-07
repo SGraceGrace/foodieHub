@@ -1,0 +1,53 @@
+<div class="auth-container">
+  <div class="auth-card">
+
+    <div class="auth-left">
+      <div class="auth-brand">
+        <div class="logo-icon">F</div>
+        <div class="auth-divider"></div>
+        <div>
+          <div class="logo-text">foodiehub</div>
+          <div class="logo-sub">Delivery Partner</div>
+        </div>
+      </div>
+
+      <h2 class="auth-title">Welcome Driver!</h2>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+        <div class="input-field" [class.error]="email?.invalid && email?.touched">
+          <span>✉️</span>
+          <input type="email" placeholder="Email address" formControlName="email" />
+        </div>
+        <div class="field-error" *ngIf="email?.invalid && email?.touched">
+          Enter a valid email address
+        </div>
+
+        <div class="input-field" [class.error]="password?.invalid && password?.touched">
+          <span>🔒</span>
+          <input [type]="showPassword ? 'text' : 'password'" placeholder="Password" formControlName="password" />
+          <span class="eye-btn" (click)="showPassword = !showPassword">{{ showPassword ? '🙈' : '👁️' }}</span>
+        </div>
+        <div class="field-error" *ngIf="password?.invalid && password?.touched">
+          Password is required
+        </div>
+
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid">Login</button>
+      </form>
+
+      <div class="auth-or">or</div>
+      <a routerLink="/driver/register" class="btn btn-outline">Become a Delivery Partner</a>
+      <div class="auth-footer">
+        <a routerLink="/home">← Back to FoodieHub</a>
+      </div>
+    </div>
+
+    <div class="auth-right">
+      <div class="promo-card">
+        <div class="promo-emoji">🚗</div>
+        <div class="promo-title">Earn While You Drive</div>
+        <div class="promo-desc">Flexible working hours. Earn on every delivery. Get instant payouts.</div>
+      </div>
+    </div>
+
+  </div>
+</div>

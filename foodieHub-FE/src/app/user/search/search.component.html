@@ -1,0 +1,119 @@
+<div class="search-page">
+
+  <!-- Header -->
+  <div class="search-header">
+    <h2 *ngIf="searchValue" class="search-title">
+      Results for <span class="query">"{{ searchValue }}"</span>
+    </h2>
+    <h2 *ngIf="!searchValue" class="search-title">Search FoodieHub</h2>
+
+    <span *ngIf="searched && !loading" class="result-count">
+      {{ totalResults }} result{{ totalResults !== 1 ? 's' : '' }} found
+    </span>
+  </div>
+
+  <!-- Loading spinner -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Searching…</p>
+  </div>
+
+  <!-- Empty state (user typed something but nothing came back) -->
+  <div *ngIf="!loading && searched && totalResults === 0" class="empty-state">
+    <div class="empty-icon">🔍</div>
+    <h3>No results found</h3>
+    <p>Try a different keyword, like a dish name or cuisine.</p>
+  </div>
+
+  <!-- Idle state (nothing typed yet) -->
+  <div *ngIf="!loading && !searched" class="idle-state">
+    <div class="idle-icon">🍽️</div>
+    <p>Type in the search box above to find restaurants and dishes.</p>
+  </div>
+
+  <!-- ── Restaurants section ─────────────────────────────────────────── -->
+  <section *ngIf="!loading && restaurants.length > 0" class="result-section">
+    <h3 class="section-title">
+      <span class="section-icon">🏪</span> Restaurants
+      <span class="section-count">{{ restaurants.length }}</span>
+    </h3>
+
+    <div class="restaurant-grid">
+      <a
+        *ngFor="let r of restaurants; trackBy: trackById"
+        [routerLink]="['/restaurants', r.id]"
+        class="restaurant-card"
+      >
+        <div class="card-image">
+          <img
+            [src]="r.imageUrl || 'assets/images/restaurant-placeholder.png'"
+            [alt]="r.name"
+            onerror="this.src='assets/images/restaurant-placeholder.png'"
+          />
+          <span class="status-badge" [class.open]="r.open" [class.closed]="!r.open">
+            {{ r.open ? 'Open' : 'Closed' }}
+          </span>
+        </div>
+
+        <div class="card-body">
+          <h4 class="restaurant-name">{{ r.name }}</h4>
+          <p class="cuisine-tags">{{ r.cuisine.join(', ') || '—' }}</p>
+          <p class="address">📍 {{ r.address || '—' }}</p>
+
+          <div class="card-meta">
+            <span class="meta-item rating">
+              ⭐ {{ r.rating | number:'1.1-1' }}
+              <span class="rating-count">({{ r.ratingCount }})</span>
+            </span>
+            <span class="meta-item">🕐 {{ r.deliveryTime }} min</span>
+            <span class="meta-item">₹{{ r.minOrder }}+ min</span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ── Menu items section ──────────────────────────────────────────── -->
+  <section *ngIf="!loading && menuItems.length > 0" class="result-section">
+    <h3 class="section-title">
+      <span class="section-icon">🍛</span> Dishes
+      <span class="section-count">{{ menuItems.length }}</span>
+    </h3>
+
+    <div class="menu-grid">
+      <a
+        *ngFor="let item of menuItems; trackBy: trackById"
+        [routerLink]="['/restaurants', item.restaurantId]"
+        class="menu-card"
+        [title]="'See ' + item.name + ' at ' + item.restaurantName"
+      >
+        <div class="menu-image">
+          <img
+            [src]="item.imageUrl || 'assets/images/food-placeholder.png'"
+            [alt]="item.name"
+            onerror="this.src='assets/images/food-placeholder.png'"
+          />
+          <!-- Veg / Non-veg dot -->
+          <span class="veg-dot" [class.veg]="item.veg" [class.nonveg]="!item.veg"
+                [title]="item.veg ? 'Veg' : 'Non-veg'">
+          </span>
+        </div>
+
+        <div class="menu-body">
+          <h4 class="item-name">{{ item.name }}</h4>
+          <p *ngIf="item.description" class="item-desc">{{ item.description }}</p>
+
+          <div class="item-meta">
+            <span class="item-price">₹{{ item.price | number:'1.0-0' }}</span>
+            <span class="item-category">{{ item.category }}</span>
+          </div>
+
+          <p class="item-restaurant">
+            <span class="restaurant-icon">🏪</span> {{ item.restaurantName }}
+          </p>
+        </div>
+      </a>
+    </div>
+  </section>
+
+</div>

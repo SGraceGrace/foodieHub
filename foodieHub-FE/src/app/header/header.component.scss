@@ -1,0 +1,162 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+$gold:      #f9b303;
+$gold-dark: #e0a000;
+$text:      #4e4e4e;
+$text-dark: #2a2a2a;
+$text-light:#888;
+$border:    #e8e8e8;
+$font-serif:'Libre Baskerville', Georgia, serif;
+$font-sans: 'DM Sans', sans-serif;
+
+* { font-family: $font-sans; box-sizing: border-box; cursor: default; }
+input { cursor: text; }
+button, a { cursor: pointer; }
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .75rem 2.5rem;
+  background: white;
+  border-bottom: 1px solid rgba(0,0,0,.05);
+  box-shadow: 0 1px 8px rgba(0,0,0,.05);
+  gap: 1.5rem;
+}
+
+// ── Logo ──────────────────────────────────────────────────────────
+.logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.logo-icon {
+  width: 44px;
+  height: 44px;
+  background: $gold;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: white;
+}
+
+.logo-divider {
+  width: 1px;
+  height: 24px;
+  background: $border;
+}
+
+.logo-text {
+  font-family: $font-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: $text-dark;
+  letter-spacing: .01em;
+}
+
+// ── Nav ──────────────────────────────────────────────────────────
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+}
+
+.nav-link {
+  display: inline-block;
+  padding: .45rem .75rem;
+  font-size: .88rem;
+  font-weight: 500;
+  color: $text;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color .2s, border-color .2s;
+  white-space: nowrap;
+
+  &:hover { color: $gold; border-bottom-color: $gold; }
+  &.active { color: $gold; border-bottom-color: $gold; }
+}
+
+// ── Right ─────────────────────────────────────────────────────────
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  flex-shrink: 0;
+}
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1.5px solid $border;
+  border-radius: 20px;
+  padding: .4rem .9rem;
+  transition: border-color .2s;
+
+  &.focused { border-color: $gold; }
+
+  .search-icon { font-size: .9rem; color: $text-light; }
+
+  input {
+    border: none;
+    outline: none;
+    font-family: $font-sans;
+    font-size: .85rem;
+    color: $text;
+    background: transparent;
+    width: 160px;
+
+    &::placeholder { color: $text-light; }
+  }
+}
+
+.btn-hdr-login {
+  padding: .42rem 1.1rem;
+  background: transparent;
+  color: $gold;
+  border: 1.5px solid $gold;
+  border-radius: 8px;
+  font-family: $font-sans;
+  font-size: .85rem;
+  font-weight: 600;
+  transition: background .2s, color .2s;
+  white-space: nowrap;
+
+  &:hover { background: #fff8e1; }
+}
+
+.btn-hdr-signup {
+  padding: .42rem 1.1rem;
+  background: $gold;
+  color: white;
+  border: 1.5px solid $gold;
+  border-radius: 8px;
+  font-family: $font-sans;
+  font-size: .85rem;
+  font-weight: 600;
+  transition: background .2s;
+  white-space: nowrap;
+
+  &:hover { background: $gold-dark; border-color: $gold-dark; }
+}
+
+// ── Responsive ───────────────────────────────────────────────────
+@media (max-width: 900px) {
+  .nav-links { display: none; }
+  .search-box input { width: 120px; }
+}
+
+@media (max-width: 600px) {
+  .header { padding: .6rem 1rem; }
+  .search-box { display: none; }
+}

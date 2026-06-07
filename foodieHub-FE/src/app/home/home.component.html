@@ -1,0 +1,200 @@
+<!-- ── Delivery Address Bar ──────────────────────────────────────── -->
+<div class="delivery-bar">
+  <div class="delivery-bar-inner">
+    <span class="delivery-bar-pin">📍</span>
+    <div class="delivery-bar-info" *ngIf="hasDeliveryAddress">
+      <span class="delivery-bar-label">Delivering to</span>
+      <span class="delivery-bar-address">
+        <strong>{{ deliveryAddressLabel | titlecase }}</strong>
+        &nbsp;·&nbsp;
+        {{ deliveryAddressText | slice:0:60 }}{{ deliveryAddressText.length > 60 ? '…' : '' }}
+      </span>
+    </div>
+    <span class="delivery-bar-prompt" *ngIf="!hasDeliveryAddress">
+      Add a delivery address to see nearby restaurants
+    </span>
+    <a class="delivery-bar-change" routerLink="/user/addresses">
+      {{ hasDeliveryAddress ? 'Change' : 'Add Address' }}
+    </a>
+  </div>
+</div>
+
+<!-- ── Slideshow ───────────────────────────────────────────────────── -->
+<div class="slideshow-container" *ngIf="slides.length > 0">
+  <button class="slide-nav prev" (click)="prevSlide()">❮</button>
+  <button class="slide-nav next" (click)="nextSlide()">❯</button>
+
+  <div class="slide" *ngFor="let slide of slides; let i = index"
+       [class.active]="i === activeSlide">
+    <div class="slide-content">
+      <div class="slide-title">
+        {{ slide.title }}<br>
+        <span class="highlight">{{ slide.highlightWord }}</span>
+      </div>
+      <div class="slide-desc">{{ slide.description }}</div>
+      <div class="slide-buttons">
+        <button class="btn btn-gold" routerLink="/user/cuisine">{{ slide.btn1Text }}</button>
+        <button class="btn btn-outline" routerLink="/user/search">{{ slide.btn2Text }}</button>
+      </div>
+      <div class="slide-badge" *ngIf="slide.badgeIcon">
+        <span class="badge-icon-lg">{{ slide.badgeIcon }}</span>
+        <div>
+          <strong>{{ slide.badgeText }}</strong>
+        </div>
+      </div>
+    </div>
+    <div class="slide-image">
+      <div class="slide-emoji">{{ slide.emoji }}</div>
+    </div>
+  </div>
+
+  <div class="slide-indicators">
+    <div class="indicator" *ngFor="let s of slides; let i = index"
+         [class.active]="i === activeSlide"
+         (click)="goToSlide(i)"></div>
+  </div>
+</div>
+
+<!-- ── Stats Bar ──────────────────────────────────────────────────── -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-item"><h3>1,200+</h3><p>Restaurants</p></div>
+    <div class="stat-item"><h3>50K+</h3><p>Happy Customers</p></div>
+    <div class="stat-item"><h3>30 min</h3><p>Avg Delivery</p></div>
+    <div class="stat-item"><h3>4.8 ⭐</h3><p>Average Rating</p></div>
+  </div>
+</div>
+
+<!-- ── Browse by Cuisine ──────────────────────────────────────────── -->
+<div class="section" *ngIf="cuisineFilters.length > 0">
+  <div class="section-hdr">
+    <h2>Browse by Cuisine</h2>
+    <button class="see-all" routerLink="/user/cuisine">See all →</button>
+  </div>
+  <div class="cuisine-grid">
+    <div class="cuisine-card" [class.cuisine-card--active]="selectedCuisine === 'All'" (click)="selectCuisine()">
+      <div class="cuisine-card-emoji" [style.background]="selectedCuisine === 'All' ? 'linear-gradient(135deg,#f5f5f5,#eeeeee)' : null">🍽️</div>
+      <span class="cuisine-card-label">All</span>
+    </div>
+    <div class="cuisine-card" *ngFor="let c of cuisineFilters"
+         [class.cuisine-card--active]="selectedCuisine === c"
+         (click)="selectCuisine(c)">
+      <div class="cuisine-card-emoji" [style.background]="selectedCuisine === c ? getCuisineBg(c) : null">{{ getCuisineEmoji(c) }}</div>
+      <span class="cuisine-card-label">{{ c }}</span>
+    </div>
+  </div>
+</div>
+
+<!-- ── Popular Dishes ─────────────────────────────────────────────── -->
+<div class="section" *ngIf="popularDishes.length > 0">
+  <div class="section-hdr">
+    <h2>{{ selectedCuisine === 'All' ? 'Popular Dishes' : selectedCuisine + ' Dishes' }}</h2>
+    <button class="see-all" routerLink="/user/cuisine">See all →</button>
+  </div>
+  <div class="food-grid">
+    <div class="food-card" *ngFor="let dish of popularDishes">
+      <div class="food-card-img" [style.background]="dish.imageUrl ? 'none' : dish.bg">
+        <img *ngIf="dish.imageUrl" [src]="dish.imageUrl" [alt]="dish.name" class="food-card-cover" />
+        <span *ngIf="!dish.imageUrl">{{ dish.emoji }}</span>
+      </div>
+      <div class="food-card-body">
+        <h3>{{ dish.name }}</h3>
+        <div class="food-rating">
+          <span class="stars">
+            <ng-container *ngFor="let full of starsArray(dish.rating)">{{ full ? '★' : '☆' }}</ng-container>
+          </span>
+          {{ dish.rating }}
+        </div>
+        <div class="food-footer">
+          <span class="food-price">₹{{ dish.price }}</span>
+          <!-- qty controls once item is in cart -->
+          <div class="qty-ctrl" *ngIf="getQty(dish) > 0">
+            <button class="qty-btn" (click)="removeFromCart(dish); $event.stopPropagation()">−</button>
+            <span class="qty-num">{{ getQty(dish) }}</span>
+            <button class="qty-btn" (click)="addToCart(dish); $event.stopPropagation()">+</button>
+          </div>
+          <!-- add button when not yet in cart -->
+          <button class="add-btn" *ngIf="getQty(dish) === 0"
+                  (click)="addToCart(dish); $event.stopPropagation()">Add +</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Top Restaurants ───────────────────────────────────────────── -->
+<div style="background:var(--bg-warm);padding:3rem 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+  <div class="section" style="padding-top:0;padding-bottom:0">
+    <div class="section-hdr">
+      <h2>{{ selectedCuisine === 'All' ? 'Top Restaurants' : selectedCuisine + ' Restaurants' }}</h2>
+      <button class="see-all" routerLink="/user/cuisine">See all →</button>
+    </div>
+    <div class="rest-empty" *ngIf="restaurants.length === 0">
+      {{ hasDeliveryAddress ? 'No restaurants found nearby. Try a different address.' : 'No restaurants found for this cuisine yet.' }}
+    </div>
+    <div class="rest-grid" *ngIf="restaurants.length > 0">
+      <div class="rest-card" *ngFor="let r of restaurants" [routerLink]="['/restaurants', r.id]" style="cursor:pointer">
+
+        <!-- Image area -->
+        <div class="rest-img" [style.background]="r.imageUrl ? 'none' : getBg(r)">
+          <img *ngIf="r.imageUrl" [src]="r.imageUrl" [alt]="r.name" class="rest-cover" />
+          <span *ngIf="!r.imageUrl" class="rest-emoji">{{ getEmoji(r) }}</span>
+
+          <span class="rest-badge-status" [class.closed]="r.open === false">
+            {{ r.open === false ? 'Closed' : 'Open now' }}
+          </span>
+          <span class="rest-badge-dist" *ngIf="getDistanceLabel(r)">
+            📍 {{ getDistanceLabel(r) }}
+          </span>
+        </div>
+
+        <!-- Card body -->
+        <div class="rest-body">
+          <div class="rest-body-top">
+            <h3>{{ r.name }}</h3>
+            <span class="rest-rating">⭐ {{ r.rating ?? '—' }}</span>
+          </div>
+          <div class="rtags">
+            <span class="rtag" *ngFor="let c of (r.cuisine ?? []) | slice:0:3">{{ c }}</span>
+          </div>
+          <div class="rest-meta">
+            <span>⏱ {{ r.deliveryTime ?? '—' }} min</span>
+            <span class="meta-dot">·</span>
+            <span>Min ₹{{ r.minOrder ?? 0 }}</span>
+            <span class="meta-dot">·</span>
+            <span>{{ r.priceRange ?? '₹₹' }}</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Driver CTA ─────────────────────────────────────────────────── -->
+<div class="driver-banner">
+  <div class="driver-banner-inner">
+    <div class="driver-banner-text">
+      <h2>Deliver with FoodieHub</h2>
+      <p>Earn on your own schedule. Join thousands of delivery partners across the city and make money doing what you love — riding.</p>
+      <div class="driver-banner-actions">
+        <button class="btn btn-gold" routerLink="/driver/register">Become a Partner</button>
+        <button class="btn btn-outline-white" routerLink="/driver/login">Partner Login</button>
+      </div>
+    </div>
+    <div class="driver-banner-visual">
+      <div class="driver-stats">
+        <div class="dstat"><span class="dstat-val">₹800+</span><span class="dstat-lbl">Avg daily earnings</span></div>
+        <div class="dstat"><span class="dstat-val">Flex</span><span class="dstat-lbl">Work your own hours</span></div>
+        <div class="dstat"><span class="dstat-val">Fast</span><span class="dstat-lbl">Weekly payouts</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Promo Banner ───────────────────────────────────────────────── -->
+<div class="promo-banner-strip">
+  <h2>🎁 Get ₹100 Off Your Next Order!</h2>
+  <p>Use code FOODIE100 at checkout. Valid on orders above ₹299.</p>
+  <button class="btn btn-gold" routerLink="/user/deals">View All Deals</button>
+</div>
