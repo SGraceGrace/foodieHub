@@ -3,6 +3,7 @@ package com.project.notificationservice.config;
 import com.project.notificationservice.event.ActivityLoggedEvent;
 import com.project.notificationservice.event.ContactMessageEvent;
 import com.project.notificationservice.event.DriverRegisteredEvent;
+import com.project.notificationservice.event.OrderCancelledEvent;
 import com.project.notificationservice.event.OrderPlacedEvent;
 import com.project.notificationservice.event.OrderStatusUpdatedEvent;
 import com.project.notificationservice.event.OwnerStatusEvent;
@@ -39,6 +40,8 @@ public class RabbitMQConfig {
     public static final String CONTACT_RKEY                 = "contact.message";
     public static final String ORDER_STATUS_UPDATED_QUEUE   = "order.status.updated.queue";
     public static final String ORDER_STATUS_UPDATED_RKEY    = "order.status.updated";
+    public static final String ORDER_CANCELLED_QUEUE        = "order.cancelled.queue";
+    public static final String ORDER_CANCELLED_RKEY         = "order.cancelled";
 
     /**
      * Separate queue bound to the SAME order.placed routing key as ORDER_PLACED_QUEUE.
@@ -58,6 +61,7 @@ public class RabbitMQConfig {
     @Bean public Queue contactMessageQueue()           { return new Queue(CONTACT_QUEUE, true); }
     @Bean public Queue orderStatusUpdatedQueue()       { return new Queue(ORDER_STATUS_UPDATED_QUEUE, true); }
     @Bean public Queue driverOrderPlacedQueue()        { return new Queue(DRIVER_ORDER_PLACED_QUEUE, true); }
+    @Bean public Queue orderCancelledQueue()           { return new Queue(ORDER_CANCELLED_QUEUE, true); }
 
     @Bean
     public Binding partnerRegisteredBinding(Queue partnerRegisteredQueue, TopicExchange foodiehubExchange) {
@@ -92,6 +96,10 @@ public class RabbitMQConfig {
         // Same routing key as orderPlacedBinding — each queue gets its own independent copy of the event.
         return BindingBuilder.bind(driverOrderPlacedQueue).to(foodiehubExchange).with(ORDER_PLACED_RKEY);
     }
+    @Bean
+    public Binding orderCancelledBinding(Queue orderCancelledQueue, TopicExchange foodiehubExchange) {
+        return BindingBuilder.bind(orderCancelledQueue).to(foodiehubExchange).with(ORDER_CANCELLED_RKEY);
+    }
 
     @Bean
     public Jackson2JsonMessageConverter messageConverter() {
@@ -104,6 +112,7 @@ public class RabbitMQConfig {
         idClassMapping.put("com.project.foodieHub.messaging.OwnerStatusEvent",        OwnerStatusEvent.class);
         idClassMapping.put("com.project.orderservice.messaging.OrderPlacedEvent",          OrderPlacedEvent.class);
         idClassMapping.put("com.project.orderservice.messaging.OrderStatusUpdatedEvent",   OrderStatusUpdatedEvent.class);
+        idClassMapping.put("com.project.orderservice.messaging.OrderCancelledEvent",       OrderCancelledEvent.class);
         idClassMapping.put("com.project.foodieHub.messaging.DriverRegisteredEvent",   DriverRegisteredEvent.class);
         idClassMapping.put("com.project.foodieHub.messaging.ActivityLoggedEvent",     ActivityLoggedEvent.class);
         idClassMapping.put("com.project.foodieHub.messaging.ContactMessageEvent",     ContactMessageEvent.class);

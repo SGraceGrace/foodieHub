@@ -13,6 +13,7 @@ public class RabbitMQConfig {
     public static final String EXCHANGE                  = "foodiehub.exchange";
     public static final String ORDER_PLACED_RKEY         = "order.placed";
     public static final String ORDER_STATUS_UPDATED_RKEY = "order.status.updated";
+    public static final String ORDER_CANCELLED_RKEY      = "order.cancelled";
 
     @Bean
     public TopicExchange foodiehubExchange() {

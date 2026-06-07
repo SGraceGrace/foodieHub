@@ -3,12 +3,12 @@ package com.project.orderservice.service.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.orderservice.document.Cart;
-import com.project.orderservice.document.CartItem;
 import com.project.orderservice.document.Order;
 import com.project.orderservice.document.OrderItem;
 import com.project.orderservice.document.RestaurantCart;
 import com.project.orderservice.dto.PaginatedResponse;
 import com.project.orderservice.dto.PlaceOrderRequest;
+import com.project.orderservice.messaging.OrderCancelledEvent;
 import com.project.orderservice.messaging.OrderItemEvent;
 import com.project.orderservice.messaging.OrderPlacedEvent;
 import com.project.orderservice.messaging.OrderStatusUpdatedEvent;
@@ -23,6 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import com.project.orderservice.exception.AccessDeniedException;
 import com.project.orderservice.exception.CartEmptyException;
 import com.project.orderservice.exception.OrderConflictException;
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Service;
 
 import com.project.orderservice.dto.DriverEarningsDTO;
 import com.project.orderservice.dto.RestaurantStatsDTO;
+import java.time.Duration;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -40,6 +42,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -51,14 +54,35 @@ public class OrderServiceImpl implements OrderService {
     private static final double FREE_DELIVERY_ABOVE = 500.0;
     private static final double GST_RATE            = 0.05;
 
-    private final CartRepository       cartRepository;
-    private final OrderRepository      orderRepository;
-    private final RabbitTemplate       rabbitTemplate;
+    private final CartRepository        cartRepository;
+    private final OrderRepository       orderRepository;
+    private final RabbitTemplate        rabbitTemplate;
     private final OutboxEventRepository outboxEventRepository;
     private final ObjectMapper          objectMapper;
+    private final StringRedisTemplate   redisTemplate;
 
     @Override
     public Order placeOrder(String userId, PlaceOrderRequest req) {
+        String lockKey   = "lock:order:" + userId;
+        String lockValue = UUID.randomUUID().toString();
+        Boolean acquired = redisTemplate.opsForValue()
+                .setIfAbsent(lockKey, lockValue, Duration.ofSeconds(10));
+
+        if (!Boolean.TRUE.equals(acquired)) {
+            throw new OrderConflictException("Order already being processed, please wait");
+        }
+
+        try {
+            return doPlaceOrder(userId, req);
+        } finally {
+            String current = redisTemplate.opsForValue().get(lockKey);
+            if (lockValue.equals(current)) {
+                redisTemplate.delete(lockKey);
+            }
+        }
+    }
+
+    private Order doPlaceOrder(String userId, PlaceOrderRequest req) {
 
         // 1. Fetch cart
         Cart cart = cartRepository.findByUserId(userId)
@@ -247,6 +271,27 @@ public class OrderServiceImpl implements OrderService {
                 RabbitMQConfig.ORDER_STATUS_UPDATED_RKEY,
                 event);
         log.info("Published order.status.updated orderId={} status={}", saved.getId(), newStatus);
+
+        // Saga compensating transaction — if a paid order is cancelled, publish order.cancelled
+        // so the refund handler can initiate a Razorpay refund.
+        if ("CANCELLED".equals(newStatus) && saved.getPaymentId() != null) {
+            OrderCancelledEvent cancelledEvent = OrderCancelledEvent.builder()
+                    .orderId(saved.getId())
+                    .userId(saved.getUserId())
+                    .customerEmail(saved.getUserId())   // X-User-Id is the email
+                    .customerName(saved.getCustomerName())
+                    .restaurantName(saved.getRestaurantName())
+                    .paymentId(saved.getPaymentId())
+                    .totalAmount(saved.getTotalAmount())
+                    .cancelledAt(saved.getUpdatedAt())
+                    .build();
+            rabbitTemplate.convertAndSend(
+                    RabbitMQConfig.EXCHANGE,
+                    RabbitMQConfig.ORDER_CANCELLED_RKEY,
+                    cancelledEvent);
+            log.info("Published order.cancelled (refund saga) orderId={} paymentId={}",
+                    saved.getId(), saved.getPaymentId());
+        }
 
         return saved;
     }

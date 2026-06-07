@@ -9,6 +9,7 @@ import com.project.notificationservice.dto.CustomerOrderUpdateDTO;
 import com.project.notificationservice.event.ActivityLoggedEvent;
 import com.project.notificationservice.event.ContactMessageEvent;
 import com.project.notificationservice.event.DriverRegisteredEvent;
+import com.project.notificationservice.event.OrderCancelledEvent;
 import com.project.notificationservice.event.OrderPlacedEvent;
 import com.project.notificationservice.event.OrderStatusUpdatedEvent;
 import com.project.notificationservice.event.OwnerStatusEvent;
@@ -308,6 +309,28 @@ public class NotificationListener {
         log.info("Notified {} online driver(s) about order {}", driverEmails.size(), event.getOrderId());
     }
 
+    // ── Saga compensating transaction: paid order cancelled → initiate refund ──
+
+    @RabbitListener(queues = RabbitMQConfig.ORDER_CANCELLED_QUEUE)
+    public void onOrderCancelled(OrderCancelledEvent event) {
+        // In a real system this would call Razorpay's refund API:
+        //   razorpayClient.payments.refund(event.getPaymentId(), options)
+        // For the POC we log the intent and email the customer.
+        log.info("Saga refund triggered — orderId={} paymentId={} amount={}",
+                event.getOrderId(), event.getPaymentId(), event.getTotalAmount());
+
+        try {
+            SimpleMailMessage msg = new SimpleMailMessage();
+            msg.setTo(event.getCustomerEmail());
+            msg.setSubject("Your FoodieHub Refund Has Been Initiated");
+            msg.setText(buildRefundEmail(event));
+            mailSender.send(msg);
+            log.info("Refund email sent to {} for orderId={}", event.getCustomerEmail(), event.getOrderId());
+        } catch (Exception e) {
+            log.error("Failed to send refund email for orderId={}: {}", event.getOrderId(), e.getMessage());
+        }
+    }
+
     // ── Email bodies ──────────────────────────────────────────────
 
     private String buildOwnerStatusEmail(OwnerStatusEvent e) {
@@ -368,6 +391,32 @@ public class NotificationListener {
                 e.getRestaurantAddress() != null ? e.getRestaurantAddress() : "—",
                 e.getFssaiNumber()       != null ? e.getFssaiNumber()       : "—",
                 e.getGstNumber()         != null ? e.getGstNumber()         : "—"
+        );
+    }
+
+    private String buildRefundEmail(OrderCancelledEvent e) {
+        return """
+                Hi %s,
+
+                We're sorry — your order from %s was cancelled.
+
+                A refund of ₹%.2f has been initiated to your original payment method.
+                Refunds typically take 5-7 business days to reflect in your account.
+
+                Order ID  : %s
+                Payment ID: %s
+                Amount    : ₹%.2f
+
+                If you have any questions, please contact support.
+
+                — FoodieHub Team
+                """.formatted(
+                e.getCustomerName(),
+                e.getRestaurantName(),
+                e.getTotalAmount(),
+                e.getOrderId(),
+                e.getPaymentId(),
+                e.getTotalAmount()
         );
     }
 

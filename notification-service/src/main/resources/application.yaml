@@ -44,6 +44,14 @@ vapid:
   public-key: ${VAPID_PUBLIC_KEY:BBExuSKx28RTr_4tt3TJIqAfVoWOfTpwNExZez0UjTUx4rnrSEgyjX0tFqmQPGYY5YS_CZeSRIFvmBL0S-39UQw}
   private-key: ${VAPID_PRIVATE_KEY:Ln6IM4WpM_77cEsTvtU-rpv8S0gj7TAmqZmo-3OPRjg}
 
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+
 logging:
   level:
     org.springframework.security: DEBUG

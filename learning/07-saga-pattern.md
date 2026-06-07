@@ -65,9 +65,48 @@ Compensating transactions:
 - "The downside of choreography is it's hard to see the overall flow — you have to trace events across services. Orchestration makes the flow explicit but adds a coordinator service"
 - "Sagas give eventual consistency, not ACID consistency — for a brief moment an order can exist without payment. You handle this with order status (PENDING → CONFIRMED/CANCELLED)"
 
-## What to implement in FoodieHub
-- [ ] Add `payment.success` / `payment.failed` events to RabbitMQ config
-- [ ] Order status: add `PAYMENT_PENDING` before `CONFIRMED`
-- [ ] Order Service listens for `payment.failed` → sets status to `CANCELLED`
-- [ ] Add compensating logic for each failure scenario
-- [ ] Draw the full event flow as a sequence diagram for your portfolio
+## What was actually implemented in FoodieHub
+
+The learning doc's original plan (payment.failed → cancel order) assumed an async payment flow. FoodieHub uses Razorpay with synchronous verification — if payment fails, the order is never created, so there is nothing to cancel.
+
+The correct Saga for this codebase is the **refund compensating transaction**:
+
+### The Saga: paid order cancelled → initiate refund
+
+```
+Restaurant cancels a confirmed order
+  OrderService.updateStatus("CANCELLED")
+    → status = CANCELLED, order has paymentId (was paid)
+    → [existing]  publish order.status.updated → customer notified via SSE + Web Push
+    → [NEW SAGA]  publish order.cancelled      → refund handler triggered
+          ↓
+  NotificationListener.onOrderCancelled()
+    → logs: "Saga refund triggered — paymentId=xxx amount=yyy"
+    → emails customer: "Your refund of ₹X has been initiated"
+    → (in production: razorpayClient.payments.refund(paymentId, options))
+```
+
+### Why two events for one cancellation?
+`order.status.updated` is for UI — SSE patches the order tracker, Web Push shows the "cancelled" banner. It carries no payment details.
+
+`order.cancelled` is the Saga event — it carries `paymentId` and `totalAmount` specifically so the refund handler has what it needs. Different consumers, different concerns.
+
+### Files changed
+| File | Change |
+|---|---|
+| `order-service/.../messaging/OrderCancelledEvent.java` | New event class |
+| `order-service/.../messaging/RabbitMQConfig.java` | Added `ORDER_CANCELLED_RKEY = "order.cancelled"` |
+| `order-service/.../service/impl/OrderServiceImpl.java` | `updateStatus()` publishes `order.cancelled` when CANCELLED + paymentId != null |
+| `notification-service/.../event/OrderCancelledEvent.java` | Mirror event class |
+| `notification-service/.../config/RabbitMQConfig.java` | Queue + binding + class mapping for `order.cancelled` |
+| `notification-service/.../listener/NotificationListener.java` | `onOrderCancelled()` — logs refund + emails customer |
+
+### What PAYMENT_PENDING would require
+Adding `PAYMENT_PENDING` makes sense only if orders are created BEFORE payment is collected — e.g., COD or bank transfer flows. In the Razorpay flow, the order is only created after signature verification succeeds, so `PAYMENT_PENDING` has no window to exist. Skip it for this POC.
+
+## Interview talking points (updated)
+- "I use the Choreography Saga — no central coordinator. Each service reacts to events independently via RabbitMQ"
+- "When a paid order is cancelled, two events fire: `order.status.updated` updates the UI (SSE/Web Push), and `order.cancelled` triggers the Saga's compensating transaction — the refund"
+- "I kept the two events separate because they have different consumers and different payloads. The refund handler needs the paymentId; the UI notification handler doesn't"
+- "The compensating transaction is the inverse of the original action: charge → refund. That's the core of the Saga pattern"
+- "Choreography's downside is observability — you can't see the full Saga flow in one place. Distributed Tracing (Zipkin) would help here — you'd trace the order.cancelled event through all its consumers"

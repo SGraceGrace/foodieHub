@@ -6,15 +6,15 @@ Concepts implemented or studied through this project, ordered by interview prior
 
 | # | Topic | File | Status |
 |---|---|---|---|
-| 1 | Rate Limiting | [01-rate-limiting.md](01-rate-limiting.md) | To implement |
-| 2 | Circuit Breaker | [02-circuit-breaker.md](02-circuit-breaker.md) | To implement |
-| 3 | Idempotency | [03-idempotency.md](03-idempotency.md) | To implement |
-| 4 | Outbox Pattern | [04-outbox-pattern.md](04-outbox-pattern.md) | To implement |
-| 5 | Geolocation Search | [05-geolocation-search.md](05-geolocation-search.md) | To implement |
-| 6 | Distributed Locking | [06-distributed-locking.md](06-distributed-locking.md) | To implement |
-| 7 | Saga Pattern | [07-saga-pattern.md](07-saga-pattern.md) | To implement |
-| 8 | CQRS | [08-cqrs.md](08-cqrs.md) | Already implemented (MongoDB + ES) |
-| 9 | Distributed Tracing | [09-distributed-tracing.md](09-distributed-tracing.md) | To implement |
+| 1 | Rate Limiting | [01-rate-limiting.md](01-rate-limiting.md) | Done — custom Token Bucket (Lua + Redis), per-user + per-route |
+| 2 | Circuit Breaker | [02-circuit-breaker.md](02-circuit-breaker.md) | Done — Resilience4j on all api-gateway routes |
+| 3 | Idempotency | [03-idempotency.md](03-idempotency.md) | Done — razorpayOrderId key, 24h TTL, PaymentServiceImpl |
+| 4 | Outbox Pattern | [04-outbox-pattern.md](04-outbox-pattern.md) | Done — order-service outbox + poller |
+| 5 | Geolocation Search | [05-geolocation-search.md](05-geolocation-search.md) | Done — MongoDB $near |
+| 6 | Distributed Locking | [06-distributed-locking.md](06-distributed-locking.md) | Done — Redis SETNX + UUID, placeOrder() |
+| 7 | Saga Pattern | [07-saga-pattern.md](07-saga-pattern.md) | Done — order.cancelled event triggers refund compensating transaction |
+| 8 | CQRS | [08-cqrs.md](08-cqrs.md) | Done — MongoDB write model + Elasticsearch read model |
+| 9 | Distributed Tracing | [09-distributed-tracing.md](09-distributed-tracing.md) | Done — Micrometer + Zipkin wired into all 5 services |
 
 ## Already in FoodieHub
 - Microservices architecture

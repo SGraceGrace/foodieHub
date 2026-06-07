@@ -72,3 +72,6 @@ The cached value is the full serialized `Order` object. On retry, the client get
 - "The check happens before signature verification so a retry is essentially free — one Redis GET and we're done"
 - "I cache the full Order object, not just a flag — so the retry response is identical to the original, including the order ID Angular navigates to"
 - "24-hour TTL covers all realistic retry scenarios; after that, the Razorpay order itself would have expired anyway"
+
+## See also
+For how idempotency differs from distributed locking (a related but different problem), see `06-distributed-locking.md` → "Idempotency vs Distributed Locking" section.
