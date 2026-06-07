@@ -10,13 +10,10 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://localhost:27017/foodiehub_food
+      uri: ${MONGODB_URI:mongodb://localhost:27017/foodiehub_food}
 
   rabbitmq:
-    host: ${RABBITMQ_HOST:localhost}
-    port: ${RABBITMQ_PORT:5672}
-    username: ${RABBITMQ_USERNAME:guest}
-    password: ${RABBITMQ_PASSWORD:guest}
+    addresses: ${RABBITMQ_URL:amqp://guest:guest@localhost:5672}
 
   mail:
     host: smtp.gmail.com
@@ -50,7 +47,7 @@ management:
       probability: 1.0
   zipkin:
     tracing:
-      endpoint: http://localhost:9411/api/v2/spans
+      endpoint: ${ZIPKIN_URL:http://localhost:9411}/api/v2/spans
 
 logging:
   level:

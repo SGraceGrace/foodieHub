@@ -3,15 +3,14 @@ spring:
     name: api-gateway
   data:
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+      url: ${REDIS_URL:redis://localhost:6379}
   cloud:
     gateway:
       server:
         webmvc:
           routes:
           - id: user-service-auth
-            uri: http://localhost:8081
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
             predicates:
               - Path=/api/v1/auth/**
             filters:
@@ -21,7 +20,7 @@ spring:
                   fallbackUri: forward:/fallback/user-service
 
           - id: user-service-users
-            uri: http://localhost:8081
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
             predicates:
               - Path=/api/v1/user, /api/v1/user/**
             filters:
@@ -31,7 +30,7 @@ spring:
                   fallbackUri: forward:/fallback/user-service
 
           - id: user-service-refresh
-            uri: http://localhost:8081
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
             predicates:
               - Path=/api/v1/refresh-token/**
             filters:
@@ -41,7 +40,7 @@ spring:
                   fallbackUri: forward:/fallback/user-service
 
           - id: user-service-oauth2
-            uri: http://localhost:8081
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
             predicates:
               - Path=/oauth2/**, /login/oauth2/**
             filters:
@@ -51,7 +50,7 @@ spring:
                   fallbackUri: forward:/fallback/user-service
 
           - id: user-service-contact
-            uri: http://localhost:8081
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
             predicates:
               - Path=/api/v1/contact
             filters:
@@ -61,7 +60,7 @@ spring:
                   fallbackUri: forward:/fallback/user-service
 
           - id: user-service-admin-contact-messages
-            uri: http://localhost:8081
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
             predicates:
               - Path=/api/v1/admin/contact-messages, /api/v1/admin/contact-messages/**
             filters:
@@ -71,7 +70,7 @@ spring:
                   fallbackUri: forward:/fallback/user-service
 
           - id: food-service-slides-public
-            uri: http://localhost:8082
+            uri: ${FOOD_SERVICE_URL:http://localhost:8082}
             predicates:
               - Path=/api/v1/slides
             filters:
@@ -81,7 +80,7 @@ spring:
                   fallbackUri: forward:/fallback/food-service
 
           - id: food-service-slides-admin
-            uri: http://localhost:8082
+            uri: ${FOOD_SERVICE_URL:http://localhost:8082}
             predicates:
               - Path=/api/v1/admin/slides, /api/v1/admin/slides/**
             filters:
@@ -91,7 +90,7 @@ spring:
                   fallbackUri: forward:/fallback/food-service
 
           - id: food-service-admin-restaurants
-            uri: http://localhost:8082
+            uri: ${FOOD_SERVICE_URL:http://localhost:8082}
             predicates:
               - Path=/api/v1/admin/restaurants, /api/v1/admin/restaurants/**
             filters:
@@ -101,7 +100,7 @@ spring:
                   fallbackUri: forward:/fallback/food-service
 
           - id: user-service-admin-users
-            uri: http://localhost:8081
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
             predicates:
               - Path=/api/v1/admin/users, /api/v1/admin/users/**
             filters:
@@ -111,7 +110,7 @@ spring:
                   fallbackUri: forward:/fallback/user-service
 
           - id: user-service-activity-logs
-            uri: http://localhost:8081
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
             predicates:
               - Path=/api/v1/admin/activity-logs
             filters:
@@ -121,7 +120,7 @@ spring:
                   fallbackUri: forward:/fallback/user-service
 
           - id: user-service-restaurant-owners
-            uri: http://localhost:8081
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
             predicates:
               - Path=/api/v1/admin/restaurant-owners, /api/v1/admin/restaurant-owners/**
             filters:
@@ -131,7 +130,7 @@ spring:
                   fallbackUri: forward:/fallback/user-service
 
           - id: user-service-drivers
-            uri: http://localhost:8081
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
             predicates:
               - Path=/api/v1/admin/drivers, /api/v1/admin/drivers/**
             filters:
@@ -141,7 +140,7 @@ spring:
                   fallbackUri: forward:/fallback/user-service
 
           - id: notification-service-notifications
-            uri: http://localhost:8084
+            uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
             predicates:
               - Path=/api/v1/admin/notifications, /api/v1/admin/notifications/**
             filters:
@@ -151,7 +150,7 @@ spring:
                   fallbackUri: forward:/fallback/notification-service
 
           - id: notification-service-push-subscription
-            uri: http://localhost:8084
+            uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
             predicates:
               - Path=/api/v1/admin/push-subscription
             filters:
@@ -161,7 +160,7 @@ spring:
                   fallbackUri: forward:/fallback/notification-service
 
           - id: user-service-partner
-            uri: http://localhost:8081
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
             predicates:
               - Path=/api/v1/partner/**
             filters:
@@ -171,7 +170,7 @@ spring:
                   fallbackUri: forward:/fallback/user-service
 
           - id: notification-service-driver-notifications
-            uri: http://localhost:8084
+            uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
             predicates:
               - Path=/api/v1/driver/notifications, /api/v1/driver/notifications/**
             filters:
@@ -181,7 +180,7 @@ spring:
                   fallbackUri: forward:/fallback/notification-service
 
           - id: notification-service-driver-push-subscription
-            uri: http://localhost:8084
+            uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
             predicates:
               - Path=/api/v1/driver/push-subscription
             filters:
@@ -191,7 +190,7 @@ spring:
                   fallbackUri: forward:/fallback/notification-service
 
           - id: user-service-driver-register
-            uri: http://localhost:8081
+            uri: ${USER_SERVICE_URL:http://localhost:8081}
             predicates:
               - Path=/api/v1/driver/**
             filters:
@@ -201,7 +200,7 @@ spring:
                   fallbackUri: forward:/fallback/user-service
 
           - id: food-service-restaurants
-            uri: http://localhost:8082
+            uri: ${FOOD_SERVICE_URL:http://localhost:8082}
             predicates:
               - Path=/api/v1/restaurants, /api/v1/restaurants/**
             filters:
@@ -211,7 +210,7 @@ spring:
                   fallbackUri: forward:/fallback/food-service
 
           - id: food-service-cuisines
-            uri: http://localhost:8082
+            uri: ${FOOD_SERVICE_URL:http://localhost:8082}
             predicates:
               - Path=/api/cuisines/**
             filters:
@@ -221,7 +220,7 @@ spring:
                   fallbackUri: forward:/fallback/food-service
 
           - id: food-service-search
-            uri: http://localhost:8082
+            uri: ${FOOD_SERVICE_URL:http://localhost:8082}
             predicates:
               - Path=/api/search/**
             filters:
@@ -231,7 +230,7 @@ spring:
                   fallbackUri: forward:/fallback/food-service
 
           - id: order-service-cart
-            uri: http://localhost:8083
+            uri: ${ORDER_SERVICE_URL:http://localhost:8083}
             predicates:
               - Path=/api/cart/**
             filters:
@@ -241,7 +240,7 @@ spring:
                   fallbackUri: forward:/fallback/order-service
 
           - id: order-service-orders
-            uri: http://localhost:8083
+            uri: ${ORDER_SERVICE_URL:http://localhost:8083}
             predicates:
               - Path=/api/orders/**
             filters:
@@ -251,7 +250,7 @@ spring:
                   fallbackUri: forward:/fallback/order-service
 
           - id: order-service-payments
-            uri: http://localhost:8083
+            uri: ${ORDER_SERVICE_URL:http://localhost:8083}
             predicates:
               - Path=/api/v1/payments/**
             filters:
@@ -261,7 +260,7 @@ spring:
                   fallbackUri: forward:/fallback/order-service
 
           - id: notification-service-restaurant
-            uri: http://localhost:8084
+            uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
             predicates:
               - Path=/api/v1/restaurant/notifications, /api/v1/restaurant/notifications/**
             filters:
@@ -271,7 +270,7 @@ spring:
                   fallbackUri: forward:/fallback/notification-service
 
           - id: notification-service-customer
-            uri: http://localhost:8084
+            uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
             predicates:
               - Path=/api/v1/customer/notifications, /api/v1/customer/notifications/**, /api/v1/customer/push-subscription
             filters:
@@ -334,7 +333,7 @@ management:
       probability: 1.0
   zipkin:
     tracing:
-      endpoint: http://localhost:9411/api/v2/spans
+      endpoint: ${ZIPKIN_URL:http://localhost:9411}/api/v2/spans
 
 logging:
   level:

@@ -6,16 +6,12 @@ spring:
     name: order-service
   data:
     mongodb:
-      uri: mongodb://localhost:27017/foodiehub_food
+      uri: ${MONGODB_URI:mongodb://localhost:27017/foodiehub_food}
       auto-index-creation: true
     redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
+      url: ${REDIS_URL:redis://localhost:6379}
   rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
+    addresses: ${RABBITMQ_URL:amqp://guest:guest@localhost:5672}
 
 razorpay:
   key-id: ${RAZORPAY_KEY_ID}
@@ -27,4 +23,4 @@ management:
       probability: 1.0
   zipkin:
     tracing:
-      endpoint: http://localhost:9411/api/v2/spans
+      endpoint: ${ZIPKIN_URL:http://localhost:9411}/api/v2/spans

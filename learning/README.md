@@ -16,6 +16,13 @@ Concepts implemented or studied through this project, ordered by interview prior
 | 8 | CQRS | [08-cqrs.md](08-cqrs.md) | Done — MongoDB write model + Elasticsearch read model |
 | 9 | Distributed Tracing | [09-distributed-tracing.md](09-distributed-tracing.md) | Done — Micrometer + Zipkin wired into all 5 services |
 
+| 10 | Event Sourcing | [10-event-sourcing.md](10-event-sourcing.md) | Conceptual — not implemented |
+| 11 | Database Sharding | [11-database-sharding.md](11-database-sharding.md) | Conceptual — not implemented |
+| 12 | Cache Invalidation | [12-cache-invalidation.md](12-cache-invalidation.md) | Partial — TTL in use; event-driven invalidation not implemented |
+| 13 | Backpressure | [13-backpressure.md](13-backpressure.md) | Partial — circuit breaker done; RabbitMQ prefetch + DLQ not implemented |
+| 14 | API Versioning | [14-api-versioning.md](14-api-versioning.md) | Partial — /v1/ prefix in place; order/cart routes missing prefix |
+| 15 | Pagination Deep Dive | [15-pagination-deep-dive.md](15-pagination-deep-dive.md) | Done — offset pagination on all list endpoints |
+
 ## Already in FoodieHub
 - Microservices architecture
 - API Gateway (Spring Cloud Gateway)
