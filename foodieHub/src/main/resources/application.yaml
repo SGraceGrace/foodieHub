@@ -40,7 +40,7 @@ spring:
     addresses: ${RABBITMQ_URL:amqp://guest:guest@localhost:5672}
 
 server:
-  port: 8081
+  port: ${PORT:8081}
 
 food:
   service:
