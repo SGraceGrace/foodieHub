@@ -1,6 +1,7 @@
 package com.project.foodservice.config;
 
 import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.HttpResponseInterceptor;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.impl.client.BasicCredentialsProvider;
@@ -43,6 +44,16 @@ public class ElasticsearchConfig {
                         (HttpRequestInterceptor) (request, context) -> {
                             request.setHeader("Content-Type", "application/json");
                             request.setHeader("Accept", "application/json");
+                        }
+                    );
+
+                    // elasticsearch-java 8.x checks every response for the
+                    // X-Elastic-Product header that ES 7.x doesn't send — inject it.
+                    httpClientBuilder.addInterceptorLast(
+                        (HttpResponseInterceptor) (response, context) -> {
+                            if (response.getFirstHeader("X-Elastic-Product") == null) {
+                                response.addHeader("X-Elastic-Product", "Elasticsearch");
+                            }
                         }
                     );
 
