@@ -26,6 +26,9 @@ spring:
           auth: true
           starttls:
             enable: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 
   jackson:
     serialization:
@@ -42,6 +45,9 @@ vapid:
   private-key: ${VAPID_PRIVATE_KEY:Ln6IM4WpM_77cEsTvtU-rpv8S0gj7TAmqZmo-3OPRjg}
 
 management:
+  health:
+    mail:
+      enabled: false
   tracing:
     sampling:
       probability: ${TRACING_SAMPLING_PROBABILITY:0.0}
