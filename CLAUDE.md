@@ -1,5 +1,5 @@
 # FoodieHub — CLAUDE.md
-## POC Development Guide (Learning + Interview Ready)
+## Development Guide (Learning + Interview Ready)
 
 > **How to use:** Paste this into any Claude conversation, Claude Code terminal, or Cowork session. Claude will instantly understand your project and help you build without re-explaining anything.
 
@@ -7,14 +7,12 @@
 
 ## 🎯 Project Goal
 
-**FoodieHub** is a food delivery POC — like a simplified Swiggy/Zomato — built to:
+**FoodieHub** is a food delivery app — like Swiggy/Zomato — built to:
 - Learn microservices architecture hands-on
 - Build a portfolio project for international startup interviews
 - Demonstrate real-world tech choices (not just tutorials)
 
-**This is NOT an enterprise app.** Keep it simple, keep it working, keep it deployable.
-
-> ⚠️ **"It's a POC" is never a reason to skip a proper fix.** If something is wrong, fix it correctly. Cutting corners on bugs or architecture because "it's just a POC" produces bad habits and a weak portfolio. Build it as you would in a real job.
+Build every feature correctly and completely. No shortcuts. This is a real project.
 
 ---
 
@@ -25,7 +23,7 @@
 - **Target:** Software Engineer roles at startups in Germany, UAE, Singapore, Ireland
 - **Frontend:** Angular (HTML prototype already complete)
 - **Backend:** Learning Spring Boot
-- **Timeline:** ~4 weeks for working POC
+- **Timeline:** ~4 weeks for working app
 
 ---
 
@@ -34,7 +32,7 @@
 ```
 Angular Frontend
        ↓
-Spring Boot API Gateway  (just routing, no Kong needed for POC)
+Spring Boot API Gateway  (just routing, no Kong needed)
        ↓
 ┌──────────────┬───────────────┬──────────────┐
 │ User Service │ Food Service  │ Order Service │
@@ -62,7 +60,7 @@ Spring Boot API Gateway  (just routing, no Kong needed for POC)
 | Cache | Redis | Cart storage + JWT sessions |
 | Messaging | RabbitMQ | Order placed → notification event |
 | Containers | Docker + Docker Compose | Run everything locally with one command |
-| Deploy | Railway (free) | Live demo URL for Wellfound profile |
+| Deploy | Render | Live demo URL for Wellfound profile |
 
 ### Database Names (single instance, multiple logical DBs)
 
@@ -73,11 +71,11 @@ Spring Boot API Gateway  (just routing, no Kong needed for POC)
 
 > All services share one MySQL instance and one MongoDB instance. Each service connects only to its own collections — no cross-service queries.
 
-### What we're intentionally skipping for POC
+### What we're intentionally skipping
 - ❌ Eureka / Service Discovery — Docker DNS is enough
 - ❌ Spring Cloud Config — .env files are fine
 - ❌ Kong API Gateway — Spring Cloud Gateway does the job
-- ❌ Resilience4j circuit breakers — not needed for POC
+- ❌ Resilience4j circuit breakers — not needed at this scale
 - ❌ 80% test coverage — just basic happy path tests
 - ❌ 6 microservices — 3 is enough to show the pattern
 
@@ -89,7 +87,6 @@ Spring Boot API Gateway  (just routing, no Kong needed for POC)
 - **DB:** MySQL
 - **What it does:** Register, login, JWT auth, basic profile
 - **Redis:** Store JWT session (TTL 24h)
-- **Keep it simple:** Just auth + profile. No complex address management needed for POC.
 
 **APIs needed:**
 ```
@@ -110,7 +107,6 @@ users (id, name, email, password_hash, phone, role, created_at)
 - **DB:** MongoDB
 - **What it does:** Restaurants, menus, categories, search
 - **Redis:** Cache restaurant list (TTL 10 min) — good to show in interviews
-- **Keep it simple:** Read-heavy service. CRUD for restaurants + menus. No branch management needed.
 
 **APIs needed:**
 ```
@@ -146,8 +142,7 @@ GET  /api/search?q=biryani      → Search dishes + restaurants
 - **DB:** MongoDB
 - **What it does:** Place orders, track status, order history
 - **Redis:** Cart storage per user (TTL 2h)
-- **RabbitMQ:** Publish `order.placed` event — notification service can consume it later
-- **Keep it simple:** Basic order lifecycle. No driver assignment, no live tracking for POC.
+- **RabbitMQ:** Publish `order.placed` event — notification service consumes it
 
 **APIs needed:**
 ```
@@ -185,7 +180,7 @@ cache:restaurants        → Restaurant list    TTL: 10min
 
 ---
 
-## 📨 RabbitMQ — Just One Event for POC
+## 📨 RabbitMQ — Just One Event
 
 ```
 When order is placed:
@@ -266,7 +261,7 @@ services:
 
 ---
 
-## 📅 4-Week POC Plan
+## 📅 4-Week Build Plan
 
 ### Week 1 — User Service + Auth
 **Goal:** Login and signup working end-to-end with real database
@@ -320,7 +315,7 @@ services:
 - [ ] Connect all Angular pages to real APIs
 - [ ] Basic error handling in all services
 - [ ] Write a good README with architecture diagram
-- [ ] Deploy to Railway (free tier)
+- [ ] Deploy to Render
 - [ ] Test the full user journey end to end
 - [ ] Add live URL to Wellfound + LinkedIn + GitHub
 
@@ -332,11 +327,10 @@ services:
 
 ### Starting a new service
 ```
-"I'm building the food-service for FoodieHub POC.
+"I'm building the food-service for FoodieHub.
 Spring Boot 3.x, MongoDB, Java 17.
 Create the Restaurant entity, repository, service, and controller.
-Include a basic listing endpoint with optional cuisine filter.
-Keep it simple — this is a learning POC, not enterprise code."
+Include a basic listing endpoint with optional cuisine filter."
 ```
 
 ### When you're stuck on something
@@ -351,7 +345,7 @@ What's wrong and how do I fix it?"
 ```
 "I have a GET /api/restaurants endpoint running on localhost:8082.
 Help me create an Angular service and component that calls this
-and displays the restaurant list. Keep it simple."
+and displays the restaurant list."
 ```
 
 ### Understanding what you built
@@ -589,22 +583,22 @@ Customer clicks ★ (Orders page)
 
 ### What NOT to do
 - ❌ Do not store rating as a rolling weighted average — it drifts and can't be verified
-- ❌ Do not accept orderId from the customer in a way that lets them rate without a real order — the orderId is validated against the ratings collection only (order-service is not called for verification in this POC)
+- ❌ Do not accept orderId from the customer in a way that lets them rate without a real order — the orderId is validated against the ratings collection only (order-service is not called for verification)
 - ❌ Do not skip the `auto-index-creation: true` in food-service `application.yaml` — without it `@Indexed(unique = true)` on `orderId` is never created in MongoDB
 
 ---
 
-## ✅ Definition of Done (POC)
+## ✅ Definition of Done
 
-Your POC is interview-ready when:
-- [ ] All 3 services run with `docker-compose up`
+The project is interview-ready when:
+- [ ] All services run with `docker-compose up`
 - [ ] You can register, login, browse restaurants, place an order
-- [ ] Live URL works (Railway deploy)
+- [ ] Live URL works (Render deploy)
 - [ ] GitHub README has architecture diagram + setup instructions
 - [ ] You can explain every technology choice without reading notes
 - [ ] You can draw the architecture on a whiteboard from memory
 
 ---
 
-*FoodieHub POC · Developer: Grace R · Learning project for startup interviews*
+*FoodieHub · Developer: Grace R · Learning project for startup interviews*
 *Target: Software Engineer roles — Germany, UAE, Singapore, Ireland*
