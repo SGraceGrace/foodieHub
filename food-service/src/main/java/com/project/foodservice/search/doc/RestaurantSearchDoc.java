@@ -6,7 +6,7 @@ import org.springframework.data.elasticsearch.annotations.Document;
 
 import java.util.List;
 
-@Document(indexName = "restaurants")
+@Document(indexName = "restaurants", createIndex = false)
 @Data
 public class RestaurantSearchDoc {
 
