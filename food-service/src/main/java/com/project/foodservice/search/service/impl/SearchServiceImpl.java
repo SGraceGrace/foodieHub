@@ -36,58 +36,56 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public SearchResultDTO search(String query) {
-        try {
-            NativeQuery restaurantQuery = NativeQuery.builder()
-                    .withQuery(q -> q
-                            .multiMatch(mm -> mm
-                                    .fields("name^3", "address", "cuisine^2")
-                                    .query(query)
-                                    .fuzziness("AUTO")
-                            )
-                    )
-                    .withPageable(PageRequest.of(0, 10))
-                    .build();
+        // --- Restaurants: fuzzy multi-match on name, address, cuisine
+        NativeQuery restaurantQuery = NativeQuery.builder()
+                .withQuery(q -> q
+                        .multiMatch(mm -> mm
+                                .fields("name^3", "address", "cuisine^2")
+                                .query(query)
+                                .fuzziness("AUTO")
+                        )
+                )
+                .withPageable(PageRequest.of(0, 10))
+                .build();
 
-            SearchHits<RestaurantSearchDoc> rHits =
-                    elasticsearchOperations.search(restaurantQuery, RestaurantSearchDoc.class);
+        SearchHits<RestaurantSearchDoc> rHits =
+                elasticsearchOperations.search(restaurantQuery, RestaurantSearchDoc.class);
 
-            List<SearchResultDTO.RestaurantResult> restaurants = rHits.getSearchHits().stream()
-                    .map(h -> toRestaurantResult(h.getContent()))
-                    .collect(Collectors.toList());
+        List<SearchResultDTO.RestaurantResult> restaurants = rHits.getSearchHits().stream()
+                .map(h -> toRestaurantResult(h.getContent()))
+                .collect(Collectors.toList());
 
-            NativeQuery menuQuery = NativeQuery.builder()
-                    .withQuery(q -> q
-                            .bool(b -> b
-                                    .must(m -> m
-                                            .multiMatch(mm -> mm
-                                                    .fields("name^3", "description^2", "category", "restaurantName^2")
-                                                    .query(query)
-                                                    .fuzziness("AUTO")
-                                            )
-                                    )
-                                    .filter(f -> f
-                                            .term(t -> t
-                                                    .field("available")
-                                                    .value(true)
-                                            )
-                                    )
-                            )
-                    )
-                    .withPageable(PageRequest.of(0, 15))
-                    .build();
+        // --- Menu items: fuzzy multi-match on name, description, category
+        //     Filter: only available items
+        NativeQuery menuQuery = NativeQuery.builder()
+                .withQuery(q -> q
+                        .bool(b -> b
+                                .must(m -> m
+                                        .multiMatch(mm -> mm
+                                                .fields("name^3", "description^2", "category", "restaurantName^2")
+                                                .query(query)
+                                                .fuzziness("AUTO")
+                                        )
+                                )
+                                .filter(f -> f
+                                        .term(t -> t
+                                                .field("available")
+                                                .value(true)
+                                        )
+                                )
+                        )
+                )
+                .withPageable(PageRequest.of(0, 15))
+                .build();
 
-            SearchHits<MenuItemSearchDoc> mHits =
-                    elasticsearchOperations.search(menuQuery, MenuItemSearchDoc.class);
+        SearchHits<MenuItemSearchDoc> mHits =
+                elasticsearchOperations.search(menuQuery, MenuItemSearchDoc.class);
 
-            List<SearchResultDTO.MenuItemResult> menuItems = mHits.getSearchHits().stream()
-                    .map(h -> toMenuItemResult(h.getContent()))
-                    .collect(Collectors.toList());
+        List<SearchResultDTO.MenuItemResult> menuItems = mHits.getSearchHits().stream()
+                .map(h -> toMenuItemResult(h.getContent()))
+                .collect(Collectors.toList());
 
-            return new SearchResultDTO(restaurants, menuItems);
-        } catch (Exception e) {
-            log.warn("ES search unavailable for query '{}': {}", query, e.getMessage());
-            return new SearchResultDTO(List.of(), List.of());
-        }
+        return new SearchResultDTO(restaurants, menuItems);
     }
 
     @Override
@@ -125,19 +123,14 @@ public class SearchServiceImpl implements SearchService {
 
     @Override
     public int reindex() {
-        try {
-            List<Restaurant> all = restaurantRepo.findAll();
-            for (Restaurant r : all) {
-                indexRestaurant(r);
-                List<MenuItemDocument> items = menuItemRepo.findByRestaurantIdOrderByCategory(r.getId());
-                indexMenuItems(r.getId(), items);
-            }
-            log.info("ES reindex complete — {} restaurants", all.size());
-            return all.size();
-        } catch (Exception e) {
-            log.warn("ES reindex failed: {}", e.getMessage());
-            return 0;
+        List<Restaurant> all = restaurantRepo.findAll();
+        for (Restaurant r : all) {
+            indexRestaurant(r);
+            List<MenuItemDocument> items = menuItemRepo.findByRestaurantIdOrderByCategory(r.getId());
+            indexMenuItems(r.getId(), items);
         }
+        log.info("ES reindex complete — {} restaurants", all.size());
+        return all.size();
     }
 
     // ── Mappers: MongoDB doc → ES doc ─────────────────────────────────
