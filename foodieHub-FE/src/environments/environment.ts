@@ -1,8 +1,8 @@
 import { Environment } from "../app/model/environment.model";
 
 export const environment: Environment = {
-  production: false,
-  apiBaseUrl: 'http://localhost:8080',
-  notificationServiceUrl: 'http://localhost:8084',
+  production: true,
+  apiBaseUrl: 'https://foodiehub-gateway.onrender.com',
+  notificationServiceUrl: 'https://foodiehub-notification-service.onrender.com',
   cloudinary: { cloudName: 'dyv0innvy', uploadPreset: 'foodiehub-images' },
 };
