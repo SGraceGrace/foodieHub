@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiResponse } from '../model/apiResponse.model';
-import { MenuCategory, PaginatedResponse, Slide, Restaurant } from '../model/restaurant.model';
+import { MenuCategory, PaginatedResponse, Review, Slide, Restaurant } from '../model/restaurant.model';
 
 @Injectable({ providedIn: 'root' })
 export class HomeService {
@@ -56,6 +56,13 @@ export class HomeService {
    * orderId is required — the backend enforces one rating per order via a unique index.
    * driverEmail + driverRating are stored on the same Rating document (null when no driver/skipped).
    */
+  getMyRatings(page = 0, size = 10): Observable<ApiResponse<PaginatedResponse<Review>>> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+    return this.http.get<ApiResponse<PaginatedResponse<Review>>>(`${this.base}/api/v1/ratings`, { params });
+  }
+
   rateRestaurant(
     restaurantId: string,
     rating: number,
