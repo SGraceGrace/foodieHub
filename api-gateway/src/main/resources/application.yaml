@@ -46,7 +46,7 @@ spring:
             filters:
               - name: CircuitBreaker
                 args:
-                  id: user-service
+                  id: user-service-oauth2
                   fallbackUri: forward:/fallback/user-service
 
           - id: user-service-contact
@@ -323,6 +323,12 @@ resilience4j:
         failure-rate-threshold: 50
         wait-duration-in-open-state: 10s
         permitted-number-of-calls-in-half-open-state: 3
+        register-health-indicator: true
+      user-service-oauth2:
+        sliding-window-size: 5
+        failure-rate-threshold: 80
+        wait-duration-in-open-state: 5s
+        permitted-number-of-calls-in-half-open-state: 2
         register-health-indicator: true
 
 management:
