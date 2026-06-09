@@ -11,9 +11,10 @@ export const routes: Routes = [
     path: 'about-us', 
     loadComponent: () => import('./about-us/about-us.component').then(module => module.AboutUsComponent)
   },
-  { 
-    path: 'reviews', 
-    loadComponent: () => import('./reviews/reviews.component').then(module => module.ReviewsComponent)
+  {
+    path: 'reviews',
+    loadComponent: () => import('./reviews/reviews.component').then(module => module.ReviewsComponent),
+    canActivate: [authGuard]
   },
   { 
     path: 'blog', 

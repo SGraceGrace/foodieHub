@@ -1,1 +1,78 @@
-<p>reviews works!</p>
+<div class="reviews-wrap">
+
+  <h1 class="reviews-title">My Reviews</h1>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Loading your reviews…</p>
+  </div>
+
+  <!-- Empty -->
+  <div class="empty-state" *ngIf="!loading && reviews.length === 0">
+    <div class="empty-icon">⭐</div>
+    <p>You haven't reviewed any orders yet.</p>
+    <p class="empty-sub">Delivered orders show a "Rate Order" button — try one!</p>
+  </div>
+
+  <!-- Review cards -->
+  <ng-container *ngIf="!loading && reviews.length > 0">
+
+    <div class="review-card" *ngFor="let review of reviews">
+
+      <!-- Restaurant thumbnail -->
+      <div class="rc-image-wrap">
+        <img
+          *ngIf="review.restaurantImageUrl"
+          [src]="review.restaurantImageUrl"
+          [alt]="review.restaurantName"
+          class="rc-image"
+        />
+        <div class="rc-image-placeholder" *ngIf="!review.restaurantImageUrl">🍽️</div>
+      </div>
+
+      <!-- Main content -->
+      <div class="rc-body">
+
+        <div class="rc-top">
+          <button class="rc-name" (click)="goToRestaurant(review.restaurantId)">
+            {{ review.restaurantName }}
+          </button>
+          <span class="rc-date">{{ formatDate(review.createdAt) }}</span>
+        </div>
+
+        <!-- Restaurant star rating -->
+        <div class="rc-stars-row">
+          <span
+            class="rc-star"
+            *ngFor="let n of stars"
+            [class.full]="starFill(review, n) === 'full'"
+            [class.half]="starFill(review, n) === 'half'"
+          >★</span>
+          <span class="rc-star-label">{{ starLabels[review.rating] || review.rating + ' / 5' }}</span>
+        </div>
+
+        <!-- Driver rating badge (optional) -->
+        <div class="rc-driver-row" *ngIf="review.driverRating">
+          <span class="rc-driver-badge">
+            🛵 Driver: {{ review.driverRating }}/5
+          </span>
+        </div>
+
+        <p class="rc-order-id">Order #{{ review.orderId }}</p>
+
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-bar" *ngIf="pagination.totalPages > 1">
+      <button class="pg-btn" [disabled]="pagination.currentPage === 0" (click)="prevPage()">← Prev</button>
+      <span class="pg-info">
+        Showing {{ showingFrom }}–{{ showingTo }} of {{ pagination.totalElements }}
+      </span>
+      <button class="pg-btn" [disabled]="pagination.currentPage >= pagination.totalPages - 1" (click)="nextPage()">Next →</button>
+    </div>
+
+  </ng-container>
+
+</div>

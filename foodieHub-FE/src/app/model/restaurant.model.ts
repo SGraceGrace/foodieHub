@@ -125,6 +125,17 @@ export interface ContactMessage {
   read: boolean;
 }
 
+export interface Review {
+  id: string;
+  restaurantId: string;
+  restaurantName: string;
+  restaurantImageUrl?: string;
+  orderId: string;
+  rating: number;
+  driverRating?: number;
+  createdAt: string;
+}
+
 export interface Slide {
   id: string;
   title: string;
