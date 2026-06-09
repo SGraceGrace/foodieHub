@@ -84,8 +84,10 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
     var refreshToken = refreshTokenService.createRefreshToken(user, deviceId);
     redisTemplate.opsForValue().set(user.getUsername()+deviceId, token, Duration.ofMillis(jwtExpiration)); //store token in redis
 
+    String frontendUrl = System.getenv().getOrDefault("FRONTEND_URL", "http://localhost:4200");
     String redirectUrl = String.format(
-        "http://localhost:4200/google-callback?accessToken=%s&refreshToken=%s",
+        "%s/google-callback?accessToken=%s&refreshToken=%s",
+        frontendUrl,
         URLEncoder.encode(token, StandardCharsets.UTF_8),
         URLEncoder.encode(refreshToken.getToken(), StandardCharsets.UTF_8)
     );

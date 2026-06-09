@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { environment } from '../../environments/environment';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse, HttpResponse } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -108,7 +109,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   signInWithGoogle() {
     const deviceId = this.deviceService.getDeviceId();
-    window.location.href = `http://localhost:8080/oauth2/authorization/google?deviceId=${encodeURIComponent(deviceId)}`;
+    window.location.href = `${environment.apiBaseUrl}/oauth2/authorization/google?deviceId=${encodeURIComponent(deviceId)}`;
   }
 
   get pwd() { return this.loginForm.get('pwd'); }
