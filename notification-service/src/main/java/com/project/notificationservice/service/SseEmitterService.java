@@ -4,6 +4,7 @@ import com.project.notificationservice.dto.CustomerOrderUpdateDTO;
 import com.project.notificationservice.dto.DriverOrderNotificationDTO;
 import com.project.notificationservice.dto.NotificationDTO;
 import com.project.notificationservice.dto.RestaurantNotificationDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Predicate;
 
+@Slf4j
 @Service
 public class SseEmitterService {
 
@@ -43,6 +45,7 @@ public class SseEmitterService {
         emitter.onCompletion(remove);
         emitter.onTimeout(remove);
         emitter.onError(e -> adminSessions.remove(session));
+        try { emitter.send(SseEmitter.event().comment("connected")); } catch (Exception e) { adminSessions.remove(session); }
         return emitter;
     }
 
@@ -78,6 +81,7 @@ public class SseEmitterService {
         emitter.onCompletion(remove);
         emitter.onTimeout(remove);
         emitter.onError(e -> restaurantSessions.remove(session));
+        try { emitter.send(SseEmitter.event().comment("connected")); } catch (Exception e) { restaurantSessions.remove(session); }
         return emitter;
     }
 
@@ -105,6 +109,7 @@ public class SseEmitterService {
         emitter.onCompletion(remove);
         emitter.onTimeout(remove);
         emitter.onError(e -> customerSessions.remove(session));
+        try { emitter.send(SseEmitter.event().comment("connected")); } catch (Exception e) { customerSessions.remove(session); }
         return emitter;
     }
 
@@ -132,6 +137,7 @@ public class SseEmitterService {
         emitter.onCompletion(remove);
         emitter.onTimeout(remove);
         emitter.onError(e -> driverSessions.remove(session));
+        try { emitter.send(SseEmitter.event().comment("connected")); } catch (Exception e) { driverSessions.remove(session); }
         return emitter;
     }
 
