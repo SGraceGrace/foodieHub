@@ -135,15 +135,10 @@ Frontend:
 
 ---
 
-## 5. Blog Page — Stub 🟢
+## 5. Blog Page ✅ Done
 
-Frontend `BlogComponent` is a placeholder (`<p>blog works!</p>`).
-
-**Options:**
-- A. Static content — hardcode 3–4 articles about "How FoodieHub works", "Our story", etc. No backend needed.
-- B. CMS-backed — add a `posts` collection to food-service with title/content/publishedAt. Admin can create posts.
-
-For interview purposes, **Option A is enough** — static HTML articles are fine.
+4 static articles: "How FoodieHub Works", "Why Microservices", "Our Story", "Tech Behind Real-Time Tracking".
+Expand/collapse per article. Matches project design system (Libre Baskerville + DM Sans, gold palette).
 
 ---
 
