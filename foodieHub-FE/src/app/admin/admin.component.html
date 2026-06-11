@@ -61,20 +61,28 @@
 
       <div class="stats-grid">
         <div class="stat-box">
-          <div class="stat-label">Total Orders Today</div>
-          <div class="stat-value">—</div>
+          <div class="stat-label">Orders Today</div>
+          <div class="stat-value">{{ adminStats ? adminStats.totalOrdersToday : '—' }}</div>
         </div>
         <div class="stat-box">
-          <div class="stat-label">Total Revenue</div>
-          <div class="stat-value">—</div>
+          <div class="stat-label">Revenue Today</div>
+          <div class="stat-value">{{ adminStats ? ('₹' + (adminStats.totalRevenueToday | number:'1.0-0')) : '—' }}</div>
         </div>
         <div class="stat-box">
-          <div class="stat-label">Active Users</div>
-          <div class="stat-value">—</div>
+          <div class="stat-label">All-Time Orders</div>
+          <div class="stat-value">{{ adminStats ? adminStats.totalOrders : '—' }}</div>
         </div>
         <div class="stat-box">
-          <div class="stat-label">Active Restaurants</div>
-          <div class="stat-value">—</div>
+          <div class="stat-label">All-Time Revenue</div>
+          <div class="stat-value">{{ adminStats ? ('₹' + (adminStats.totalRevenue | number:'1.0-0')) : '—' }}</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Pending Owner Approvals</div>
+          <div class="stat-value">{{ pendingOwnerCount }}</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Pending Driver Approvals</div>
+          <div class="stat-value">{{ pendingDriverCount }}</div>
         </div>
       </div>
 
@@ -82,9 +90,18 @@
         <div class="table-box">
           <h3>Recent Orders</h3>
           <table>
-            <thead><tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Status</th></tr></thead>
+            <thead><tr><th>Order ID</th><th>Customer</th><th>Restaurant</th><th>Amount</th><th>Status</th></tr></thead>
             <tbody>
-              <tr><td colspan="4" class="empty-cell">No data available</td></tr>
+              <tr *ngFor="let o of recentOrders">
+                <td style="font-family:monospace;font-size:.8rem">#{{ o.id | slice:0:8 }}</td>
+                <td>{{ o.customerName || o.userId | slice:0:20 }}</td>
+                <td>{{ o.restaurantName }}</td>
+                <td>₹{{ o.totalAmount | number:'1.0-0' }}</td>
+                <td><span class="badge" [ngClass]="orderStatusClass(o.status)">{{ o.status }}</span></td>
+              </tr>
+              <tr *ngIf="recentOrders.length === 0">
+                <td colspan="5" class="empty-cell">No orders yet</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -92,9 +109,18 @@
         <div class="table-box">
           <h3>Pending Approvals</h3>
           <table>
-            <thead><tr><th>Type</th><th>Name</th><th>Action</th></tr></thead>
+            <thead><tr><th>Type</th><th>Count</th><th>Action</th></tr></thead>
             <tbody>
-              <tr><td colspan="3" class="empty-cell">No pending approvals</td></tr>
+              <tr>
+                <td>Restaurant Owners</td>
+                <td><span class="badge warning">{{ pendingOwnerCount }}</span></td>
+                <td><button class="action-btn approve" (click)="goTab('restaurant-owners')">Review</button></td>
+              </tr>
+              <tr>
+                <td>Drivers</td>
+                <td><span class="badge warning">{{ pendingDriverCount }}</span></td>
+                <td><button class="action-btn approve" (click)="goTab('drivers')">Review</button></td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -403,42 +429,91 @@
     <div [hidden]="activeTab !== 'orders'">
       <div class="page-title">Order Management</div>
       <div class="filter-btns">
-        <button class="filter-btn active">All</button>
-        <button class="filter-btn">Placed</button>
-        <button class="filter-btn">Confirmed</button>
-        <button class="filter-btn">Delivered</button>
-        <button class="filter-btn">Cancelled</button>
+        <button class="filter-btn" [class.active]="adminOrderStatusFilter === ''"
+          (click)="adminOrderStatusFilter = ''; loadAdminOrders(0)">All</button>
+        <button class="filter-btn" [class.active]="adminOrderStatusFilter === 'PLACED'"
+          (click)="adminOrderStatusFilter = 'PLACED'; loadAdminOrders(0)">Placed</button>
+        <button class="filter-btn" [class.active]="adminOrderStatusFilter === 'CONFIRMED'"
+          (click)="adminOrderStatusFilter = 'CONFIRMED'; loadAdminOrders(0)">Confirmed</button>
+        <button class="filter-btn" [class.active]="adminOrderStatusFilter === 'PREPARING'"
+          (click)="adminOrderStatusFilter = 'PREPARING'; loadAdminOrders(0)">Preparing</button>
+        <button class="filter-btn" [class.active]="adminOrderStatusFilter === 'DELIVERED'"
+          (click)="adminOrderStatusFilter = 'DELIVERED'; loadAdminOrders(0)">Delivered</button>
+        <button class="filter-btn" [class.active]="adminOrderStatusFilter === 'CANCELLED'"
+          (click)="adminOrderStatusFilter = 'CANCELLED'; loadAdminOrders(0)">Cancelled</button>
       </div>
       <div class="table-box">
-        <div class="table-toolbar">
-          <input class="search-input" type="text" placeholder="Search by order ID..." />
-        </div>
         <table>
-          <thead><tr><th>Order ID</th><th>Customer</th><th>Restaurant</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+          <thead>
+            <tr><th>Order ID</th><th>Customer</th><th>Restaurant</th><th>Amount</th><th>Payment</th><th>Status</th><th>Date</th></tr>
+          </thead>
           <tbody>
-            <tr><td colspan="7" class="empty-cell">No orders found</td></tr>
+            <tr *ngFor="let o of adminOrders">
+              <td style="font-family:monospace;font-size:.8rem">#{{ o.id | slice:0:10 }}</td>
+              <td>{{ o.customerName || (o.userId | slice:0:20) }}</td>
+              <td>{{ o.restaurantName }}</td>
+              <td>₹{{ o.totalAmount | number:'1.0-0' }}</td>
+              <td>
+                <span class="badge" [ngClass]="o.paymentStatus === 'PAID' ? 'success' : 'warning'">
+                  {{ o.paymentStatus || 'COD' }}
+                </span>
+              </td>
+              <td><span class="badge" [ngClass]="orderStatusClass(o.status)">{{ o.status }}</span></td>
+              <td style="white-space:nowrap;font-size:.8rem">{{ o.createdAt | date:'dd MMM, HH:mm' }}</td>
+            </tr>
+            <tr *ngIf="adminOrders.length === 0">
+              <td colspan="7" class="empty-cell">No orders found</td>
+            </tr>
           </tbody>
         </table>
+
+        <div class="table-footer" *ngIf="adminOrderPagination.totalElements > 0">
+          <div class="pagination-info">
+            Showing {{ adminOrderPagingStart() }}–{{ adminOrderPagingEnd() }} of {{ adminOrderPagination.totalElements }} orders
+          </div>
+          <div class="pagination" *ngIf="adminOrderPagination.totalPages > 1">
+            <button class="page-btn" [disabled]="adminOrderPagination.currentPage === 0"
+              (click)="loadAdminOrders(adminOrderPagination.currentPage - 1)">&#8249;</button>
+            <button class="page-btn" *ngFor="let p of adminOrderPageNumbers"
+              [class.active]="p === adminOrderPagination.currentPage"
+              (click)="loadAdminOrders(p)">{{ p + 1 }}</button>
+            <button class="page-btn" [disabled]="adminOrderPagination.currentPage === adminOrderPagination.totalPages - 1"
+              (click)="loadAdminOrders(adminOrderPagination.currentPage + 1)">&#8250;</button>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- PAYMENTS TAB -->
     <div [hidden]="activeTab !== 'payments'">
-      <div class="page-title">Payment Management</div>
+      <div class="page-title">Payment Transactions</div>
       <div class="table-box">
-        <div class="table-toolbar">
-          <input class="search-input" type="text" placeholder="Search by transaction ID..." />
-          <select class="filter-select">
-            <option>All</option>
-            <option>Success</option>
-            <option>Pending</option>
-            <option>Failed</option>
-          </select>
-        </div>
         <table>
-          <thead><tr><th>Transaction ID</th><th>Order ID</th><th>Customer</th><th>Amount</th><th>Method</th><th>Status</th><th>Date</th></tr></thead>
+          <thead>
+            <tr><th>Razorpay Payment ID</th><th>Order ID</th><th>Customer</th><th>Restaurant</th><th>Amount</th><th>Status</th><th>Date</th></tr>
+          </thead>
           <tbody>
-            <tr><td colspan="7" class="empty-cell">No transactions found</td></tr>
+            <ng-container *ngFor="let o of adminOrders">
+              <tr *ngIf="o.paymentId || o.paymentStatus">
+                <td style="font-family:monospace;font-size:.8rem">{{ o.paymentId || '—' }}</td>
+                <td style="font-family:monospace;font-size:.8rem">#{{ o.id | slice:0:8 }}</td>
+                <td>{{ o.customerName || (o.userId | slice:0:20) }}</td>
+                <td>{{ o.restaurantName }}</td>
+                <td>₹{{ o.totalAmount | number:'1.0-0' }}</td>
+                <td>
+                  <span class="badge" [ngClass]="o.paymentStatus === 'PAID' ? 'success' : 'warning'">
+                    {{ o.paymentStatus || 'COD' }}
+                  </span>
+                </td>
+                <td style="white-space:nowrap;font-size:.8rem">{{ o.createdAt | date:'dd MMM, HH:mm' }}</td>
+              </tr>
+            </ng-container>
+            <tr *ngIf="adminOrders.length === 0">
+              <td colspan="7" class="empty-cell">
+                Load orders first —
+                <button class="action-btn approve" style="margin-left:8px" (click)="goTab('orders')">Go to Orders tab</button>
+              </td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -446,19 +521,10 @@
 
     <!-- SUPPORT TAB -->
     <div [hidden]="activeTab !== 'support'">
-      <div class="page-title">Support Tickets</div>
-      <div class="filter-btns">
-        <button class="filter-btn active">Open</button>
-        <button class="filter-btn">In Progress</button>
-        <button class="filter-btn">Resolved</button>
-      </div>
-      <div class="table-box">
-        <table>
-          <thead><tr><th>Ticket ID</th><th>Customer</th><th>Category</th><th>Issue</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
-          <tbody>
-            <tr><td colspan="7" class="empty-cell">No tickets found</td></tr>
-          </tbody>
-        </table>
+      <div class="page-title">Support</div>
+      <div class="table-box" style="text-align:center;padding:3rem">
+        <p style="color:#888;margin-bottom:1rem">Customer enquiries are tracked in Contact Messages.</p>
+        <button class="btn-primary" (click)="goTab('contact-messages')">Go to Contact Messages →</button>
       </div>
     </div>
 

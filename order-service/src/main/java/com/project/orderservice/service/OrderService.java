@@ -67,4 +67,10 @@ public interface OrderService {
 
     /** Overview stats for the restaurant partner workspace. */
     com.project.orderservice.dto.RestaurantStatsDTO getRestaurantStats(String restaurantId);
+
+    /** Paginated all orders for admin — optionally filtered by status. */
+    PaginatedResponse<Order> getAdminOrders(int page, int size, String status);
+
+    /** Platform-wide stats for the admin dashboard. */
+    com.project.orderservice.dto.AdminStatsDTO getAdminStats();
 }

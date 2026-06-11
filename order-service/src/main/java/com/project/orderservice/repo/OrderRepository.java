@@ -58,4 +58,16 @@ public interface OrderRepository extends MongoRepository<Order, String> {
 
     /** All DELIVERED orders for a driver (all time) — used for all-time earnings */
     List<Order> findByDriverEmailAndStatus(String driverEmail, String status);
+
+    // ── Admin queries ─────────────────────────────────────────────────
+
+    Page<Order> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
+    Page<Order> findByStatusOrderByCreatedAtDesc(String status, Pageable pageable);
+
+    /** All orders within a time window — used for daily revenue stats */
+    List<Order> findByCreatedAtBetween(java.time.LocalDateTime from, java.time.LocalDateTime to);
+
+    /** Count all orders */
+    long count();
 }

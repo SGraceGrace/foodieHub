@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { AdminService, CreateAdminRequest, SlideRequest } from './admin.service';
 import { ActivityLog, AdminUserResponse, ContactMessage, PaginatedResponse, Restaurant, Slide } from '../model/restaurant.model';
+import { AdminStats, Order } from '../model/order.model';
 import { AdminHeaderComponent } from './admin-header/admin-header.component';
 
 type Tab = 'dashboard' | 'users' | 'restaurants' | 'restaurant-owners' | 'drivers' | 'orders' | 'payments' | 'support' | 'contact-messages' | 'reports' | 'slides' | 'activity-log';
@@ -60,6 +61,15 @@ export class AdminComponent implements OnInit {
   showContactModal = false;
   contactMessageCount = 0;
 
+  // Admin Orders
+  adminOrders: Order[] = [];
+  adminOrderStatusFilter = '';
+  adminOrderPagination = { currentPage: 0, totalPages: 0, totalElements: 0, pageSize: 10 };
+
+  // Dashboard Stats
+  adminStats: AdminStats | null = null;
+  recentOrders: Order[] = [];
+
   // Slides
   slides: Slide[] = [];
   showEditModal = false;
@@ -70,8 +80,7 @@ export class AdminComponent implements OnInit {
   constructor(private adminService: AdminService, private toastr: ToastrService) {}
 
   ngOnInit() {
-    // Pending counts are loaded lazily when their tabs are first opened,
-    // so unrelated API calls don't fire on every admin page load.
+    this.loadDashboard();
   }
 
   loadPendingOwnerCount() {
@@ -93,13 +102,62 @@ export class AdminComponent implements OnInit {
     // Only fetch when the tab has no data yet — prevents a visible reload
     // every time a notification is clicked. Filter/search changes call the
     // load functions directly, so fresh data is still fetched when needed.
+    if (tab === 'dashboard'          && !this.adminStats)               this.loadDashboard();
     if (tab === 'users'             && this.users.length === 0)        this.loadUsers();
     if (tab === 'restaurants'       && this.restaurants.length === 0)  this.loadRestaurants();
     if (tab === 'restaurant-owners' && this.owners.length === 0)       { this.loadOwners(); this.loadPendingOwnerCount(); }
     if (tab === 'drivers'           && this.drivers.length === 0)      { this.loadDrivers(); this.loadPendingDriverCount(); }
+    if (tab === 'orders'            && this.adminOrders.length === 0)  this.loadAdminOrders();
     if (tab === 'slides'            && this.slides.length === 0)           this.loadSlides();
     if (tab === 'activity-log'      && this.activityLogs.length === 0)     this.loadActivityLogs();
     if (tab === 'contact-messages'  && this.contactMessages.length === 0)  this.loadContactMessages();
+  }
+
+  // ── Dashboard ────────────────────────────────────────────────────
+
+  loadDashboard() {
+    this.adminService.getAdminStats().subscribe({
+      next: (res) => { this.adminStats = res.data ?? null; },
+      error: () => {}
+    });
+    this.adminService.getAdminOrders(undefined, 0, 5).subscribe({
+      next: (res) => { this.recentOrders = res.data?.content ?? []; },
+      error: () => {}
+    });
+    this.adminService.getPendingOwnerCount().subscribe({ next: c => this.pendingOwnerCount = c, error: () => {} });
+    this.adminService.getPendingDriverCount().subscribe({ next: c => this.pendingDriverCount = c, error: () => {} });
+  }
+
+  // ── Admin Orders ──────────────────────────────────────────────────
+
+  loadAdminOrders(page = 0) {
+    const status = this.adminOrderStatusFilter || undefined;
+    this.adminService.getAdminOrders(status, page, this.adminOrderPagination.pageSize).subscribe({
+      next: (res) => {
+        const p: PaginatedResponse<Order> = res.data;
+        this.adminOrders = p.content ?? [];
+        this.adminOrderPagination = { currentPage: p.currentPage, totalPages: p.totalPages, totalElements: p.totalElements, pageSize: p.pageSize };
+      },
+      error: () => this.toastr.error('Failed to load orders.')
+    });
+  }
+
+  get adminOrderPageNumbers(): number[] {
+    const { currentPage, totalPages } = this.adminOrderPagination;
+    const pages: number[] = [];
+    for (let i = Math.max(0, currentPage - 2); i <= Math.min(totalPages - 1, currentPage + 2); i++) pages.push(i);
+    return pages;
+  }
+
+  adminOrderPagingStart(): number { return this.adminOrderPagination.currentPage * this.adminOrderPagination.pageSize + 1; }
+  adminOrderPagingEnd(): number { return Math.min((this.adminOrderPagination.currentPage + 1) * this.adminOrderPagination.pageSize, this.adminOrderPagination.totalElements); }
+
+  orderStatusClass(status: string): string {
+    const map: Record<string, string> = {
+      PLACED: 'warning', CONFIRMED: 'info', PREPARING: 'info',
+      READY: 'info', OUT_FOR_DELIVERY: 'info', DELIVERED: 'success', CANCELLED: 'danger'
+    };
+    return map[status] ?? '';
   }
 
   // ── Users ────────────────────────────────────────────────────────
