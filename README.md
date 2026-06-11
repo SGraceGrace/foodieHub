@@ -2,6 +2,8 @@
 
 A food delivery web application (Swiggy/Zomato-style) built as a portfolio project to demonstrate microservices architecture, real-time notifications, and a complete end-to-end order flow.
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/SGraceGrace/foodieHub)
+
 ---
 
 ## Architecture
@@ -38,6 +40,28 @@ Spring Cloud Gateway (port 8080)
 | Payments | Razorpay |
 | Notifications | SSE + Web Push (VAPID) |
 | Containers | Docker + Docker Compose |
+
+---
+
+## Deploy to Render
+
+Click the button above, or go to **Render Dashboard → New → Blueprint** and connect this repo. Render reads `render.yaml` and creates all 6 services automatically.
+
+After the services spin up, fill in the required environment variables in each service's dashboard:
+
+| Variable | Where to get it |
+|---|---|
+| `JWT_KEY` | Any random string, min 32 characters |
+| `DB_URL` | MySQL connection string (e.g. TiDB Cloud free tier) |
+| `MONGODB_URI` | MongoDB Atlas free cluster connection string |
+| `REDIS_URL` | Upstash Redis free tier |
+| `RABBITMQ_URL` | CloudAMQP free tier (`amqps://...`) |
+| `ELASTICSEARCH_URI` | Elastic Cloud 14-day trial or Bonsai free tier |
+| `GOOGLE-CLIENT-ID` / `GOOGLE-SECRET` | [Google Cloud Console](https://console.cloud.google.com/) → Credentials → OAuth 2.0 |
+| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | [Razorpay Dashboard](https://dashboard.razorpay.com/app/keys) → API Keys |
+| `MAIL_USERNAME` / `MAIL_PASSWORD` | Gmail address + [App Password](https://myaccount.google.com/apppasswords) |
+
+> **Already deployed manually?** Your existing Render services are unaffected. Render matches by service name and skips duplicates.
 
 ---
 
