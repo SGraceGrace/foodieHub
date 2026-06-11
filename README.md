@@ -112,6 +112,10 @@ Subsequent runs are much faster.
 |---|---|
 | http://localhost:4200 | Angular frontend |
 | http://localhost:8080 | API Gateway (direct API access) |
+| http://localhost:8081/swagger-ui.html | User Service — Swagger UI |
+| http://localhost:8082/swagger-ui.html | Food Service — Swagger UI |
+| http://localhost:8083/swagger-ui.html | Order Service — Swagger UI |
+| http://localhost:8084/swagger-ui.html | Notification Service — Swagger UI |
 | http://localhost:15672 | RabbitMQ management UI (guest / guest) |
 | http://localhost:9200 | Elasticsearch (health check) |
 

@@ -43,7 +43,7 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
     return httpSecurity.csrf(AbstractHttpConfigurer::disable)
         .cors(AbstractHttpConfigurer::disable)
-        .authorizeHttpRequests(request -> request.requestMatchers("/api/v1/auth/login", "/api/v1/auth/signup", "/api/v1/refresh-token", "/api/v1/contact", "/api/v1/slides", "/api/v1/partner/register", "/api/v1/driver/register", "/api/v1/internal/**", "/oauth2/**", "/login/oauth2/**", "/actuator/health", "/actuator/info").permitAll())
+        .authorizeHttpRequests(request -> request.requestMatchers("/api/v1/auth/login", "/api/v1/auth/signup", "/api/v1/refresh-token", "/api/v1/contact", "/api/v1/slides", "/api/v1/partner/register", "/api/v1/driver/register", "/api/v1/internal/**", "/oauth2/**", "/login/oauth2/**", "/actuator/health", "/actuator/info", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs", "/v3/api-docs/**").permitAll())
         .authorizeHttpRequests(request -> request.requestMatchers("/api/v1/**").authenticated())
         .oauth2Login(httpSecurityOAuth2LoginConfigurer -> httpSecurityOAuth2LoginConfigurer
             .authorizationEndpoint(authorizationEndpointConfig -> authorizationEndpointConfig.authorizationRequestResolver(
