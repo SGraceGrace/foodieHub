@@ -1,0 +1,154 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# FoodieHub — Render Infrastructure as Code
+#
+# If you have already deployed manually via the Render dashboard, Render will
+# match services by name and skip creating duplicates. Existing services are
+# left untouched — this file is additive only.
+#
+# New deployments: connect this repo in the Render dashboard → "New Blueprint"
+# and fill in the environment variables marked [REQUIRED].
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Angular Frontend ────────────────────────────────────────────────────────
+  - type: web
+    name: foodiehub-frontend
+    runtime: docker
+    dockerfilePath: ./foodieHub-FE/Dockerfile
+    dockerContext: ./foodieHub-FE
+    plan: free
+    envVars:
+      - key: BUILD_CONFIGURATION
+        value: production
+
+  # ── API Gateway ─────────────────────────────────────────────────────────────
+  - type: web
+    name: foodiehub-api-gateway
+    runtime: docker
+    dockerfilePath: ./api-gateway/Dockerfile
+    dockerContext: ./api-gateway
+    plan: free
+    envVars:
+      - key: USER_SERVICE_URL
+        fromService:
+          name: foodiehub-user-service
+          type: web
+          property: host
+      - key: FOOD_SERVICE_URL
+        fromService:
+          name: foodiehub-food-service
+          type: web
+          property: host
+      - key: ORDER_SERVICE_URL
+        fromService:
+          name: foodiehub-order-service
+          type: web
+          property: host
+      - key: NOTIFICATION_SERVICE_URL
+        fromService:
+          name: foodiehub-notification-service
+          type: web
+          property: host
+      - key: JWT_KEY
+        sync: false   # [REQUIRED] fill in Render dashboard
+      - key: GOOGLE-CLIENT-ID
+        sync: false   # [REQUIRED] Google OAuth2 client ID
+      - key: GOOGLE-SECRET
+        sync: false   # [REQUIRED] Google OAuth2 client secret
+      - key: APP_URL
+        sync: false   # [REQUIRED] your Render frontend URL e.g. https://foodiehub-frontend.onrender.com
+
+  # ── User Service ─────────────────────────────────────────────────────────────
+  - type: web
+    name: foodiehub-user-service
+    runtime: docker
+    dockerfilePath: ./user-service/Dockerfile
+    dockerContext: ./user-service
+    plan: free
+    envVars:
+      - key: DB_URL
+        sync: false   # [REQUIRED] jdbc:mysql://<host>/<db>
+      - key: DB_USERNAME
+        sync: false   # [REQUIRED]
+      - key: DB_PASSWORD
+        sync: false   # [REQUIRED]
+      - key: REDIS_URL
+        sync: false   # [REQUIRED] redis://:password@host:port
+      - key: RABBITMQ_URL
+        sync: false   # [REQUIRED] amqps://user:pass@host/vhost
+      - key: JWT_KEY
+        sync: false   # [REQUIRED] same value as api-gateway
+      - key: JWT_EXPIRATION
+        value: "3600000"
+      - key: REFRESH_TOKEN_EXPIRATION
+        value: "864000000"
+      - key: GOOGLE-CLIENT-ID
+        sync: false
+      - key: GOOGLE-SECRET
+        sync: false
+      - key: APP_URL
+        sync: false   # [REQUIRED] your Render frontend URL
+      - key: GATEWAY_URL
+        sync: false   # [REQUIRED] your Render api-gateway URL
+      - key: MAIL_USERNAME
+        sync: false   # [REQUIRED] Gmail address
+      - key: MAIL_PASSWORD
+        sync: false   # [REQUIRED] Gmail App Password
+
+  # ── Food Service ─────────────────────────────────────────────────────────────
+  - type: web
+    name: foodiehub-food-service
+    runtime: docker
+    dockerfilePath: ./food-service/Dockerfile
+    dockerContext: ./food-service
+    plan: free
+    envVars:
+      - key: MONGODB_URI
+        sync: false   # [REQUIRED] MongoDB Atlas connection string
+      - key: REDIS_URL
+        sync: false   # [REQUIRED]
+      - key: ELASTICSEARCH_URI
+        sync: false   # [REQUIRED] Elasticsearch cloud endpoint
+
+  # ── Order Service ─────────────────────────────────────────────────────────────
+  - type: web
+    name: foodiehub-order-service
+    runtime: docker
+    dockerfilePath: ./order-service/Dockerfile
+    dockerContext: ./order-service
+    plan: free
+    envVars:
+      - key: MONGODB_URI
+        sync: false   # [REQUIRED] MongoDB Atlas connection string
+      - key: REDIS_URL
+        sync: false   # [REQUIRED]
+      - key: RABBITMQ_URL
+        sync: false   # [REQUIRED]
+      - key: RAZORPAY_KEY_ID
+        sync: false   # [REQUIRED]
+      - key: RAZORPAY_KEY_SECRET
+        sync: false   # [REQUIRED]
+
+  # ── Notification Service ──────────────────────────────────────────────────────
+  - type: web
+    name: foodiehub-notification-service
+    runtime: docker
+    dockerfilePath: ./notification-service/Dockerfile
+    dockerContext: ./notification-service
+    plan: free
+    envVars:
+      - key: MONGODB_URI
+        sync: false   # [REQUIRED] MongoDB Atlas connection string
+      - key: RABBITMQ_URL
+        sync: false   # [REQUIRED]
+      - key: MAIL_USERNAME
+        sync: false   # [REQUIRED]
+      - key: MAIL_PASSWORD
+        sync: false   # [REQUIRED]
+      - key: ADMIN_EMAIL
+        sync: false   # [REQUIRED]
+      - key: VAPID_PUBLIC_KEY
+        sync: false   # [OPTIONAL] Web Push public key
+      - key: VAPID_PRIVATE_KEY
+        sync: false   # [OPTIONAL] Web Push private key
