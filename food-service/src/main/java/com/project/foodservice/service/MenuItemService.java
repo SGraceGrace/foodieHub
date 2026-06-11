@@ -31,10 +31,4 @@ public interface MenuItemService {
      */
     void incrementOrderCount(String menuItemId, int qty, double price);
 
-    /**
-     * One-time migration: reads existing embedded menu data and saves each item to menu_items.
-     * Idempotent — skips restaurants that already have items in the collection.
-     * Returns the number of items migrated.
-     */
-    int migrateFromEmbedded(String restaurantId, List<MenuCategory> embeddedMenu);
 }

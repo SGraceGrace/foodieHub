@@ -1,0 +1,248 @@
+version: '3.9'
+
+# ─────────────────────────────────────────────────────────────────────────────
+# FoodieHub — full local stack
+#
+# Usage:
+#   docker-compose up --build          # first run (builds all images)
+#   docker-compose up                  # subsequent runs
+#   docker-compose down -v             # stop and wipe all volumes
+#
+# Prerequisites:
+#   1. Copy .env.example to .env and fill in secrets (JWT, OAuth2, Razorpay, etc.)
+#   2. Docker Desktop with at least 4 GB RAM assigned (Elasticsearch needs it)
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ─── Infrastructure ──────────────────────────────────────────────────────────
+
+  mysql:
+    image: mysql:8
+    container_name: foodiehub-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: foodiehub
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    networks:
+      - foodiehub-net
+
+  mongodb:
+    image: mongo:7
+    container_name: foodiehub-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')", "--quiet"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    networks:
+      - foodiehub-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: foodiehub-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 15
+    networks:
+      - foodiehub-net
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: foodiehub-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"   # management UI: http://localhost:15672 (guest / guest)
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    networks:
+      - foodiehub-net
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+    container_name: foodiehub-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    ports:
+      - "9200:9200"
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health | grep -qv '\"status\":\"red\"'"]
+      interval: 15s
+      timeout: 10s
+      retries: 15
+    networks:
+      - foodiehub-net
+
+  # ─── Application Services ────────────────────────────────────────────────────
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: foodiehub-user-service
+    ports:
+      - "8081:8081"
+    env_file: .env
+    environment:
+      # Override cloud URLs from .env with local Docker network addresses
+      DB_URL: jdbc:mysql://mysql:3306/foodiehub
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      USER_SERVICE_URL: http://user-service:8081
+      FOOD_SERVICE_URL: http://food-service:8082
+      # Google OAuth2 redirect goes through the gateway — browser-visible URL
+      GATEWAY_URL: http://localhost:8080
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - foodiehub-net
+
+  food-service:
+    build:
+      context: ./food-service
+      dockerfile: Dockerfile
+    container_name: foodiehub-food-service
+    ports:
+      - "8082:8082"
+    env_file: .env
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/foodiehub_food
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      ELASTICSEARCH_URI: http://elasticsearch:9200
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - foodiehub-net
+
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: foodiehub-order-service
+    ports:
+      - "8083:8083"
+    env_file: .env
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/foodiehub_food
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - foodiehub-net
+
+  notification-service:
+    build:
+      context: ./notification-service
+      dockerfile: Dockerfile
+    container_name: foodiehub-notification-service
+    ports:
+      - "8084:8084"
+    env_file: .env
+    environment:
+      MONGODB_URI: mongodb://mongodb:27017/foodiehub_food
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      USER_SERVICE_URL: http://user-service:8081
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: on-failure
+    networks:
+      - foodiehub-net
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: foodiehub-api-gateway
+    ports:
+      - "8080:8080"
+    env_file: .env
+    environment:
+      REDIS_URL: redis://redis:6379
+      USER_SERVICE_URL: http://user-service:8081
+      FOOD_SERVICE_URL: http://food-service:8082
+      ORDER_SERVICE_URL: http://order-service:8083
+      NOTIFICATION_SERVICE_URL: http://notification-service:8084
+    depends_on:
+      - user-service
+      - food-service
+      - order-service
+      - notification-service
+    restart: on-failure
+    networks:
+      - foodiehub-net
+
+  frontend:
+    build:
+      context: ./foodieHub-FE
+      dockerfile: Dockerfile
+      args:
+        # Use development config so Angular calls localhost:8080 (not Render)
+        BUILD_CONFIGURATION: development
+    container_name: foodiehub-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - foodiehub-net
+
+# ─── Volumes ─────────────────────────────────────────────────────────────────
+
+volumes:
+  mysql-data:
+  mongo-data:
+  es-data:
+
+# ─── Network ─────────────────────────────────────────────────────────────────
+
+networks:
+  foodiehub-net:
+    driver: bridge

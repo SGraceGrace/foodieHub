@@ -1,24 +1,24 @@
-# FoodieHub 🍔
+# FoodieHub
 
-A food delivery web application (Swiggy/Zomato-style) built as a portfolio POC to demonstrate microservices architecture.
+A food delivery web application (Swiggy/Zomato-style) built as a portfolio project to demonstrate microservices architecture, real-time notifications, and a complete end-to-end order flow.
 
 ---
 
 ## Architecture
 
 ```
-Angular Frontend (4200)
-        ↓
-Spring Cloud Gateway (8080)
-        ↓
-┌─────────────────┬──────────────────┬───────────────────┬──────────────────────┐
-│  user-service   │  food-service    │  order-service    │ notification-service │
-│     (8081)      │     (8082)       │     (8083)        │       (8084)         │
-│     MySQL       │    MongoDB       │    MongoDB        │      MongoDB         │
-└─────────────────┴──────────────────┴───────────────────┴──────────────────────┘
-        ↓                  ↓                  ↓
-      Redis           Elasticsearch        RabbitMQ
-  (sessions/cart)     (search index)    (order events)
+Angular Frontend (port 4200)
+          ↓
+Spring Cloud Gateway (port 8080)
+          ↓
+┌──────────────────┬─────────────────┬──────────────────┬──────────────────────┐
+│  user-service    │  food-service   │  order-service   │ notification-service │
+│    (8081)        │    (8082)       │    (8083)        │       (8084)         │
+│    MySQL         │   MongoDB       │   MongoDB        │      MongoDB         │
+└──────────────────┴─────────────────┴──────────────────┴──────────────────────┘
+       ↓                  ↓                  ↓                    ↓
+     Redis           Elasticsearch        RabbitMQ            RabbitMQ
+ (sessions/cart)    (search index)     (order events)      (notification events)
 ```
 
 ---
@@ -27,162 +27,197 @@ Spring Cloud Gateway (8080)
 
 | Layer | Technology |
 |---|---|
-| Frontend | Angular 17+ |
+| Frontend | Angular 19 |
 | API Gateway | Spring Cloud Gateway |
-| Auth | JWT + Spring Security |
+| Auth | JWT + Spring Security + Google OAuth2 |
 | Relational DB | MySQL 8 |
 | Document DB | MongoDB 7 |
 | Cache | Redis 7 |
 | Messaging | RabbitMQ 3 |
 | Search | Elasticsearch 8 |
-| Containers | Docker |
+| Payments | Razorpay |
+| Notifications | SSE + Web Push (VAPID) |
+| Containers | Docker + Docker Compose |
 
 ---
 
-## Prerequisites
+## Quick Start — Docker Compose
 
-Make sure the following infrastructure services are running before starting any backend service.
+The fastest way to run the full stack locally. One command starts everything.
 
-### Redis
+### 1. Prerequisites
+
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed and running
+- At least **4 GB RAM** allocated to Docker (Elasticsearch needs it)
+  - Docker Desktop → Settings → Resources → Memory → set to 4 GB or more
+
+### 2. Clone and configure
+
 ```bash
-docker run -d --name redis -p 6379:6379 redis:7-alpine
+git clone https://github.com/your-username/foodiehub.git
+cd foodiehub
+
+# Create your local env file from the template
+cp .env.example .env
 ```
 
-### RabbitMQ
-```bash
-docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
-```
-Management UI → http://localhost:15672 (guest / guest)
+Open `.env` and fill in the required secrets:
 
-### Elasticsearch
-```bash
-docker run -d --name elasticsearch -p 9200:9200 -e "discovery.type=single-node" -e "xpack.security.enabled=false" docker.elastic.co/elasticsearch/elasticsearch:8.13.4
-```
-Verify it's up → http://localhost:9200
+| Variable | Where to get it |
+|---|---|
+| `JWT_KEY` | Any random string, min 32 characters |
+| `GOOGLE-CLIENT-ID` / `GOOGLE-SECRET` | [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials → Create OAuth 2.0 Client ID |
+| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | [Razorpay Dashboard](https://dashboard.razorpay.com/app/keys) → API Keys (use test keys) |
+| `MAIL_USERNAME` / `MAIL_PASSWORD` | A Gmail address + an [App Password](https://myaccount.google.com/apppasswords) |
 
-### MySQL
-```bash
-docker run -d --name mysql -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=foodiehub mysql:8
-```
+> **Google OAuth redirect URI** — in Google Cloud Console, add this as an Authorized Redirect URI:
+> `http://localhost:8080/login/oauth2/code/google`
 
-### MongoDB
+### 3. Build and start
+
 ```bash
-docker run -d --name mongodb -p 27017:27017 mongo:7
+docker-compose up --build
 ```
 
----
+First run takes ~5–10 minutes (Maven downloads dependencies, npm installs packages).
+Subsequent runs are much faster.
 
-## Running the Services
+### 4. Open the app
 
-Start in this order (infrastructure must be up first):
+| URL | What it is |
+|---|---|
+| http://localhost:4200 | Angular frontend |
+| http://localhost:8080 | API Gateway (direct API access) |
+| http://localhost:15672 | RabbitMQ management UI (guest / guest) |
+| http://localhost:9200 | Elasticsearch (health check) |
 
-| Service | Port | How to start |
-|---|---|---|
-| user-service | 8081 | Run `FoodieHubApplication` |
-| food-service | 8082 | Run `FoodServiceApplication` |
-| order-service | 8083 | Run `OrderServiceApplication` |
-| notification-service | 8084 | Run `NotificationServiceApplication` |
-| api-gateway | 8080 | Run `ApiGatewayApplication` |
-| Angular frontend | 4200 | `ng serve` |
+### 5. First-time search setup
 
----
-
-## Search — First-time Setup
-
-After starting `food-service` for the first time (or after wiping Elasticsearch), run the reindex endpoint to populate the search index from MongoDB:
+After all services are up, seed the Elasticsearch index from MongoDB:
 
 ```bash
 curl -X POST http://localhost:8080/api/search/reindex
 ```
 
-From that point on, the index stays in sync automatically — every restaurant save and every menu save writes through to Elasticsearch.
+This only needs to be done once. The index stays in sync automatically after that.
 
-To test search:
+### Useful commands
+
 ```bash
-curl "http://localhost:8080/api/search?q=biryani"
+# Start in background
+docker-compose up --build -d
+
+# View logs for a specific service
+docker-compose logs -f food-service
+
+# Stop everything (keeps data volumes)
+docker-compose down
+
+# Stop and wipe all data (fresh start)
+docker-compose down -v
+
+# Rebuild a single service after a code change
+docker-compose up --build user-service
 ```
 
 ---
 
-## Environment Variables
+## Manual Setup — IntelliJ / Local Dev
 
-Set these as environment variables (or in IntelliJ Run Configurations → Environment Variables) before starting each service.
+Use this approach when actively developing a service and want hot reload.
 
-### api-gateway
+### 1. Start infrastructure
 
-| Variable | Description | Example |
+Run each infrastructure service in Docker:
+
+```bash
+docker run -d --name mysql         -p 3306:3306  -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=foodiehub mysql:8
+docker run -d --name mongodb       -p 27017:27017 mongo:7
+docker run -d --name redis         -p 6379:6379   redis:7-alpine
+docker run -d --name rabbitmq      -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+docker run -d --name elasticsearch -p 9200:9200   -e "discovery.type=single-node" -e "xpack.security.enabled=false" -e "ES_JAVA_OPTS=-Xms512m -Xmx512m" docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+```
+
+### 2. Set environment variables
+
+In IntelliJ: Run Configuration → Environment Variables (or use a `.env` plugin).
+
+Required variables for each service:
+
+**All services**
+```
+JWT_KEY=your-secret-key-min-32-chars
+```
+
+**user-service**
+```
+GOOGLE-CLIENT-ID=your-google-client-id
+GOOGLE-SECRET=your-google-client-secret
+JWT_EXPIRATION=3600000
+REFRESH_TOKEN_EXPIRATION=864000000
+```
+
+**order-service**
+```
+RAZORPAY_KEY_ID=rzp_test_...
+RAZORPAY_KEY_SECRET=your-secret
+```
+
+**notification-service**
+```
+MAIL_USERNAME=your-gmail@gmail.com
+MAIL_PASSWORD=your-16-char-app-password
+ADMIN_EMAIL=your-gmail@gmail.com
+```
+
+### 3. Start services in order
+
+| Service | Port | Main class |
 |---|---|---|
-| `JWT_KEY` | Secret key used to verify JWT tokens (must match user-service) | any long random string, e.g. `mySuperSecretKey123!` |
+| user-service | 8081 | `FoodieHubApplication` |
+| food-service | 8082 | `FoodServiceApplication` |
+| order-service | 8083 | `OrderServiceApplication` |
+| notification-service | 8084 | `NotificationServiceApplication` |
+| api-gateway | 8080 | `ApiGatewayApplication` |
 
----
+### 4. Start the frontend
 
-### user-service
+```bash
+cd foodieHub-FE
+npm install
+ng serve
+```
 
-| Variable | Description | Example |
-|---|---|---|
-| `JWT_KEY` | Secret key used to sign JWT tokens (must match api-gateway) | same value as api-gateway |
-| `JWT_EXPIRATION` | Access token TTL in milliseconds | `3600000` (1 hour) |
-| `REFRESH_TOKEN_EXPIRATION` | Refresh token TTL in milliseconds | `86400000` (24 hours) |
-| `GOOGLE_CLIENT_ID` | Google OAuth2 client ID | from Google Cloud Console → Credentials |
-| `GOOGLE_SECRET` | Google OAuth2 client secret | from Google Cloud Console → Credentials |
-| `RABBITMQ_HOST` | RabbitMQ host _(optional, defaults to localhost)_ | `localhost` |
-| `RABBITMQ_PORT` | RabbitMQ port _(optional, defaults to 5672)_ | `5672` |
-| `RABBITMQ_USERNAME` | RabbitMQ username _(optional, defaults to guest)_ | `guest` |
-| `RABBITMQ_PASSWORD` | RabbitMQ password _(optional, defaults to guest)_ | `guest` |
-
-> **Google OAuth setup:**
-> 1. Go to [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials
-> 2. Create an OAuth 2.0 Client ID (Web application)
-> 3. Add `http://localhost:8081/login/oauth2/code/google` as an Authorized Redirect URI
-> 4. Copy the Client ID → `GOOGLE_CLIENT_ID` and Client Secret → `GOOGLE_SECRET`
-
----
-
-### order-service
-
-| Variable | Description | Example |
-|---|---|---|
-| `RAZORPAY_KEY_ID` | Razorpay API key ID | from Razorpay Dashboard → API Keys |
-| `RAZORPAY_KEY_SECRET` | Razorpay API key secret | from Razorpay Dashboard → API Keys |
-
----
-
-### notification-service
-
-| Variable | Description | Example |
-|---|---|---|
-| `MAIL_USERNAME` | Gmail address used to send emails | `yourapp@gmail.com` |
-| `MAIL_PASSWORD` | Gmail App Password (not your regular Gmail password) | 16-char app password from Google Account → Security → App Passwords |
-| `VAPID_PUBLIC_KEY` | VAPID public key for Web Push notifications | generate with `npx web-push generate-vapid-keys` |
-| `VAPID_PRIVATE_KEY` | VAPID private key for Web Push notifications | generate with `npx web-push generate-vapid-keys` |
-| `ADMIN_EMAIL` | Email address for admin alerts _(optional)_ | `admin@foodiehub.com` |
-| `USER_SERVICE_URL` | URL of user-service _(optional, defaults to localhost:8081)_ | `http://localhost:8081` |
-| `RABBITMQ_HOST` | RabbitMQ host _(optional, defaults to localhost)_ | `localhost` |
-| `RABBITMQ_PORT` | RabbitMQ port _(optional, defaults to 5672)_ | `5672` |
-| `RABBITMQ_USERNAME` | RabbitMQ username _(optional, defaults to guest)_ | `guest` |
-| `RABBITMQ_PASSWORD` | RabbitMQ password _(optional, defaults to guest)_ | `guest` |
-
-> **Gmail App Password setup:**
-> 1. Enable 2-Step Verification on your Google Account
-> 2. Go to Google Account → Security → App Passwords
-> 3. Create a new app password for "Mail"
-> 4. Use that 16-character password as `MAIL_PASSWORD`
-
-> **VAPID key generation:**
-> ```bash
-> npx web-push generate-vapid-keys
-> ```
-> Copy the output `Public Key` → `VAPID_PUBLIC_KEY` and `Private Key` → `VAPID_PRIVATE_KEY`
+Frontend runs at http://localhost:4200
 
 ---
 
 ## Key Features
 
-- JWT authentication with refresh tokens
-- Restaurant browsing with cuisine filter, proximity sort, and rating sort
+- Register / login with email+password or Google OAuth2
+- Browse restaurants with cuisine filter, rating sort, and proximity sort
 - Full-text fuzzy search across restaurants and menu items (Elasticsearch)
-- Cart management (Redis TTL-based)
-- Order placement and tracking with live status updates (SSE)
-- Real-time notifications for admin, restaurant partners, and customers (SSE + Web Push)
-- Driver portal with order assignment and delivery flow
-- Admin dashboard — users, restaurants, drivers, contact messages, activity logs
+- Cart management stored in Redis (2-hour TTL)
+- Checkout with Razorpay payment gateway
+- Live order tracking via Server-Sent Events (SSE)
+- Real-time notifications for customers, restaurant partners, drivers, and admin (SSE + Web Push)
+- Restaurant partner workspace — order management, live stats, menu editing
+- Driver portal — order acceptance, delivery flow, earnings tracking
+- Admin dashboard — user management, partner/driver approvals, activity logs, promo slides
+
+---
+
+## Project Structure
+
+```
+foodiehub/
+├── api-gateway/            Spring Cloud Gateway — routing + JWT filter
+├── user-service/           Auth, JWT, Google OAuth2, user management (MySQL)
+├── food-service/           Restaurants, menus, search, ratings (MongoDB + Elasticsearch)
+├── order-service/          Cart, orders, payments, driver flow (MongoDB + Redis + Razorpay)
+├── notification-service/   SSE + Web Push for all roles (MongoDB + RabbitMQ)
+├── foodieHub-FE/           Angular 19 frontend
+├── docker-compose.yml      Full local stack — one command to run everything
+├── .env.example            Environment variable template
+└── pending/                Pending features and work items
+```

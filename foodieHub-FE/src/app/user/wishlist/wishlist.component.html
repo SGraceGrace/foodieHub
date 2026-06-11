@@ -1,1 +1,69 @@
-<p>wishlist works!</p>
+<div class="wishlist-page">
+
+  <div class="wishlist-header">
+    <h1>My Wishlist</h1>
+    <span class="wishlist-count" *ngIf="!loading && pagination.totalElements > 0">
+      {{ pagination.totalElements }} saved
+    </span>
+  </div>
+
+  <!-- Loading -->
+  <div class="wishlist-loading" *ngIf="loading">
+    <div class="skeleton-card" *ngFor="let i of [1,2,3,4]"></div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="wishlist-empty" *ngIf="!loading && restaurants.length === 0">
+    <span class="empty-icon">❤️</span>
+    <h2>Nothing saved yet</h2>
+    <p>Tap the heart on any restaurant to save it here.</p>
+    <a routerLink="/home" class="btn-browse">Browse Restaurants</a>
+  </div>
+
+  <!-- Grid -->
+  <div class="rest-grid" *ngIf="!loading && restaurants.length > 0">
+    <div class="rest-card" *ngFor="let r of restaurants" [routerLink]="['/restaurants', r.id]">
+
+      <div class="rest-img" [style.background]="r.imageUrl ? 'none' : getBg(r)">
+        <img *ngIf="r.imageUrl" [src]="r.imageUrl" [alt]="r.name" class="rest-cover" />
+        <span *ngIf="!r.imageUrl" class="rest-emoji">🍽️</span>
+        <span class="rest-badge-status" [class.closed]="r.open === false">
+          {{ r.open === false ? 'Closed' : 'Open now' }}
+        </span>
+        <button class="heart-btn saved"
+                (click)="remove(r.id, $event)"
+                title="Remove from wishlist">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+                     2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09
+                     C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5
+                     c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="rest-body">
+        <div class="rest-body-top">
+          <h3>{{ r.name }}</h3>
+          <span class="rest-rating">⭐ {{ r.rating ?? '—' }}</span>
+        </div>
+        <p class="rest-cuisine">{{ r.cuisine?.join(', ') }}</p>
+        <div class="rest-meta">
+          <span>🕐 {{ r.deliveryTime ?? '—' }} min</span>
+          <span *ngIf="r.minOrder">· ₹{{ r.minOrder }} min</span>
+          <span *ngIf="r.priceRange">· {{ r.priceRange }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="!loading && pagination.totalPages > 1">
+    <button class="page-btn" [disabled]="pagination.currentPage === 0" (click)="prevPage()">← Prev</button>
+    <span class="page-info">
+      Showing {{ showingFrom }}–{{ showingTo }} of {{ pagination.totalElements }}
+    </span>
+    <button class="page-btn" [disabled]="pagination.currentPage >= pagination.totalPages - 1" (click)="nextPage()">Next →</button>
+  </div>
+
+</div>
