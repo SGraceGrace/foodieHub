@@ -30,8 +30,11 @@ import com.project.orderservice.exception.OrderConflictException;
 import com.project.orderservice.exception.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.project.orderservice.dto.AdminStatsDTO;
 import com.project.orderservice.dto.DriverEarningsDTO;
 import com.project.orderservice.dto.RestaurantStatsDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.time.Duration;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -502,5 +505,36 @@ public class OrderServiceImpl implements OrderService {
                 .sum();
 
         return new RestaurantStatsDTO(todayCount, todayRevenue, pendingOrders, totalOrders, totalRevenue);
+    }
+
+    @Override
+    public PaginatedResponse<Order> getAdminOrders(int page, int size, String status) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Order> result = (status != null && !status.isBlank())
+                ? orderRepository.findByStatusOrderByCreatedAtDesc(status, pageable)
+                : orderRepository.findAllByOrderByCreatedAtDesc(pageable);
+        return new PaginatedResponse<>(
+                result.getContent(),
+                result.getNumber(),
+                result.getTotalPages(),
+                result.getTotalElements(),
+                result.getSize());
+    }
+
+    @Override
+    public AdminStatsDTO getAdminStats() {
+        LocalDate todayIST     = LocalDate.now(ZoneId.of("Asia/Kolkata"));
+        LocalDateTime startDay = todayIST.atStartOfDay();
+        LocalDateTime endDay   = todayIST.atTime(LocalTime.MAX);
+
+        List<Order> todayOrders = orderRepository.findByCreatedAtBetween(startDay, endDay);
+        long   ordersToday  = todayOrders.size();
+        double revenueToday = todayOrders.stream().mapToDouble(Order::getTotalAmount).sum();
+
+        long   totalOrders  = orderRepository.count();
+        double totalRevenue = orderRepository.findAll().stream()
+                .mapToDouble(Order::getTotalAmount).sum();
+
+        return new AdminStatsDTO(ordersToday, revenueToday, totalOrders, totalRevenue);
     }
 }

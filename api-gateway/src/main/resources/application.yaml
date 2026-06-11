@@ -199,6 +199,16 @@ spring:
                   id: user-service
                   fallbackUri: forward:/fallback/user-service
 
+          - id: food-service-wishlist
+            uri: ${FOOD_SERVICE_URL:http://localhost:8082}
+            predicates:
+              - Path=/api/v1/wishlist, /api/v1/wishlist/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: food-service
+                  fallbackUri: forward:/fallback/food-service
+
           - id: food-service-ratings
             uri: ${FOOD_SERVICE_URL:http://localhost:8082}
             predicates:

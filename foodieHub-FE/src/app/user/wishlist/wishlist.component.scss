@@ -1,0 +1,211 @@
+.wishlist-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.wishlist-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+
+  h1 { font-size: 1.6rem; font-weight: 700; margin: 0; }
+}
+
+.wishlist-count {
+  background: #f0fdf4;
+  color: #16a34a;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.wishlist-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 80px 16px;
+  text-align: center;
+
+  .empty-icon { font-size: 3rem; }
+  h2 { font-size: 1.3rem; font-weight: 700; margin: 0; }
+  p  { color: #666; margin: 0; }
+}
+
+.btn-browse {
+  margin-top: 8px;
+  background: #e53935;
+  color: #fff;
+  border-radius: 8px;
+  padding: 10px 24px;
+  font-weight: 600;
+  text-decoration: none;
+  &:hover { background: #c62828; }
+}
+
+.rest-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.rest-card {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  background: #fff;
+  cursor: pointer;
+  transition: transform .18s, box-shadow .18s;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+
+  &:hover { transform: translateY(-3px); box-shadow: 0 6px 18px rgba(0,0,0,.12); }
+}
+
+.rest-img {
+  position: relative;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  .rest-cover { width: 100%; height: 100%; object-fit: cover; }
+  .rest-emoji { font-size: 2.5rem; }
+}
+
+.rest-badge-status {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #16a34a;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+
+  &.closed { background: #9e9e9e; }
+}
+
+.heart-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,.25);
+  transition: transform .15s, box-shadow .15s;
+  z-index: 2;
+  padding: 0;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    fill: #ccc;
+    stroke: #aaa;
+    stroke-width: 0.5;
+    transition: fill .15s;
+  }
+
+  &.saved svg {
+    fill: #e53935;
+    stroke: #e53935;
+  }
+
+  &:hover {
+    transform: scale(1.15);
+    box-shadow: 0 4px 10px rgba(0,0,0,.2);
+    svg { fill: #e53935; stroke: #e53935; }
+  }
+}
+
+.rest-body { padding: 12px; }
+
+.rest-body-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 4px;
+
+  h3 { font-size: 0.95rem; font-weight: 700; margin: 0; }
+}
+
+.rest-rating { font-size: 0.85rem; font-weight: 600; white-space: nowrap; }
+
+.rest-cuisine {
+  font-size: 0.8rem;
+  color: #666;
+  margin: 0 0 6px;
+}
+
+.rest-meta {
+  font-size: 0.78rem;
+  color: #888;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.wishlist-loading {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.skeleton-card {
+  height: 220px;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.page-btn {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background .15s;
+
+  &:hover:not(:disabled) { background: #f5f5f5; }
+  &:disabled { opacity: .4; cursor: default; }
+}
+
+.page-info { font-size: 0.85rem; color: #555; }
+
+@media (max-width: 768px) {
+  .rest-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+  .wishlist-header h1 { font-size: 1.3rem; }
+}
+
+@media (max-width: 480px) {
+  .rest-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+}

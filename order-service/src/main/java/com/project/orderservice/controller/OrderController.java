@@ -206,6 +206,27 @@ public class OrderController {
      * Allowed transitions driven by the driver: READY → OUT_FOR_DELIVERY → DELIVERED.
      * Publishes the same OrderStatusUpdatedEvent so the customer is notified via SSE + Web Push.
      */
+    /** GET /api/orders/admin/all — Paginated all orders for admin panel */
+    @GetMapping("/admin/all")
+    public ResponseEntity<BaseAPIResponse> getAdminOrders(
+            @RequestParam(defaultValue = "0")  int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false)    String status) {
+        return ResponseEntity.ok(new BaseAPIResponse(
+                CommonConstants.SUCCESS,
+                orderService.getAdminOrders(page, size, status),
+                200, null));
+    }
+
+    /** GET /api/orders/admin/stats — Platform-wide order stats for admin dashboard */
+    @GetMapping("/admin/stats")
+    public ResponseEntity<BaseAPIResponse> getAdminStats() {
+        return ResponseEntity.ok(new BaseAPIResponse(
+                CommonConstants.SUCCESS,
+                orderService.getAdminStats(),
+                200, null));
+    }
+
     @PatchMapping("/{id}/driver-status")
     public ResponseEntity<BaseAPIResponse> driverUpdateStatus(
             @PathVariable String id,

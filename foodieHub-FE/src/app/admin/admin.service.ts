@@ -5,6 +5,7 @@ import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { ApiResponse } from '../model/apiResponse.model';
 import { ActivityLog, AdminNotification, AdminUserResponse, ContactMessage, PaginatedResponse, Restaurant, Slide } from '../model/restaurant.model';
+import { AdminStats, Order } from '../model/order.model';
 
 export interface SlideRequest {
   title: string;
@@ -194,5 +195,18 @@ export class AdminService {
 
   markContactMessageRead(id: number): Observable<ApiResponse<null>> {
     return this.http.patch<ApiResponse<null>>(`${this.contactMessagesBase}/${id}/read`, {});
+  }
+
+  // Admin Orders
+  private adminOrdersBase = `${environment.apiBaseUrl}/api/orders/admin`;
+
+  getAdminOrders(status?: string, page = 0, size = 10): Observable<ApiResponse<PaginatedResponse<Order>>> {
+    let params = new HttpParams().set('page', page.toString()).set('size', size.toString());
+    if (status) params = params.set('status', status);
+    return this.http.get<ApiResponse<PaginatedResponse<Order>>>(`${this.adminOrdersBase}/all`, { params });
+  }
+
+  getAdminStats(): Observable<ApiResponse<AdminStats>> {
+    return this.http.get<ApiResponse<AdminStats>>(`${this.adminOrdersBase}/stats`);
   }
 }

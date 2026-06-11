@@ -42,6 +42,14 @@ export interface Order {
   eta?: string;
 }
 
+/** Platform-wide stats for the admin dashboard. */
+export interface AdminStats {
+  totalOrdersToday: number;
+  totalRevenueToday: number;
+  totalOrders: number;
+  totalRevenue: number;
+}
+
 /** Overview stats for the restaurant partner workspace. */
 export interface RestaurantStats {
   todayOrders:   number;

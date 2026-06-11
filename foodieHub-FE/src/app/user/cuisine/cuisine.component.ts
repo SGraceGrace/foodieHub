@@ -1,10 +1,13 @@
 import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 import { HomeService } from '../../home/home.service';
 import { Restaurant } from '../../model/restaurant.model';
 import { CUISINE_EMOJI, getCuisineEmoji, getCuisineBg } from '../../core/constants/cuisine.constants';
 import { DeliveryAddressService } from '../../core/shared/delivery-address.service';
+import { WishlistService } from '../../core/shared/wishlist.service';
+import { TokenService } from '../../core/shared/token.service';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -23,6 +26,8 @@ export class CuisineComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedCuisine = 'All';
   selectedSort = 'relevance';
   loading = false;
+
+  savedIds = new Set<string>();
 
   readonly sortOptions = [
     { value: 'relevance',    label: 'Relevance'          },
@@ -45,18 +50,21 @@ export class CuisineComponent implements OnInit, AfterViewInit, OnDestroy {
 
   constructor(
     private homeService: HomeService,
-    private deliveryAddressService: DeliveryAddressService
+    private deliveryAddressService: DeliveryAddressService,
+    private wishlistService: WishlistService,
+    private tokenService: TokenService,
+    private toastr: ToastrService,
+    private router: Router
   ) {}
 
   ngOnInit() {
     this.cuisines = Object.keys(CUISINE_EMOJI).filter(k => k !== 'default');
-    // Pick up the user's selected delivery address (lat/lng) so delivery-time
-    // sort can use actual distance instead of the owner's static estimate
     this.addressSub = this.deliveryAddressService.selected$.subscribe(addr => {
       this.userLat = addr?.location?.lat ?? undefined;
       this.userLng = addr?.location?.lng ?? undefined;
     });
     this.load();
+    if (this.tokenService.userInfo) this.loadSavedIds();
   }
 
   ngAfterViewInit() {
@@ -72,6 +80,44 @@ export class CuisineComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy() {
     this.observer?.disconnect();
     this.addressSub?.unsubscribe();
+  }
+
+  private loadSavedIds() {
+    this.wishlistService.getWishlist(0, 100).subscribe({
+      next: (res) => {
+        this.savedIds = new Set((res.data?.content ?? []).map(r => r.id));
+      }
+    });
+  }
+
+  toggleWishlist(restaurantId: string, event: Event) {
+    event.stopPropagation();
+    event.preventDefault();
+
+    if (!this.tokenService.userInfo) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    if (this.savedIds.has(restaurantId)) {
+      this.wishlistService.remove(restaurantId).subscribe({
+        next: () => {
+          this.savedIds.delete(restaurantId);
+          this.savedIds = new Set(this.savedIds);
+          this.toastr.info('Removed from wishlist.');
+        },
+        error: () => this.toastr.error('Could not update wishlist.')
+      });
+    } else {
+      this.wishlistService.add(restaurantId).subscribe({
+        next: () => {
+          this.savedIds.add(restaurantId);
+          this.savedIds = new Set(this.savedIds);
+          this.toastr.success('Saved to wishlist!');
+        },
+        error: () => this.toastr.error('Could not update wishlist.')
+      });
+    }
   }
 
   selectCuisine(c?: string) {
@@ -111,7 +157,6 @@ export class CuisineComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  // helpers
   getEmoji(r: Restaurant): string    { return getCuisineEmoji(r.cuisine?.[0]); }
   getBg(r: Restaurant): string       { return getCuisineBg(r.cuisine?.[0]); }
   getCuisineEmoji(c: string): string { return getCuisineEmoji(c); }

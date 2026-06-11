@@ -1,0 +1,217 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+$gold:       #f9b303;
+$gold-dark:  #e0a000;
+$gold-light: #fff8e1;
+$text:       #4e4e4e;
+$text-dark:  #2a2a2a;
+$text-light: #888;
+$bg-warm:    #fffaf2;
+$border:     #e8e8e8;
+$shadow:     0 2px 10px rgba(0,0,0,.08);
+$shadow-lg:  0 8px 30px rgba(0,0,0,.12);
+$font-serif: 'Libre Baskerville', Georgia, serif;
+$font-sans:  'DM Sans', sans-serif;
+
+* { font-family: $font-sans; box-sizing: border-box; }
+
+// ── Hero ─────────────────────────────────────────────────────────
+.blog-hero {
+  background: $bg-warm;
+  border-bottom: 1px solid $border;
+  padding: 4rem 2.5rem 3rem;
+  text-align: center;
+
+  @media (max-width: 768px) { padding: 2.5rem 1rem 2rem; }
+}
+
+.blog-hero-inner {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+.hero-kicker {
+  display: inline-block;
+  font-size: .78rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: $gold-dark;
+  margin-bottom: 12px;
+}
+
+.blog-hero h1 {
+  font-family: $font-serif;
+  font-size: 3rem;
+  color: $text-dark;
+  margin: 0 0 16px;
+  line-height: 1.15;
+
+  @media (max-width: 600px) { font-size: 2.2rem; }
+}
+
+.hero-sub {
+  font-size: 1.05rem;
+  color: $text;
+  line-height: 1.7;
+  margin: 0;
+}
+
+// ── Post Grid ─────────────────────────────────────────────────────
+.blog-wrap {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 2.5rem 4rem;
+
+  @media (max-width: 768px) { padding: 2rem 1rem 3rem; }
+}
+
+.post-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+}
+
+// ── Post Card ─────────────────────────────────────────────────────
+.post-card {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: $shadow;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow .3s, transform .3s;
+
+  &:hover { box-shadow: $shadow-lg; transform: translateY(-3px); }
+
+  &.expanded { box-shadow: $shadow-lg; }
+}
+
+.post-header {
+  height: 140px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.post-emoji { font-size: 4rem; line-height: 1; }
+
+.post-body {
+  padding: 20px 22px 18px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.post-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.post-tag {
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.post-read {
+  font-size: .78rem;
+  color: $text-light;
+}
+
+.post-title {
+  font-family: $font-serif;
+  font-size: 1.15rem;
+  color: $text-dark;
+  margin: 0 0 10px;
+  line-height: 1.4;
+}
+
+.post-excerpt {
+  font-size: .9rem;
+  color: $text;
+  line-height: 1.65;
+  margin: 0 0 14px;
+}
+
+// ── Full body ─────────────────────────────────────────────────────
+.post-full {
+  border-top: 1px solid $border;
+  padding-top: 16px;
+  margin-bottom: 12px;
+
+  p {
+    font-size: .9rem;
+    color: $text;
+    line-height: 1.75;
+    margin: 0 0 14px;
+
+    &:last-child { margin-bottom: 0; }
+  }
+}
+
+// ── Footer ───────────────────────────────────────────────────────
+.post-footer {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid $border;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.post-author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.author-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: $gold-light;
+  color: $gold-dark;
+  font-weight: 700;
+  font-size: .9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.author-name {
+  font-size: .84rem;
+  font-weight: 600;
+  color: $text-dark;
+}
+
+.author-role {
+  font-size: .76rem;
+  color: $text-light;
+}
+
+.read-btn {
+  padding: 7px 18px;
+  background: $gold;
+  border: none;
+  border-radius: 8px;
+  font-size: .82rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: $text-dark;
+  font-family: $font-sans;
+  transition: background .2s;
+  white-space: nowrap;
+
+  &:hover { background: $gold-dark; }
+}

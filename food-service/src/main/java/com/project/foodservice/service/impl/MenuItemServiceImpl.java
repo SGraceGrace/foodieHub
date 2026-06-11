@@ -133,20 +133,6 @@ public class MenuItemServiceImpl implements MenuItemService {
         });
     }
 
-    // ── Migration ────────────────────────────────────────────────────
-
-    @Override
-    public int migrateFromEmbedded(String restaurantId, List<MenuCategory> embeddedMenu) {
-        if (embeddedMenu == null || embeddedMenu.isEmpty()) return 0;
-        // Idempotent — if items already exist, skip this restaurant
-        if (!menuItemRepo.findByRestaurantIdOrderByCategory(restaurantId).isEmpty()) return 0;
-
-        saveFullMenu(restaurantId, embeddedMenu);
-        return (int) embeddedMenu.stream()
-                .mapToLong(c -> c.getItems() == null ? 0 : c.getItems().size())
-                .sum();
-    }
-
     // ── Helpers ──────────────────────────────────────────────────────
 
     /**

@@ -1,11 +1,14 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { HomeService } from './home.service';
 import { Slide, Restaurant } from '../model/restaurant.model';
 import { CUISINE_EMOJI, getCuisineEmoji, getCuisineBg } from '../core/constants/cuisine.constants';
 import { DeliveryAddressService } from '../core/shared/delivery-address.service';
 import { CartService } from '../core/shared/cart.service';
+import { WishlistService } from '../core/shared/wishlist.service';
+import { TokenService } from '../core/shared/token.service';
+import { ToastrService } from 'ngx-toastr';
 
 interface FoodCard {
   emoji: string;
@@ -36,6 +39,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   selectedCuisine = 'All';
   popularDishes: FoodCard[] = [];
 
+  savedIds = new Set<string>();
+
   private userLat: number | undefined;
   private userLng: number | undefined;
   hasDeliveryAddress = false;
@@ -47,7 +52,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   constructor(
     private homeService: HomeService,
     private deliveryAddressService: DeliveryAddressService,
-    public cartService: CartService
+    public cartService: CartService,
+    private wishlistService: WishlistService,
+    private tokenService: TokenService,
+    private toastr: ToastrService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -61,6 +70,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.deliveryAddressLabel = addr?.label ?? '';
       this.loadRestaurants();
     });
+    if (this.tokenService.userInfo) this.loadSavedIds();
   }
 
   ngOnDestroy() {
@@ -74,6 +84,46 @@ export class HomeComponent implements OnInit, OnDestroy {
         if (this.slides.length > 1) this.startTimer();
       },
     });
+  }
+
+  private loadSavedIds() {
+    // Fetch first page of wishlist to pre-fill heart states on visible cards
+    this.wishlistService.getWishlist(0, 100).subscribe({
+      next: (res) => {
+        const ids = (res.data?.content ?? []).map(r => r.id);
+        this.savedIds = new Set(ids);
+      }
+    });
+  }
+
+  toggleWishlist(restaurantId: string, event: Event) {
+    event.stopPropagation();
+    event.preventDefault();
+
+    if (!this.tokenService.userInfo) {
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    if (this.savedIds.has(restaurantId)) {
+      this.wishlistService.remove(restaurantId).subscribe({
+        next: () => {
+          this.savedIds.delete(restaurantId);
+          this.savedIds = new Set(this.savedIds); // trigger change detection
+          this.toastr.info('Removed from wishlist.');
+        },
+        error: () => this.toastr.error('Could not update wishlist.')
+      });
+    } else {
+      this.wishlistService.add(restaurantId).subscribe({
+        next: () => {
+          this.savedIds.add(restaurantId);
+          this.savedIds = new Set(this.savedIds);
+          this.toastr.success('Saved to wishlist!');
+        },
+        error: () => this.toastr.error('Could not update wishlist.')
+      });
+    }
   }
 
   private startTimer() {
