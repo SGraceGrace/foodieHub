@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-@PreAuthorize("hasRole('CUSTOMER')")
+@PreAuthorize("hasRole('END_USERS')")
 @RestController
 @RequestMapping("/api/v1/wishlist")
 @RequiredArgsConstructor

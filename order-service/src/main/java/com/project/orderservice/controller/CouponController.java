@@ -24,7 +24,7 @@ public class CouponController {
     }
 
     /** Customer — validate a coupon code at checkout. */
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('END_USERS')")
     @PostMapping("/api/v1/coupons/validate")
     public ResponseEntity<BaseAPIResponse> validate(@Valid @RequestBody CouponValidateRequest req) {
         return ResponseEntity.ok(new BaseAPIResponse("ok",

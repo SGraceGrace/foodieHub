@@ -61,7 +61,8 @@ public class JwtService {
       }
       return !isTokenExpired(token);
     } catch (IllegalArgumentException | UnsupportedJwtException | MalformedJwtException |
-             ExpiredJwtException e) {
+             ExpiredJwtException | io.jsonwebtoken.security.SignatureException e) {
+      log.error("[JWT] validate exception: {}", e.getMessage());
       return false;
     }
   }

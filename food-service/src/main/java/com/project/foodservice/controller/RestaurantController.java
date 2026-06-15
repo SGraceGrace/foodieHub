@@ -112,7 +112,7 @@ public class RestaurantController {
      * X-User-Id header is injected by the API Gateway from the verified JWT.
      * One rating per order — duplicate submissions return 409.
      */
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('END_USERS')")
     @PostMapping("/{id}/rating")
     public ResponseEntity<BaseAPIResponse> addRating(
             @PathVariable String id,

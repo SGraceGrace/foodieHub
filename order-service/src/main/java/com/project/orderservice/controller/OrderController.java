@@ -28,7 +28,7 @@ public class OrderController {
     private final OrderService orderService;
 
     /** POST /api/orders — Place order for one restaurant from cart */
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('END_USERS')")
     @PostMapping
     public ResponseEntity<BaseAPIResponse> placeOrder(
             @RequestHeader("X-User-Id") String userId,
@@ -39,7 +39,7 @@ public class OrderController {
     }
 
     /** GET /api/orders — Order history for the logged-in user */
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('END_USERS')")
     @GetMapping
     public ResponseEntity<BaseAPIResponse> getOrders(
             @RequestHeader("X-User-Id") String userId) {
@@ -49,7 +49,7 @@ public class OrderController {
     }
 
     /** GET /api/orders/{id} — Single order detail */
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('END_USERS')")
     @GetMapping("/{id}")
     public ResponseEntity<BaseAPIResponse> getOrder(
             @RequestHeader("X-User-Id") String userId,
@@ -205,7 +205,7 @@ public class OrderController {
      * Sets rated=true so the UI hides the rating button and prevents duplicates.
      * Accepts an optional body: { "driverRating": 1-5 } — stored for analytics; null is fine.
      */
-    @PreAuthorize("hasRole('CUSTOMER')")
+    @PreAuthorize("hasRole('END_USERS')")
     @PatchMapping("/{id}/rated")
     public ResponseEntity<BaseAPIResponse> markRated(
             @PathVariable String id,

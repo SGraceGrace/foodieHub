@@ -28,7 +28,7 @@ import java.util.List;
  *  DELETE /api/v1/customer/notifications           Clear all
  *  POST   /api/v1/customer/push-subscription       Save Web Push subscription
  */
-@PreAuthorize("hasRole('CUSTOMER')")
+@PreAuthorize("hasRole('END_USERS')")
 @RestController
 @RequestMapping("/api/v1/customer")
 @RequiredArgsConstructor

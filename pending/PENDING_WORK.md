@@ -53,20 +53,10 @@ Frontend: WishlistComponent with pagination, heart toggle on restaurant cards, t
 
 ---
 
-## 4. Deals / Promotions Feature 🟡
+## 4. Deals / Promotions Feature ✅ Done
 
-Frontend `DealsComponent` is a placeholder (`<p>deals works!</p>`). No backend.
-
-**Minimal MVP approach (coupon codes):**
-
-Backend (order-service):
-- `POST /api/v1/coupons/validate` — validate a code, return discount amount/percentage
-- `POST /api/v1/admin/coupons` — create coupon (admin only)
-- `GET /api/v1/admin/coupons` — list all coupons (admin only)
-
-Frontend:
-- `DealsComponent` — show active promotions/coupons
-- Coupon input field in CartComponent at checkout
+Backend (order-service): `GET /api/v1/coupons/active`, `POST /api/v1/coupons/validate`, `POST /api/v1/admin/coupons`, `GET /api/v1/admin/coupons`.
+Frontend: `DealsComponent` with coupon cards + copy button. `CartComponent` coupon input, applied badge, discount in bill. Razorpay flow carries couponCode + discountAmount through to order creation.
 
 ---
 
@@ -161,6 +151,6 @@ Before calling the project interview-ready, walk through every journey manually:
 | Blog page | ✅ Done |
 | Security (@PreAuthorize all services) | ✅ Done |
 | Swagger / OpenAPI | ✅ Done |
-| Deals / Coupon system | 🟡 Placeholder — needs implementation |
+| Deals / Coupon system | ✅ Done — DealsComponent + CartComponent coupon input + order-service backend |
 | Basic unit tests | 🟢 Not done |
 | E2E verification (manual walkthrough) | 🔴 Not done |

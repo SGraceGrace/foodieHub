@@ -43,10 +43,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     );
 
     // Paths that are public for GET only — POST/PUT/DELETE require auth.
-    // This lets unauthenticated users browse restaurants while protecting
+    // This lets unauthenticated users browse restaurants and search while protecting
     // write operations like POST /api/v1/restaurants/{id}/rating.
     private static final List<String> GET_PUBLIC_PATHS = List.of(
-            "/api/v1/restaurants"
+            "/api/v1/restaurants",
+            "/api/search"
     );
 
     @Value("${jwt.secret.key}")
