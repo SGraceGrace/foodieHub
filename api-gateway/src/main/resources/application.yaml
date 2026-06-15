@@ -279,6 +279,16 @@ spring:
                   id: order-service
                   fallbackUri: forward:/fallback/order-service
 
+          - id: order-service-coupons
+            uri: ${ORDER_SERVICE_URL:http://localhost:8083}
+            predicates:
+              - Path=/api/v1/coupons/**, /api/v1/admin/coupons, /api/v1/admin/coupons/**
+            filters:
+              - name: CircuitBreaker
+                args:
+                  id: order-service
+                  fallbackUri: forward:/fallback/order-service
+
           - id: notification-service-restaurant
             uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8084}
             predicates:

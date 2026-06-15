@@ -1,0 +1,239 @@
+// ── Design tokens ────────────────────────────────────────────────────
+$gold:    #f9b303;
+$dark:    #1a1a1a;
+$mid:     #333;
+$light:   #f5f5f5;
+$muted:   #888;
+$danger:  #e53935;
+$radius:  12px;
+
+// ── Hero ─────────────────────────────────────────────────────────────
+.deals-hero {
+  background: $dark;
+  padding: 60px 24px 48px;
+  text-align: center;
+
+  &-inner { max-width: 640px; margin: 0 auto; }
+
+  &-tag {
+    display: inline-block;
+    background: $gold;
+    color: $dark;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+  }
+
+  &-title {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 2.4rem;
+    color: #fff;
+    margin: 0 0 12px;
+  }
+
+  &-sub {
+    color: #aaa;
+    font-size: 1rem;
+    margin: 0;
+  }
+}
+
+// ── Expiry Banner ─────────────────────────────────────────────────────
+.deals-expiry-banner {
+  background: #fff3cd;
+  border-left: 4px solid $gold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 24px;
+  font-size: 0.9rem;
+  color: #856404;
+
+  &-icon { font-size: 1.1rem; }
+}
+
+// ── Loading ───────────────────────────────────────────────────────────
+.deals-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 80px 24px;
+  color: $muted;
+  gap: 16px;
+}
+
+.deals-spinner {
+  width: 40px; height: 40px;
+  border: 3px solid #eee;
+  border-top-color: $gold;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+// ── Empty ─────────────────────────────────────────────────────────────
+.deals-empty {
+  text-align: center;
+  padding: 80px 24px;
+  color: $muted;
+
+  &-icon { font-size: 3rem; margin-bottom: 16px; }
+  h2 { font-size: 1.3rem; color: $mid; margin: 0 0 8px; }
+  p  { margin: 0; font-size: 0.95rem; }
+}
+
+// ── Grid ──────────────────────────────────────────────────────────────
+.deals-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+  padding: 40px 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+// ── Card ──────────────────────────────────────────────────────────────
+.deals-card {
+  background: #fff;
+  border: 1px solid #e8e8e8;
+  border-radius: $radius;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  transition: transform 0.15s, box-shadow 0.15s;
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  }
+
+  // Ribbon at top
+  &-ribbon {
+    background: $gold;
+    color: $dark;
+    font-weight: 700;
+    font-size: 1rem;
+    text-align: center;
+    padding: 10px 16px;
+    letter-spacing: 0.02em;
+  }
+
+  &-body {
+    padding: 16px 20px;
+    flex: 1;
+  }
+
+  &-desc {
+    font-size: 0.95rem;
+    color: $mid;
+    margin: 0 0 12px;
+    line-height: 1.5;
+  }
+
+  &-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  &-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-top: 1px dashed #ddd;
+    background: $light;
+  }
+}
+
+// ── Meta chips ────────────────────────────────────────────────────────
+.deals-meta-item {
+  font-size: 0.78rem;
+  color: $muted;
+  background: #f0f0f0;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.deals-meta-expiry.deals-expiry-soon {
+  background: #fff3cd;
+  color: #856404;
+  font-weight: 600;
+}
+
+// ── Code + copy button ────────────────────────────────────────────────
+.deals-code {
+  font-family: 'Courier New', monospace;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: $dark;
+  background: #fff;
+  border: 2px dashed $gold;
+  border-radius: 6px;
+  padding: 6px 14px;
+}
+
+.deals-copy-btn {
+  background: $dark;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 18px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover { background: $mid; }
+
+  &.copied {
+    background: #2e7d32;
+  }
+}
+
+// ── How to use ────────────────────────────────────────────────────────
+.deals-how {
+  background: $light;
+  padding: 40px 24px;
+  text-align: center;
+
+  &-title {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 1.4rem;
+    color: $dark;
+    margin: 0 0 20px;
+  }
+
+  &-steps {
+    list-style: decimal;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 0 0 0 24px;
+    text-align: left;
+
+    li {
+      font-size: 0.95rem;
+      color: $mid;
+      margin-bottom: 10px;
+      line-height: 1.5;
+    }
+  }
+}
+
+// ── Responsive ────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .deals-hero-title { font-size: 1.8rem; }
+  .deals-grid { grid-template-columns: 1fr; padding: 24px 16px; }
+}
+
+@media (max-width: 480px) {
+  .deals-card-footer { flex-direction: column; gap: 10px; align-items: flex-start; }
+  .deals-copy-btn { width: 100%; text-align: center; }
+}

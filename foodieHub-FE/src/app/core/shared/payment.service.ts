@@ -23,10 +23,10 @@ export class PaymentService {
    * Backend reads the cart, calculates amount, calls Razorpay API.
    * Returns the Razorpay order ID + public key so we can open the modal.
    */
-  initiatePayment(restaurantId: string): Observable<ApiResponse<InitiatePaymentResponse>> {
+  initiatePayment(restaurantId: string, couponCode?: string): Observable<ApiResponse<InitiatePaymentResponse>> {
     return this.http.post<ApiResponse<InitiatePaymentResponse>>(
       `${this.base}/api/v1/payments/initiate`,
-      { restaurantId }
+      { restaurantId, couponCode: couponCode ?? null }
     );
   }
 

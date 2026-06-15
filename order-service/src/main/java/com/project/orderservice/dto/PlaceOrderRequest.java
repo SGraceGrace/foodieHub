@@ -17,4 +17,7 @@ public class PlaceOrderRequest {
 
     /** Razorpay payment ID — set when order is paid via gateway; null for COD */
     private String paymentId;
+
+    private String couponCode;
+    private double discountAmount;
 }

@@ -8,4 +8,7 @@ public class InitiatePaymentRequest {
 
     @NotBlank(message = "restaurantId is required")
     private String restaurantId;
+
+    /** Optional — applied before creating the Razorpay order. */
+    private String couponCode;
 }

@@ -61,6 +61,9 @@ public class Order {
     /** Customer's rating for the driver (1-5). Null if no driver was assigned or not yet rated. */
     private Integer driverRating;
 
+    private String couponCode;
+    private double discountAmount;
+
     /** Razorpay payment ID — null means COD / not yet paid */
     private String paymentId;
 

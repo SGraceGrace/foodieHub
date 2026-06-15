@@ -15,4 +15,6 @@ public class VerifyPaymentRequest {
     @NotBlank private String restaurantId;
     @NotBlank private String deliveryAddress;
     private String customerName;
+    private String couponCode;
+    private double discountAmount;
 }

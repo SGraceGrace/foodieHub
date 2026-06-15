@@ -17,4 +17,7 @@ public class InitiatePaymentResponse {
 
     /** Public key sent to frontend to init Razorpay checkout */
     private String keyId;
+
+    /** Discount applied (0 if no coupon). Frontend uses this to show savings. */
+    private double discountAmount;
 }

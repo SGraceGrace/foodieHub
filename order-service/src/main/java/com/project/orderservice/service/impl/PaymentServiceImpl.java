@@ -10,8 +10,10 @@ import com.project.orderservice.dto.InitiatePaymentResponse;
 import com.project.orderservice.dto.PlaceOrderRequest;
 import com.project.orderservice.dto.VerifyPaymentRequest;
 import com.project.orderservice.repo.CartRepository;
+import com.project.orderservice.service.CouponService;
 import com.project.orderservice.service.OrderService;
 import com.project.orderservice.service.PaymentService;
+import com.project.orderservice.service.impl.CouponServiceImpl;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +44,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final RazorpayProperties  props;
     private final CartRepository      cartRepository;
     private final OrderService        orderService;
+    private final CouponServiceImpl   couponService;
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper        objectMapper;
 
@@ -69,7 +72,18 @@ public class PaymentServiceImpl implements PaymentService {
         double deliveryFee = subtotal >= FREE_DELIVERY_ABOVE ? 0 : DELIVERY_FEE;
         double gst         = Math.round(subtotal * GST_RATE);
         double total       = subtotal + deliveryFee + gst;
-        int    amountPaise = (int) Math.round(total * 100); // Razorpay needs paise
+
+        // 2b. Apply coupon discount if provided
+        double discount = 0;
+        if (req.getCouponCode() != null && !req.getCouponCode().isBlank()) {
+            var validation = couponService.validate(req.getCouponCode(), subtotal);
+            if (validation.isValid()) {
+                discount = validation.getDiscountAmount();
+                total    = Math.max(1, total - discount); // min ₹1 for Razorpay
+            }
+        }
+
+        int amountPaise = (int) Math.round(total * 100); // Razorpay needs paise
 
         // 3. Create a Razorpay order
         try {
@@ -86,6 +100,7 @@ public class PaymentServiceImpl implements PaymentService {
                     .amount(amountPaise)
                     .currency("INR")
                     .keyId(props.getKeyId())
+                    .discountAmount(discount)
                     .build();
 
         } catch (RazorpayException e) {
@@ -126,6 +141,13 @@ public class PaymentServiceImpl implements PaymentService {
         placeReq.setDeliveryAddress(req.getDeliveryAddress());
         placeReq.setCustomerName(req.getCustomerName());
         placeReq.setPaymentId(req.getRazorpayPaymentId());
+        placeReq.setCouponCode(req.getCouponCode());
+        placeReq.setDiscountAmount(req.getDiscountAmount());
+
+        // Increment coupon usage after successful payment
+        if (req.getCouponCode() != null && !req.getCouponCode().isBlank()) {
+            couponService.incrementUsage(req.getCouponCode());
+        }
 
         // 3. Delegate to OrderService — saves order, clears cart, publishes RabbitMQ event
         Order order = orderService.placeOrder(userId, placeReq);

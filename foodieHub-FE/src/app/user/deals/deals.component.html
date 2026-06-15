@@ -1,1 +1,79 @@
-<p>deals works!</p>
+<!-- ── Hero ─────────────────────────────────────────────────────────── -->
+<section class="deals-hero">
+  <div class="deals-hero-inner">
+    <span class="deals-hero-tag">Exclusive Offers</span>
+    <h1 class="deals-hero-title">Deals & Coupons</h1>
+    <p class="deals-hero-sub">Apply these codes at checkout to save on your next order.</p>
+  </div>
+</section>
+
+<!-- ── Expiring Soon Banner ──────────────────────────────────────────── -->
+<div class="deals-expiry-banner" *ngIf="!loading && hasExpiringSoon.length > 0">
+  <span class="deals-expiry-icon">⏰</span>
+  <span>
+    <strong>{{ hasExpiringSoon[0].code }}</strong> expires in
+    {{ daysLeft(hasExpiringSoon[0].expiresAt) }} day{{ daysLeft(hasExpiringSoon[0].expiresAt) !== 1 ? 's' : '' }} — grab it before it's gone!
+  </span>
+</div>
+
+<!-- ── Loading ───────────────────────────────────────────────────────── -->
+<div class="deals-loading" *ngIf="loading">
+  <div class="deals-spinner"></div>
+  <p>Fetching latest offers…</p>
+</div>
+
+<!-- ── Empty State ───────────────────────────────────────────────────── -->
+<div class="deals-empty" *ngIf="!loading && coupons.length === 0">
+  <div class="deals-empty-icon">🎟️</div>
+  <h2>No active offers right now</h2>
+  <p>Check back soon — we add new deals every week.</p>
+</div>
+
+<!-- ── Coupon Grid ───────────────────────────────────────────────────── -->
+<section class="deals-grid" *ngIf="!loading && coupons.length > 0">
+  <article class="deals-card" *ngFor="let c of coupons">
+
+    <!-- Ribbon -->
+    <div class="deals-card-ribbon">{{ discountLabel(c) }}</div>
+
+    <!-- Body -->
+    <div class="deals-card-body">
+      <p class="deals-card-desc">{{ c.description }}</p>
+
+      <div class="deals-card-meta">
+        <span *ngIf="c.minOrderAmount > 0" class="deals-meta-item">
+          Min order ₹{{ c.minOrderAmount }}
+        </span>
+        <span class="deals-meta-item deals-meta-expiry"
+              [class.deals-expiry-soon]="daysLeft(c.expiresAt) <= 3">
+          Expires {{ c.expiresAt | date:'d MMM y' }}
+        </span>
+        <span class="deals-meta-item" *ngIf="c.usageLimit > 0">
+          {{ c.usageLimit - c.usedCount }} uses left
+        </span>
+      </div>
+    </div>
+
+    <!-- Code + Copy -->
+    <div class="deals-card-footer">
+      <span class="deals-code">{{ c.code }}</span>
+      <button class="deals-copy-btn"
+              (click)="copyCode(c.code)"
+              [class.copied]="copiedCode === c.code">
+        {{ copiedCode === c.code ? '✓ Copied!' : 'Copy Code' }}
+      </button>
+    </div>
+
+  </article>
+</section>
+
+<!-- ── How to use ────────────────────────────────────────────────────── -->
+<section class="deals-how" *ngIf="!loading && coupons.length > 0">
+  <h2 class="deals-how-title">How to use a coupon</h2>
+  <ol class="deals-how-steps">
+    <li>Add items to your cart from any restaurant</li>
+    <li>On the cart page, enter the coupon code in the <strong>Apply Coupon</strong> box</li>
+    <li>Click <strong>Apply</strong> — the discount is deducted from your total</li>
+    <li>Complete payment with the reduced amount</li>
+  </ol>
+</section>

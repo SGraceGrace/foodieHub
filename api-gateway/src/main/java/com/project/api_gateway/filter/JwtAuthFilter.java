@@ -38,7 +38,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             "/api/v1/driver/register",
             "/login/oauth2",
             "/oauth2",
-            "/actuator"
+            "/actuator",
+            "/api/v1/coupons/active"
     );
 
     // Paths that are public for GET only — POST/PUT/DELETE require auth.

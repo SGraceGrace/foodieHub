@@ -6,7 +6,9 @@ import { CartService, Cart, CartItem, RestaurantCart } from '../../core/shared/c
 import { DeliveryAddressService } from '../../core/shared/delivery-address.service';
 import { PaymentService } from '../../core/shared/payment.service';
 import { TokenService } from '../../core/shared/token.service';
+import { CouponService } from '../../core/services/coupon.service';
 import { UserAddress } from '../../model/address.model';
+import { FormsModule } from '@angular/forms';
 
 const DELIVERY_FEE        = 30;
 const GST_RATE            = 0.05;
@@ -15,7 +17,7 @@ const FREE_DELIVERY_ABOVE = 500;
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './cart.component.html',
   styleUrl: './cart.component.scss',
 })
@@ -29,6 +31,12 @@ export class CartComponent implements OnInit, OnDestroy {
   /** Error message shown below the Pay button if payment/verification fails */
   paymentError: string | null = null;
 
+  // ── Coupon state ──────────────────────────────────────────────────
+  couponInput = '';
+  appliedCoupon: { code: string; discount: number } | null = null;
+  couponError: string | null = null;
+  couponLoading = false;
+
   private subs = new Subscription();
 
   constructor(
@@ -36,6 +44,7 @@ export class CartComponent implements OnInit, OnDestroy {
     private deliveryAddressService: DeliveryAddressService,
     private paymentService: PaymentService,
     private tokenService: TokenService,
+    private couponService: CouponService,
     private router: Router
   ) {}
 
@@ -79,7 +88,8 @@ export class CartComponent implements OnInit, OnDestroy {
   }
 
   grandTotal(rc: RestaurantCart): number {
-    return this.subtotal(rc) + this.deliveryFee(rc) + this.gst(rc);
+    const base = this.subtotal(rc) + this.deliveryFee(rc) + this.gst(rc);
+    return Math.max(1, base - (this.appliedCoupon?.discount ?? 0));
   }
 
   itemCount(rc: RestaurantCart): number {
@@ -92,6 +102,37 @@ export class CartComponent implements OnInit, OnDestroy {
 
   get hasItems(): boolean {
     return !!this.cart && this.cart.restaurants.length > 0;
+  }
+
+  // ── Coupon ───────────────────────────────────────────────────────
+
+  applyCoupon(rc: RestaurantCart) {
+    const code = this.couponInput.trim().toUpperCase();
+    if (!code) return;
+    this.couponLoading = true;
+    this.couponError = null;
+    this.couponService.validate(code, this.subtotal(rc)).subscribe({
+      next: res => {
+        this.couponLoading = false;
+        if (res.data.valid) {
+          this.appliedCoupon = { code, discount: res.data.discountAmount };
+          this.couponError = null;
+        } else {
+          this.appliedCoupon = null;
+          this.couponError = res.data.message;
+        }
+      },
+      error: () => {
+        this.couponLoading = false;
+        this.couponError = 'Could not validate coupon. Try again.';
+      }
+    });
+  }
+
+  removeCoupon() {
+    this.appliedCoupon = null;
+    this.couponInput = '';
+    this.couponError = null;
   }
 
   // ── Razorpay payment flow ─────────────────────────────────────────
@@ -113,7 +154,7 @@ export class CartComponent implements OnInit, OnDestroy {
 
       // ── Step 2: Backend creates a Razorpay order (reads cart → amount) ──
       const initRes = await firstValueFrom(
-        this.paymentService.initiatePayment(rc.restaurantId)
+        this.paymentService.initiatePayment(rc.restaurantId, this.appliedCoupon?.code)
       );
       const { razorpayOrderId, amount, currency, keyId } = initRes.data;
 
@@ -141,6 +182,8 @@ export class CartComponent implements OnInit, OnDestroy {
           restaurantId:      rc.restaurantId,
           deliveryAddress:   this.deliveryAddress!.addressText,
           customerName,
+          couponCode:        this.appliedCoupon?.code,
+          discountAmount:    this.appliedCoupon?.discount ?? 0,
         })
       );
 

@@ -111,11 +111,38 @@
           <span>GST (5%)</span>
           <span>₹{{ gst(rc) }}</span>
         </div>
+        <div class="cart-bill-row cart-bill-discount" *ngIf="appliedCoupon">
+          <span>Coupon ({{ appliedCoupon.code }})</span>
+          <span class="cart-discount-val">− ₹{{ appliedCoupon.discount }}</span>
+        </div>
         <div class="cart-bill-divider"></div>
         <div class="cart-bill-row cart-bill-total">
           <span>To pay</span>
           <span>₹{{ grandTotal(rc) }}</span>
         </div>
+      </div>
+
+      <!-- ── Coupon ─────────────────────────────────────────────── -->
+      <div class="cart-coupon-section">
+        <div class="cart-coupon-applied" *ngIf="appliedCoupon">
+          <span class="cart-coupon-tag">🎟 {{ appliedCoupon.code }} applied — saving ₹{{ appliedCoupon.discount }}</span>
+          <button class="cart-coupon-remove" (click)="removeCoupon()">✕ Remove</button>
+        </div>
+
+        <div class="cart-coupon-input-row" *ngIf="!appliedCoupon">
+          <input class="cart-coupon-input"
+                 type="text"
+                 [(ngModel)]="couponInput"
+                 placeholder="Enter coupon code"
+                 (keydown.enter)="applyCoupon(rc)" />
+          <button class="cart-coupon-btn"
+                  [disabled]="!couponInput.trim() || couponLoading"
+                  (click)="applyCoupon(rc)">
+            {{ couponLoading ? '…' : 'Apply' }}
+          </button>
+        </div>
+        <p class="cart-coupon-error" *ngIf="couponError">{{ couponError }}</p>
+        <a class="cart-coupon-browse" routerLink="/user/deals">Browse deals →</a>
       </div>
 
       <!-- Pay via Razorpay CTA -->

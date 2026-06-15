@@ -12,6 +12,8 @@ export interface VerifyPaymentRequest {
   restaurantId:      string;
   deliveryAddress:   string;
   customerName:      string;
+  couponCode?:       string;
+  discountAmount?:   number;
 }
 
 /** Razorpay returns these three fields in the handler callback after successful payment */
