@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -27,6 +28,7 @@ import java.util.List;
  *  DELETE /api/v1/driver/notifications           Clear all (hard-delete, same as customer/restaurant)
  *  POST   /api/v1/driver/push-subscription       Save Web Push subscription
  */
+@PreAuthorize("hasRole('DRIVER')")
 @RestController
 @RequestMapping("/api/v1/driver")
 @RequiredArgsConstructor

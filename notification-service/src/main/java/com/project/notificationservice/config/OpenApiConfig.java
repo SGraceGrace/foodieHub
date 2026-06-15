@@ -25,6 +25,19 @@ public class OpenApiConfig {
                         .addSecuritySchemes("Bearer Token", new SecurityScheme()
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
-                                .bearerFormat("JWT")));
+                                .bearerFormat("JWT"))
+                        .addSecuritySchemes("X-User-Id", new SecurityScheme()
+                                .type(SecurityScheme.Type.APIKEY)
+                                .in(SecurityScheme.In.HEADER)
+                                .name("X-User-Id")
+                                .description("Your email address (e.g. user@example.com)"))
+                        .addSecuritySchemes("X-User-Role", new SecurityScheme()
+                                .type(SecurityScheme.Type.APIKEY)
+                                .in(SecurityScheme.In.HEADER)
+                                .name("X-User-Role")
+                                .description("ROLE_CUSTOMER | ROLE_RESTAURANT_OWNER | ROLE_DRIVER | ROLE_ADMIN | ROLE_SUPER_ADMIN")))
+                .addSecurityItem(new SecurityRequirement()
+                        .addList("X-User-Id")
+                        .addList("X-User-Role"));
     }
 }

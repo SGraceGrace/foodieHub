@@ -10,6 +10,7 @@ import com.project.orderservice.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -27,6 +28,7 @@ public class OrderController {
     private final OrderService orderService;
 
     /** POST /api/orders — Place order for one restaurant from cart */
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping
     public ResponseEntity<BaseAPIResponse> placeOrder(
             @RequestHeader("X-User-Id") String userId,
@@ -37,6 +39,7 @@ public class OrderController {
     }
 
     /** GET /api/orders — Order history for the logged-in user */
+    @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping
     public ResponseEntity<BaseAPIResponse> getOrders(
             @RequestHeader("X-User-Id") String userId) {
@@ -46,6 +49,7 @@ public class OrderController {
     }
 
     /** GET /api/orders/{id} — Single order detail */
+    @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/{id}")
     public ResponseEntity<BaseAPIResponse> getOrder(
             @RequestHeader("X-User-Id") String userId,
@@ -60,6 +64,7 @@ public class OrderController {
      * Restaurant partner fetches their incoming/live orders.
      * When statuses param is omitted, returns all orders for that restaurant.
      */
+    @PreAuthorize("hasRole('RESTAURANT_OWNER')")
     @GetMapping("/restaurant/{restaurantId}")
     public ResponseEntity<BaseAPIResponse> getRestaurantOrders(
             @PathVariable String restaurantId,
@@ -78,6 +83,7 @@ public class OrderController {
      * Paginated full order history for a restaurant — used by the All Orders tab.
      * from/to are optional ISO local dates (yyyy-MM-dd). When omitted, all orders are returned.
      */
+    @PreAuthorize("hasRole('RESTAURANT_OWNER')")
     @GetMapping("/restaurant/{restaurantId}/all")
     public ResponseEntity<BaseAPIResponse> getAllRestaurantOrders(
             @PathVariable String restaurantId,
@@ -101,6 +107,7 @@ public class OrderController {
      * PUT /api/orders/{id}/status — Restaurant partner updates order status.
      * Transitions: PLACED → CONFIRMED → PREPARING → READY → DELIVERED
      */
+    @PreAuthorize("hasRole('RESTAURANT_OWNER')")
     @PutMapping("/{id}/status")
     public ResponseEntity<BaseAPIResponse> updateStatus(
             @PathVariable String id,
@@ -114,6 +121,7 @@ public class OrderController {
      * GET /api/orders/restaurant/{restaurantId}/stats
      * Overview stats for the partner workspace: today's orders/revenue, pending, total.
      */
+    @PreAuthorize("hasRole('RESTAURANT_OWNER')")
     @GetMapping("/restaurant/{restaurantId}/stats")
     public ResponseEntity<BaseAPIResponse> getRestaurantStats(
             @PathVariable String restaurantId) {
@@ -125,6 +133,7 @@ public class OrderController {
      * GET /api/orders/available — All unassigned active orders visible to drivers.
      * Returns orders where driverEmail IS NULL and status IN (PLACED, CONFIRMED, PREPARING, READY).
      */
+    @PreAuthorize("hasRole('DRIVER')")
     @GetMapping("/available")
     public ResponseEntity<BaseAPIResponse> getAvailableOrders() {
         return ResponseEntity.ok(
@@ -136,6 +145,7 @@ public class OrderController {
      * Returns the order they accepted but haven't delivered yet, or null if none.
      * Used to restore active delivery state after a page refresh.
      */
+    @PreAuthorize("hasRole('DRIVER')")
     @GetMapping("/driver/active")
     public ResponseEntity<BaseAPIResponse> getDriverActiveOrder(
             @RequestHeader("X-User-Id") String driverEmail) {
@@ -148,6 +158,7 @@ public class OrderController {
      * Earnings summary for the logged-in driver: today, this week, all-time, weekly breakdown.
      * All monetary values represent 15% commission on totalAmount of DELIVERED orders.
      */
+    @PreAuthorize("hasRole('DRIVER')")
     @GetMapping("/driver/earnings")
     public ResponseEntity<BaseAPIResponse> getDriverEarnings(
             @RequestHeader("X-User-Id") String driverEmail) {
@@ -162,6 +173,7 @@ public class OrderController {
      * Paginated delivery history for the logged-in driver.
      * Returns all DELIVERED and CANCELLED orders where driverEmail matches.
      */
+    @PreAuthorize("hasRole('DRIVER')")
     @GetMapping("/driver/history")
     public ResponseEntity<BaseAPIResponse> getDriverHistory(
             @RequestHeader("X-User-Id") String driverEmail,
@@ -178,6 +190,7 @@ public class OrderController {
      * Stores the driver's email on the order. Returns 409 if already taken.
      * No request body needed — driver identity comes from the X-User-Id header.
      */
+    @PreAuthorize("hasRole('DRIVER')")
     @PatchMapping("/{id}/accept")
     public ResponseEntity<BaseAPIResponse> acceptOrder(
             @PathVariable String id,
@@ -192,6 +205,7 @@ public class OrderController {
      * Sets rated=true so the UI hides the rating button and prevents duplicates.
      * Accepts an optional body: { "driverRating": 1-5 } — stored for analytics; null is fine.
      */
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PatchMapping("/{id}/rated")
     public ResponseEntity<BaseAPIResponse> markRated(
             @PathVariable String id,
@@ -207,6 +221,7 @@ public class OrderController {
      * Publishes the same OrderStatusUpdatedEvent so the customer is notified via SSE + Web Push.
      */
     /** GET /api/orders/admin/all — Paginated all orders for admin panel */
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
     @GetMapping("/admin/all")
     public ResponseEntity<BaseAPIResponse> getAdminOrders(
             @RequestParam(defaultValue = "0")  int page,
@@ -219,6 +234,7 @@ public class OrderController {
     }
 
     /** GET /api/orders/admin/stats — Platform-wide order stats for admin dashboard */
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
     @GetMapping("/admin/stats")
     public ResponseEntity<BaseAPIResponse> getAdminStats() {
         return ResponseEntity.ok(new BaseAPIResponse(
@@ -227,6 +243,7 @@ public class OrderController {
                 200, null));
     }
 
+    @PreAuthorize("hasRole('DRIVER')")
     @PatchMapping("/{id}/driver-status")
     public ResponseEntity<BaseAPIResponse> driverUpdateStatus(
             @PathVariable String id,

@@ -5,6 +5,7 @@ import com.project.foodservice.search.dto.SearchResultDTO;
 import com.project.foodservice.search.service.SearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,6 +37,7 @@ public class SearchController {
      * Admin-only endpoint: rebuilds the entire ES index from MongoDB.
      * Call once after deploying or when ES data is stale.
      */
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
     @PostMapping("/reindex")
     public ResponseEntity<BaseAPIResponse> reindex() {
         int count = searchService.reindex();

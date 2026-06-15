@@ -7,6 +7,7 @@ import com.project.foodservice.service.MenuItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -37,6 +38,7 @@ public class MenuItemController {
     }
 
     /** Partner — add a single item to a category. */
+    @PreAuthorize("hasRole('RESTAURANT_OWNER')")
     @PostMapping("api/v1/restaurants/{restaurantId}/menu/items")
     public ResponseEntity<BaseAPIResponse> addItem(
             @PathVariable String restaurantId,
@@ -49,6 +51,7 @@ public class MenuItemController {
     }
 
     /** Partner — update a single item (stats are preserved). */
+    @PreAuthorize("hasRole('RESTAURANT_OWNER')")
     @PutMapping("api/v1/restaurants/{restaurantId}/menu/items/{itemId}")
     public ResponseEntity<BaseAPIResponse> updateItem(
             @PathVariable String restaurantId,
@@ -60,6 +63,7 @@ public class MenuItemController {
     }
 
     /** Partner — delete a single item. */
+    @PreAuthorize("hasRole('RESTAURANT_OWNER')")
     @DeleteMapping("api/v1/restaurants/{restaurantId}/menu/items/{itemId}")
     public ResponseEntity<BaseAPIResponse> deleteItem(
             @PathVariable String restaurantId,

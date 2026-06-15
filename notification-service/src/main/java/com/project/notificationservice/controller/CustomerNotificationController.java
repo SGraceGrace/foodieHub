@@ -13,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -27,6 +28,7 @@ import java.util.List;
  *  DELETE /api/v1/customer/notifications           Clear all
  *  POST   /api/v1/customer/push-subscription       Save Web Push subscription
  */
+@PreAuthorize("hasRole('CUSTOMER')")
 @RestController
 @RequestMapping("/api/v1/customer")
 @RequiredArgsConstructor

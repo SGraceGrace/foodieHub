@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -51,12 +52,14 @@ public class RestaurantController {
         return ResponseEntity.ok(new BaseAPIResponse(CommonConstants.SUCCESS, restaurantService.getCuisines(), HttpStatus.OK.value(), null));
     }
 
+    @PreAuthorize("hasRole('ADMIN') or hasRole('SUPER_ADMIN')")
     @PostMapping
     public ResponseEntity<BaseAPIResponse> create(@RequestBody RestaurantCreateRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new BaseAPIResponse(CommonConstants.SUCCESS, restaurantService.create(request), HttpStatus.CREATED.value(), null));
     }
 
+    @PreAuthorize("hasRole('RESTAURANT_OWNER')")
     @GetMapping("/owner/{ownerId}")
     public ResponseEntity<BaseAPIResponse> getByOwner(
             @PathVariable String ownerId,
@@ -67,6 +70,7 @@ public class RestaurantController {
                 HttpStatus.OK.value(), null));
     }
 
+    @PreAuthorize("hasRole('RESTAURANT_OWNER')")
     @PutMapping("/{id}")
     public ResponseEntity<BaseAPIResponse> updateDetails(
             @PathVariable String id,
@@ -76,6 +80,7 @@ public class RestaurantController {
                 HttpStatus.OK.value(), null));
     }
 
+    @PreAuthorize("hasRole('RESTAURANT_OWNER')")
     @PutMapping("/{id}/hours")
     public ResponseEntity<BaseAPIResponse> updateHours(
             @PathVariable String id,
@@ -90,6 +95,7 @@ public class RestaurantController {
      * Writes to the menu_items collection (replaces all existing items).
      * Returns the newly saved menu grouped by category.
      */
+    @PreAuthorize("hasRole('RESTAURANT_OWNER')")
     @PutMapping("/{id}/menu")
     public ResponseEntity<BaseAPIResponse> updateMenu(
             @PathVariable String id,
@@ -106,6 +112,7 @@ public class RestaurantController {
      * X-User-Id header is injected by the API Gateway from the verified JWT.
      * One rating per order — duplicate submissions return 409.
      */
+    @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/{id}/rating")
     public ResponseEntity<BaseAPIResponse> addRating(
             @PathVariable String id,
