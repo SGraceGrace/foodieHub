@@ -58,12 +58,37 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                     FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
 
-        if (isPublicPath(path, request.getMethod()) || "OPTIONS".equalsIgnoreCase(request.getMethod())) {
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
             filterChain.doFilter(request, response);
             return;
         }
 
         String authHeader = request.getHeader("Authorization");
+
+        if (isPublicPath(path, request.getMethod())) {
+            // Public path — JWT is optional.
+            // If a valid JWT is present, still inject headers so downstream services
+            // can enforce @PreAuthorize on mixed public/protected endpoints.
+            // If JWT is absent or invalid, just forward without headers (anonymous access).
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                try {
+                    Claims claims = extractClaims(authHeader.substring(7));
+                    MutableHttpServletRequest mutableRequest = new MutableHttpServletRequest(request);
+                    mutableRequest.addHeader("X-User-Id", claims.getSubject());
+                    List<?> authorities = claims.get("role", List.class);
+                    String role = (authorities != null && !authorities.isEmpty())
+                            ? authorities.get(0).toString() : "";
+                    mutableRequest.addHeader("X-User-Role", role);
+                    filterChain.doFilter(mutableRequest, response);
+                    return;
+                } catch (Exception ignored) {
+                    // Invalid JWT on public path — proceed as anonymous
+                }
+            }
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             sendUnauthorized(request, response, "Missing or invalid Authorization header");
             return;
