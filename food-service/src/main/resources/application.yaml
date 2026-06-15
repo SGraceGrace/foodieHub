@@ -10,6 +10,9 @@ spring:
       auto-index-creation: true
   rabbitmq:
     addresses: ${RABBITMQ_URL:amqp://guest:guest@localhost:5672}
+  data:
+    redis:
+      url: ${REDIS_URL:redis://localhost:6379}
   elasticsearch:
     uris: ${ELASTICSEARCH_URI:http://localhost:9200}
 

@@ -18,6 +18,8 @@ import com.project.foodservice.exception.DuplicateRatingException;
 import com.project.foodservice.search.service.SearchService;
 import com.project.foodservice.service.RestaurantService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -48,6 +50,9 @@ public class RestaurantServiceImpl implements RestaurantService {
     private final SearchService searchService;
     private final MongoTemplate mongoTemplate;
 
+    // Cache non-location listings — location queries are user-specific and not cacheable.
+    // TTL 10 min per CacheConfig; evicted whenever a restaurant is created or updated.
+    @Cacheable(value = "restaurants", key = "#cuisine + '_' + #sort + '_' + #pageable.pageNumber + '_' + #pageable.pageSize", condition = "#lat == null && #lng == null")
     @Override
     public PaginatedResponse<Restaurant> getAll(String cuisine, Double lat, Double lng, Double radiusKm, String sort, Pageable pageable) {
         boolean hasCuisine  = cuisine != null && !cuisine.isBlank();
@@ -137,6 +142,7 @@ public class RestaurantServiceImpl implements RestaurantService {
                 .collect(Collectors.toList());
     }
 
+    @CacheEvict(value = "restaurants", allEntries = true)
     @Override
     public Restaurant create(RestaurantCreateRequestDTO request) {
         Restaurant restaurant = new Restaurant();
@@ -199,6 +205,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         restaurantRepo.saveAll(restaurants);
     }
 
+    @CacheEvict(value = "restaurants", allEntries = true)
     @Override
     public Restaurant updateHours(String id, List<DaySchedule> hours) {
         Restaurant r = restaurantRepo.findById(id)
@@ -210,6 +217,7 @@ public class RestaurantServiceImpl implements RestaurantService {
         return saved;
     }
 
+    @CacheEvict(value = "restaurants", allEntries = true)
     @Override
     public Restaurant updateDetails(String id, RestaurantUpdateRequestDTO req) {
         Restaurant r = restaurantRepo.findById(id)
